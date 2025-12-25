@@ -6,6 +6,7 @@ import FeatureGrid from "@/components/landing/FeatureGrid";
 import ProfitCalculator, { CalculatorData } from "@/components/landing/ProfitCalculator";
 import AnalyzingState from "@/components/landing/AnalyzingState";
 import TeaserReport from "@/components/landing/TeaserReport";
+import FoundersPricingBanner from "@/components/landing/FoundersPricingBanner";
 import LeadCaptureModal from "@/components/landing/LeadCaptureModal";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardContent from "@/components/dashboard/DashboardContent";
@@ -95,6 +96,7 @@ const Index = () => {
       <main>
         <HeroSection onGetStarted={handleGetStarted} />
         <FeatureGrid />
+        <FoundersPricingBanner />
         <ProfitCalculator onSubmit={handleCalculatorSubmit} />
       </main>
       <Footer />
