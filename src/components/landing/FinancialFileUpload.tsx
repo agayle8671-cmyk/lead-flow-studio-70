@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Upload, CheckCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface FileUploadProps {
   onDataParsed: (data: Record<string, unknown>) => void;
@@ -7,14 +8,11 @@ interface FileUploadProps {
 
 const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processFile = useCallback((file: File) => {
     setIsUploading(true);
 
-    // Simulate reading the file (this is where your Replit logic goes)
     const reader = new FileReader();
     reader.onload = (event) => {
       console.log("File content read:", event.target?.result);
@@ -25,10 +23,57 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
       }, 1500);
     };
     reader.readAsText(file);
+  }, [onDataParsed]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processFile(file);
   };
 
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = [".csv", ".txt", ".json"];
+    const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+    if (!validTypes.includes(fileExtension)) {
+      console.warn("Invalid file type:", fileExtension);
+      return;
+    }
+
+    processFile(file);
+  }, [processFile]);
+
   return (
-    <div className="border-2 border-dashed border-primary/30 rounded-lg p-8 text-center bg-card/50">
+    <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={cn(
+        "border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200",
+        isDragging
+          ? "border-primary bg-primary/10 scale-[1.02]"
+          : "border-primary/30 bg-card/50 hover:border-primary/50 hover:bg-card/70"
+      )}
+    >
       <input
         type="file"
         id="file-upload"
@@ -40,13 +85,20 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
         {isUploading ? (
           <CheckCircle className="w-12 h-12 text-green-500 animate-pulse" />
         ) : (
-          <Upload className="w-12 h-12 text-primary" />
+          <Upload className={cn(
+            "w-12 h-12 transition-transform duration-200",
+            isDragging ? "text-primary scale-110" : "text-primary"
+          )} />
         )}
         <span className="text-lg font-medium">
-          {isUploading ? "Reading financial data..." : "Upload expenses (CSV or TXT)"}
+          {isUploading
+            ? "Reading financial data..."
+            : isDragging
+            ? "Drop your file here"
+            : "Drag & drop or click to upload"}
         </span>
         <span className="text-sm text-muted-foreground">
-          Let our AI File-Reader populate the calculator for you
+          CSV, TXT, or JSON • Let our AI auto-fill the calculator
         </span>
       </label>
     </div>
