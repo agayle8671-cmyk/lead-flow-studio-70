@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { z } from "zod";
+import FinancialFileUpload from "./FinancialFileUpload";
 
 const calculatorSchema = z.object({
   revenue: z.number().min(1, "Revenue must be greater than 0").max(1000000000, "Please enter a valid revenue"),
@@ -63,6 +64,18 @@ const ProfitCalculator = ({ onSubmit }: ProfitCalculatorProps) => {
     avgOrderValue: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleFileParsed = (data: Record<string, unknown>) => {
+    // Auto-fill form fields from parsed file data
+    const parsedValues: Record<string, string> = {};
+    if (data.revenue !== undefined) parsedValues.revenue = String(data.revenue);
+    if (data.costs !== undefined) parsedValues.costs = String(data.costs);
+    if (data.customers !== undefined) parsedValues.customers = String(data.customers);
+    if (data.avgOrderValue !== undefined) parsedValues.avgOrderValue = String(data.avgOrderValue);
+    
+    setValues((prev) => ({ ...prev, ...parsedValues }));
+    setErrors({});
+  };
 
   const handleChange = (field: string, value: string) => {
     // Only allow numbers and decimals
@@ -128,6 +141,14 @@ const ProfitCalculator = ({ onSubmit }: ProfitCalculatorProps) => {
           >
             <Card variant="glass" className="p-8 md:p-10">
               <form onSubmit={handleSubmit} className="space-y-6">
+                <FinancialFileUpload onDataParsed={handleFileParsed} />
+                
+                <div className="relative flex items-center gap-4">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">or enter manually</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+
                 <div className="grid sm:grid-cols-2 gap-6">
                   {inputFields.map((field, index) => (
                     <motion.div
