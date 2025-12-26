@@ -12,11 +12,10 @@ import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardContent from "@/components/dashboard/DashboardContent";
 import { useToast } from "@/hooks/use-toast";
 import type { ParsedFinancialData } from "@/components/landing/FinancialFileUpload";
+import { apiUrl } from "@/lib/config";
 
 type AppState = "landing" | "calculator" | "analyzing" | "teaser" | "dashboard";
 
-const PARSE_API_URL = "https://file-reader--agayle8671.replit.app";
-const SAVE_API_URL = "https://4c2918a7-f869-42f0-b654-23db3bfab25d-00-6l8spb3ufyqa.spock.replit.dev";
 const MINIMUM_ANALYZING_TIME = 2000; // 2 seconds minimum for smooth UX
 
 const Index = () => {
@@ -54,7 +53,40 @@ const Index = () => {
       customers: data.customers || 0,
       avgOrderValue: data.avgOrderValue || 0,
     };
-    
+
+    // Persist to backend immediately when a file is parsed
+    void (async () => {
+      try {
+        const payload = {
+          revenue: calcData.revenue,
+          marketingSpend: data.marketingSpend ?? data.costs ?? 0,
+          operationsCost: data.operationsCost ?? data.costs ?? 0,
+        };
+
+        const endpoint = apiUrl("/api/save");
+        console.log("Auto-saving parsed report to:", endpoint, payload);
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(payload),
+          mode: "cors",
+        });
+
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(`Save failed: ${res.status} ${text}`);
+        }
+
+        console.log("Auto-save succeeded");
+      } catch (e) {
+        console.error("Auto-save failed:", e);
+      }
+    })();
+
     setCalculatorData(calcData);
     analysisStartTime.current = Date.now();
     setAppState("analyzing");
@@ -85,17 +117,18 @@ const Index = () => {
     if (!calculatorData) return;
 
     try {
-      const response = await fetch(`${SAVE_API_URL}/api/save`, {
+      const response = await fetch(apiUrl("/api/save"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
           revenue: calculatorData.revenue,
           marketingSpend: calculatorData.costs,
           operationsCost: calculatorData.costs,
         }),
+        mode: "cors",
       });
 
       if (!response.ok) {
