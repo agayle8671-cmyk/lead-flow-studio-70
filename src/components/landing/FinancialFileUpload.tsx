@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Upload, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,76 +16,159 @@ interface ParsedFinancialData {
   avgOrderValue?: number;
 }
 
+// Local fallback parsers
+const parseCSV = (content: string): ParsedFinancialData => {
+  const lines = content.trim().split(/\r?\n/);
+  const data: ParsedFinancialData = {};
+
+  for (const line of lines) {
+    const parts = line.split(/[,\t;]/).map((p) => p.trim().toLowerCase());
+    
+    if (parts.length >= 2) {
+      const key = parts[0];
+      const value = parseFloat(parts[1].replace(/[$,]/g, ""));
+      
+      if (!isNaN(value)) {
+        if (key.includes("revenue") || key.includes("income") || key.includes("sales")) {
+          data.revenue = value;
+        } else if (key.includes("cost") || key.includes("expense") || key.includes("spending")) {
+          data.costs = value;
+        } else if (key.includes("customer") || key.includes("client") || key.includes("user")) {
+          data.customers = Math.round(value);
+        } else if (key.includes("order") || key.includes("aov") || key.includes("average")) {
+          data.avgOrderValue = value;
+        }
+      }
+    }
+  }
+
+  return data;
+};
+
+const parseJSON = (content: string): ParsedFinancialData => {
+  const json = JSON.parse(content);
+  const data: ParsedFinancialData = {};
+
+  const findValue = (obj: Record<string, unknown>, keys: string[]): number | undefined => {
+    for (const key of Object.keys(obj)) {
+      const lowerKey = key.toLowerCase();
+      if (keys.some((k) => lowerKey.includes(k))) {
+        const val = obj[key];
+        if (typeof val === "number") return val;
+        if (typeof val === "string") {
+          const parsed = parseFloat(val.replace(/[$,]/g, ""));
+          if (!isNaN(parsed)) return parsed;
+        }
+      }
+    }
+    return undefined;
+  };
+
+  data.revenue = findValue(json, ["revenue", "income", "sales"]);
+  data.costs = findValue(json, ["cost", "expense", "spending"]);
+  data.customers = findValue(json, ["customer", "client", "user"]);
+  data.avgOrderValue = findValue(json, ["order", "aov", "average"]);
+
+  if (data.customers !== undefined) data.customers = Math.round(data.customers);
+
+  return data;
+};
+
 const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
 
+  const parseFileLocally = useCallback((file: File): Promise<ParsedFinancialData> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Could not read the file"));
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        if (!content || content.trim().length === 0) {
+          reject(new Error("The file appears to be empty"));
+          return;
+        }
+        try {
+          const extension = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+          const parsedData = extension === ".json" ? parseJSON(content) : parseCSV(content);
+          resolve(parsedData);
+        } catch {
+          reject(new Error("Could not parse the file format"));
+        }
+      };
+      reader.readAsText(file);
+    });
+  }, []);
+
   const processFile = useCallback(async (file: File) => {
     setIsUploading(true);
 
     try {
-      // Create FormData to send file
-      const formData = new FormData();
-      formData.append("file", file);
+      let parsedData: ParsedFinancialData = {};
 
-      // Send to API for AI-powered parsing
-      const response = await fetch(`${API_BASE_URL}/api/parse`, {
-        method: "POST",
-        body: formData,
-      });
+      // Try API first, fall back to local parsing
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Server error: ${response.status}`);
+        const response = await fetch(`${API_BASE_URL}/api/parse`, {
+          method: "POST",
+          body: formData,
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        
+        if (response.ok && contentType.includes("application/json")) {
+          const result = await response.json();
+          parsedData = {
+            revenue: result.revenue ? Number(result.revenue) : undefined,
+            costs: result.costs ? Number(result.costs) : undefined,
+            customers: result.customers ? Math.round(Number(result.customers)) : undefined,
+            avgOrderValue: result.avgOrderValue ? Number(result.avgOrderValue) : undefined,
+          };
+        } else {
+          console.log("API unavailable, using local parsing");
+          parsedData = await parseFileLocally(file);
+        }
+      } catch (apiError) {
+        console.log("API error, falling back to local parsing:", apiError);
+        parsedData = await parseFileLocally(file);
       }
-
-      const result = await response.json();
-
-      // Map API response to expected format
-      const parsedData: ParsedFinancialData = {
-        revenue: result.revenue ? Number(result.revenue) : undefined,
-        costs: result.costs ? Number(result.costs) : undefined,
-        customers: result.customers ? Math.round(Number(result.customers)) : undefined,
-        avgOrderValue: result.avgOrderValue ? Number(result.avgOrderValue) : undefined,
-      };
 
       // Filter out undefined values
       const cleanedData = Object.fromEntries(
         Object.entries(parsedData).filter(([_, v]) => v !== undefined)
       );
 
-      const hasData = Object.keys(cleanedData).length > 0;
-
-      if (!hasData) {
+      if (Object.keys(cleanedData).length === 0) {
         toast({
           variant: "destructive",
           title: "No data found",
-          description: "Could not extract financial data from the file. Please check the format.",
+          description: "Could not extract financial data. Use format: 'revenue, 50000' per line.",
         });
         setIsUploading(false);
         return;
       }
 
-      // Show success with what was found
       const fields = Object.keys(cleanedData).length;
       toast({
         title: "Data imported",
-        description: `AI extracted ${fields} field${fields > 1 ? "s" : ""} from your file.`,
+        description: `Extracted ${fields} field${fields > 1 ? "s" : ""} from your file.`,
       });
 
       onDataParsed(cleanedData);
     } catch (error) {
-      console.error("File upload error:", error);
+      console.error("File processing error:", error);
       toast({
         variant: "destructive",
         title: "Upload failed",
-        description: error instanceof Error ? error.message : "Could not process the file. Please try again.",
+        description: error instanceof Error ? error.message : "Could not process the file.",
       });
     } finally {
       setIsUploading(false);
     }
-  }, [onDataParsed, toast]);
+  }, [onDataParsed, toast, parseFileLocally]);
 
   const validateAndProcessFile = useCallback((file: File) => {
     const validTypes = [".csv", ".txt", ".json"];
