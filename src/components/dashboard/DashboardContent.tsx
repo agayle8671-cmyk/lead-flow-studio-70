@@ -72,14 +72,19 @@ const recommendations = [
 
 const DashboardContent = ({ data, userName, onSaveReport }: DashboardContentProps) => {
   const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const profitMargin = ((data.revenue - data.costs) / data.revenue) * 100;
   const profit = data.revenue - data.costs;
 
   const handleSave = async () => {
     if (!onSaveReport) return;
     setIsSaving(true);
+    setSaveSuccess(false);
     try {
       await onSaveReport();
+      setSaveSuccess(true);
+      // Reset success state after animation
+      setTimeout(() => setSaveSuccess(false), 2500);
     } finally {
       setIsSaving(false);
     }
@@ -130,18 +135,36 @@ const DashboardContent = ({ data, userName, onSaveReport }: DashboardContentProp
             <p className="text-muted-foreground">Here's your profit analysis overview</p>
           </motion.div>
           {onSaveReport && (
-            <Button 
-              onClick={handleSave} 
-              disabled={isSaving}
-              className="gap-2"
+            <motion.div
+              initial={false}
+              animate={saveSuccess ? { scale: [1, 1.05, 1] } : {}}
+              transition={{ duration: 0.3 }}
             >
-              {isSaving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              {isSaving ? "Saving..." : "Save Report"}
-            </Button>
+              <Button 
+                onClick={handleSave} 
+                disabled={isSaving}
+                className={`gap-2 transition-all duration-300 ${
+                  saveSuccess 
+                    ? "bg-primary text-primary-foreground" 
+                    : ""
+                }`}
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : saveSuccess ? (
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 10 }}
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                  </motion.div>
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                {isSaving ? "Saving..." : saveSuccess ? "Saved!" : "Save Report"}
+              </Button>
+            </motion.div>
           )}
         </div>
       </header>
