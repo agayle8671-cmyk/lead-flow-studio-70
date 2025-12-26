@@ -323,10 +323,13 @@ const DashboardContent = ({ data, userName, onSaveReport }: DashboardContentProp
           <Card variant="bento" className="p-6">
             <CardHeader className="p-0 mb-6">
               <CardTitle className="flex items-center justify-between">
-                <span>AI Recommendations</span>
-                <a href="#" className="text-sm font-normal text-primary flex items-center gap-1 hover:underline">
-                  View All <ArrowUpRight className="w-4 h-4" />
-                </a>
+                <span className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  AI Recommendations
+                </span>
+                <span className="text-sm font-normal text-muted-foreground">
+                  Updated just now
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -337,7 +340,8 @@ const DashboardContent = ({ data, userName, onSaveReport }: DashboardContentProp
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: 0.7 + index * 0.1 }}
-                    className="flex items-start gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
+                    whileHover={{ x: 4 }}
+                    className="flex items-start gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer group"
                   >
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                       rec.status === "critical" 
@@ -354,10 +358,11 @@ const DashboardContent = ({ data, userName, onSaveReport }: DashboardContentProp
                         <CheckCircle className="w-5 h-5 text-primary" />
                       )}
                     </div>
-                    <div>
-                      <h4 className="font-semibold mb-1">{rec.title}</h4>
+                    <div className="flex-1">
+                      <h4 className="font-semibold mb-1 group-hover:text-primary transition-colors">{rec.title}</h4>
                       <p className="text-sm text-muted-foreground">{rec.description}</p>
                     </div>
+                    <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                   </motion.div>
                 ))}
               </div>
