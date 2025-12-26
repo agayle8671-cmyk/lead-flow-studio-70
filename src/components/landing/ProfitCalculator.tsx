@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { DollarSign, Users, TrendingUp, Package, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ const calculatorSchema = z.object({
 
 interface ProfitCalculatorProps {
   onSubmit: (data: CalculatorData) => void;
+  onFileUploadSuccess?: (data: CalculatorData) => void;
 }
 
 export interface CalculatorData {
@@ -56,7 +57,7 @@ const inputFields = [
   },
 ];
 
-const ProfitCalculator = ({ onSubmit }: ProfitCalculatorProps) => {
+const ProfitCalculator = ({ onSubmit, onFileUploadSuccess }: ProfitCalculatorProps) => {
   const [values, setValues] = useState<Record<string, string>>({
     revenue: "",
     costs: "",
@@ -65,8 +66,23 @@ const ProfitCalculator = ({ onSubmit }: ProfitCalculatorProps) => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleFileParsed = (data: Record<string, unknown>) => {
-    // Auto-fill form fields from parsed file data
+  const handleFileParsed = useCallback((data: Record<string, unknown>) => {
+    // Format data to match CalculatorData type
+    const formattedData: CalculatorData = {
+      revenue: Number(data.revenue) || 0,
+      costs: Number(data.costs) || 0,
+      customers: Number(data.customers) || 0,
+      avgOrderValue: Number(data.avgOrderValue) || 0,
+    };
+
+    // If onFileUploadSuccess is provided and we have valid data, trigger analysis flow
+    if (onFileUploadSuccess && (formattedData.revenue > 0 || formattedData.costs > 0)) {
+      onFileUploadSuccess(formattedData);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    // Otherwise, just auto-fill the form fields
     const parsedValues: Record<string, string> = {};
     if (data.revenue !== undefined) parsedValues.revenue = String(data.revenue);
     if (data.costs !== undefined) parsedValues.costs = String(data.costs);
@@ -75,7 +91,7 @@ const ProfitCalculator = ({ onSubmit }: ProfitCalculatorProps) => {
     
     setValues((prev) => ({ ...prev, ...parsedValues }));
     setErrors({});
-  };
+  }, [onFileUploadSuccess]);
 
   const handleChange = (field: string, value: string) => {
     // Only allow numbers and decimals
