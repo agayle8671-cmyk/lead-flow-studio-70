@@ -3,17 +3,19 @@ import { Upload, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE_URL = "https://4c2918a7-f869-42f0-b654-23db3bfab25d-00-6l8spb3ufyqa.spock.replit.dev";
+const API_BASE_URL = "https://file-reader--agayle8671.replit.app";
 
-interface FileUploadProps {
-  onDataParsed: (data: Record<string, unknown>) => void;
-}
-
-interface ParsedFinancialData {
+export interface ParsedFinancialData {
   revenue?: number;
   costs?: number;
   customers?: number;
   avgOrderValue?: number;
+  marketingSpend?: number;
+  operationsCost?: number;
+}
+
+interface FileUploadProps {
+  onDataParsed: (data: ParsedFinancialData) => void;
 }
 
 // Local fallback parsers
@@ -112,9 +114,12 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
         const formData = new FormData();
         formData.append("file", file);
 
-        const response = await fetch(`${API_BASE_URL}/api/parse`, {
+        const response = await fetch(`${API_BASE_URL}/api/parse-finances`, {
           method: "POST",
           body: formData,
+          headers: {
+            "Accept": "application/json",
+          },
         });
 
         const contentType = response.headers.get("content-type") || "";
@@ -123,9 +128,11 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
           const result = await response.json();
           parsedData = {
             revenue: result.revenue ? Number(result.revenue) : undefined,
-            costs: result.costs ? Number(result.costs) : undefined,
+            costs: result.operationsCost ? Number(result.operationsCost) : undefined,
             customers: result.customers ? Math.round(Number(result.customers)) : undefined,
             avgOrderValue: result.avgOrderValue ? Number(result.avgOrderValue) : undefined,
+            marketingSpend: result.marketingSpend ? Number(result.marketingSpend) : undefined,
+            operationsCost: result.operationsCost ? Number(result.operationsCost) : undefined,
           };
         } else {
           console.log("API unavailable, using local parsing");

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   TrendingUp, 
@@ -7,9 +8,12 @@ import {
   Target,
   AlertCircle,
   CheckCircle,
-  ArrowUpRight
+  ArrowUpRight,
+  Save,
+  Loader2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
   LineChart, 
   Line, 
@@ -29,6 +33,7 @@ import type { CalculatorData } from "@/components/landing/ProfitCalculator";
 interface DashboardContentProps {
   data: CalculatorData;
   userName: string;
+  onSaveReport?: () => void;
 }
 
 const revenueData = [
@@ -65,9 +70,20 @@ const recommendations = [
   },
 ];
 
-const DashboardContent = ({ data, userName }: DashboardContentProps) => {
+const DashboardContent = ({ data, userName, onSaveReport }: DashboardContentProps) => {
+  const [isSaving, setIsSaving] = useState(false);
   const profitMargin = ((data.revenue - data.costs) / data.revenue) * 100;
   const profit = data.revenue - data.costs;
+
+  const handleSave = async () => {
+    if (!onSaveReport) return;
+    setIsSaving(true);
+    try {
+      await onSaveReport();
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const statsCards = [
     {
@@ -104,7 +120,7 @@ const DashboardContent = ({ data, userName }: DashboardContentProps) => {
     <div className="flex-1 overflow-auto">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border">
-        <div className="px-6 md:px-8 py-4">
+        <div className="px-6 md:px-8 py-4 flex items-center justify-between">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -113,6 +129,20 @@ const DashboardContent = ({ data, userName }: DashboardContentProps) => {
             <h1 className="text-2xl font-bold">Welcome back, {userName.split(" ")[0]}</h1>
             <p className="text-muted-foreground">Here's your profit analysis overview</p>
           </motion.div>
+          {onSaveReport && (
+            <Button 
+              onClick={handleSave} 
+              disabled={isSaving}
+              className="gap-2"
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {isSaving ? "Saving..." : "Save Report"}
+            </Button>
+          )}
         </div>
       </header>
 
