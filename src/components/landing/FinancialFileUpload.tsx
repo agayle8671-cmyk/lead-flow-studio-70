@@ -2,8 +2,7 @@ import { useState, useCallback } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-
-const API_BASE_URL = "https://file-reader--agayle8671.replit.app";
+import { apiUrl } from "@/lib/config";
 
 export interface ParsedFinancialData {
   revenue?: number;
@@ -114,25 +113,46 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
         const formData = new FormData();
         formData.append("file", file);
 
-        const response = await fetch(`${API_BASE_URL}/api/parse-finances`, {
+        const endpoint = apiUrl("/api/parse-finances");
+        console.log("Uploading to:", endpoint);
+
+        const response = await fetch(endpoint, {
           method: "POST",
           body: formData,
           headers: {
-            "Accept": "application/json",
+            Accept: "application/json",
           },
+          mode: "cors",
         });
 
         const contentType = response.headers.get("content-type") || "";
-        
+
         if (response.ok && contentType.includes("application/json")) {
           const result = await response.json();
+
+          const marketingSpend =
+            result.marketingSpend !== undefined && result.marketingSpend !== null
+              ? Number(result.marketingSpend)
+              : undefined;
+          const operationsCost =
+            result.operationsCost !== undefined && result.operationsCost !== null
+              ? Number(result.operationsCost)
+              : undefined;
+
+          const costs =
+            result.costs !== undefined && result.costs !== null
+              ? Number(result.costs)
+              : marketingSpend !== undefined || operationsCost !== undefined
+                ? (marketingSpend ?? 0) + (operationsCost ?? 0)
+                : undefined;
+
           parsedData = {
             revenue: result.revenue ? Number(result.revenue) : undefined,
-            costs: result.operationsCost ? Number(result.operationsCost) : undefined,
+            costs,
             customers: result.customers ? Math.round(Number(result.customers)) : undefined,
             avgOrderValue: result.avgOrderValue ? Number(result.avgOrderValue) : undefined,
-            marketingSpend: result.marketingSpend ? Number(result.marketingSpend) : undefined,
-            operationsCost: result.operationsCost ? Number(result.operationsCost) : undefined,
+            marketingSpend,
+            operationsCost,
           };
         } else {
           console.log("API unavailable, using local parsing");
