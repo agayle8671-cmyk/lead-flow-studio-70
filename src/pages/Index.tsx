@@ -15,7 +15,8 @@ import type { ParsedFinancialData } from "@/components/landing/FinancialFileUplo
 
 type AppState = "landing" | "calculator" | "analyzing" | "teaser" | "dashboard";
 
-const API_BASE_URL = "https://file-reader--agayle8671.replit.app";
+const PARSE_API_URL = "https://file-reader--agayle8671.replit.app";
+const SAVE_API_URL = "https://4c2918a7-f869-42f0-b654-23db3bfab25d-00-6l8spb3ufyqa.spock.replit.dev";
 const MINIMUM_ANALYZING_TIME = 2000; // 2 seconds minimum for smooth UX
 
 const Index = () => {
@@ -84,16 +85,16 @@ const Index = () => {
     if (!calculatorData) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/save`, {
+      const response = await fetch(`${SAVE_API_URL}/api/save`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
         body: JSON.stringify({
-          ...calculatorData,
-          userName,
-          savedAt: new Date().toISOString(),
+          revenue: calculatorData.revenue,
+          marketingSpend: calculatorData.costs,
+          operationsCost: calculatorData.costs,
         }),
       });
 
