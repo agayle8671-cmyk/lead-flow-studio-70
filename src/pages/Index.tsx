@@ -38,6 +38,12 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  const handleFileUploadSuccess = useCallback((data: CalculatorData) => {
+    setCalculatorData(data);
+    setAppState("analyzing");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
   const handleAnalysisComplete = useCallback(() => {
     setAppState("teaser");
   }, []);
@@ -97,7 +103,7 @@ const Index = () => {
         <HeroSection onGetStarted={handleGetStarted} />
         <FeatureGrid />
         <FoundersPricingBanner />
-        <ProfitCalculator onSubmit={handleCalculatorSubmit} />
+        <ProfitCalculator onSubmit={handleCalculatorSubmit} onFileUploadSuccess={handleFileUploadSuccess} />
       </main>
       <Footer />
     </div>
