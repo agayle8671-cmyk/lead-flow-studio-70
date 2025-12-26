@@ -1,18 +1,22 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Play, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import AppDemo from "./AppDemo";
 
 interface HeroSectionProps {
   onGetStarted: () => void;
 }
 
 const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
-  const [showVideo, setShowVideo] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
+  const demoRef = useRef<HTMLDivElement>(null);
 
   const handleSeeHowItWorks = () => {
-    // Scroll to feature grid section
-    document.querySelector('section:nth-of-type(2)')?.scrollIntoView({ behavior: 'smooth' });
+    setShowDemo(true);
+    setTimeout(() => {
+      demoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   return (
@@ -201,6 +205,15 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
 
       {/* Bottom fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+      
+      {/* App Demo Section */}
+      <div ref={demoRef}>
+        <AppDemo 
+          isVisible={showDemo} 
+          onClose={() => setShowDemo(false)} 
+          onGetStarted={onGetStarted}
+        />
+      </div>
     </section>
   );
 };
