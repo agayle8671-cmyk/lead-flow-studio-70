@@ -1,7 +1,9 @@
 import { useState, useCallback } from "react";
-import { Upload, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, CheckCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+
+const API_BASE_URL = "https://4c2918a7-f869-42f0-b654-23db3bfab25d-00-6l8spb3ufyqa.spock.replit.dev";
 
 interface FileUploadProps {
   onDataParsed: (data: Record<string, unknown>) => void;
@@ -14,140 +16,75 @@ interface ParsedFinancialData {
   avgOrderValue?: number;
 }
 
-const parseCSV = (content: string): ParsedFinancialData => {
-  const lines = content.trim().split(/\r?\n/);
-  const data: ParsedFinancialData = {};
-
-  // Try to detect if it's a header-value format or key-value format
-  for (const line of lines) {
-    const parts = line.split(/[,\t;]/).map((p) => p.trim().toLowerCase());
-    
-    if (parts.length >= 2) {
-      const key = parts[0];
-      const value = parseFloat(parts[1].replace(/[$,]/g, ""));
-      
-      if (!isNaN(value)) {
-        if (key.includes("revenue") || key.includes("income") || key.includes("sales")) {
-          data.revenue = value;
-        } else if (key.includes("cost") || key.includes("expense") || key.includes("spending")) {
-          data.costs = value;
-        } else if (key.includes("customer") || key.includes("client") || key.includes("user")) {
-          data.customers = Math.round(value);
-        } else if (key.includes("order") || key.includes("aov") || key.includes("average")) {
-          data.avgOrderValue = value;
-        }
-      }
-    }
-  }
-
-  return data;
-};
-
-const parseJSON = (content: string): ParsedFinancialData => {
-  const json = JSON.parse(content);
-  const data: ParsedFinancialData = {};
-
-  // Handle both flat and nested structures
-  const findValue = (obj: Record<string, unknown>, keys: string[]): number | undefined => {
-    for (const key of Object.keys(obj)) {
-      const lowerKey = key.toLowerCase();
-      if (keys.some((k) => lowerKey.includes(k))) {
-        const val = obj[key];
-        if (typeof val === "number") return val;
-        if (typeof val === "string") {
-          const parsed = parseFloat(val.replace(/[$,]/g, ""));
-          if (!isNaN(parsed)) return parsed;
-        }
-      }
-    }
-    return undefined;
-  };
-
-  data.revenue = findValue(json, ["revenue", "income", "sales"]);
-  data.costs = findValue(json, ["cost", "expense", "spending"]);
-  data.customers = findValue(json, ["customer", "client", "user"]);
-  data.avgOrderValue = findValue(json, ["order", "aov", "average"]);
-
-  if (data.customers !== undefined) data.customers = Math.round(data.customers);
-
-  return data;
-};
-
 const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
 
-  const processFile = useCallback((file: File) => {
+  const processFile = useCallback(async (file: File) => {
     setIsUploading(true);
 
-    const reader = new FileReader();
-    
-    reader.onerror = () => {
-      setIsUploading(false);
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description: "Could not read the file. Please try again.",
-      });
-    };
+    try {
+      // Create FormData to send file
+      const formData = new FormData();
+      formData.append("file", file);
 
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      
-      if (!content || content.trim().length === 0) {
-        setIsUploading(false);
+      // Send to API for AI-powered parsing
+      const response = await fetch(`${API_BASE_URL}/api/parse`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Map API response to expected format
+      const parsedData: ParsedFinancialData = {
+        revenue: result.revenue ? Number(result.revenue) : undefined,
+        costs: result.costs ? Number(result.costs) : undefined,
+        customers: result.customers ? Math.round(Number(result.customers)) : undefined,
+        avgOrderValue: result.avgOrderValue ? Number(result.avgOrderValue) : undefined,
+      };
+
+      // Filter out undefined values
+      const cleanedData = Object.fromEntries(
+        Object.entries(parsedData).filter(([_, v]) => v !== undefined)
+      );
+
+      const hasData = Object.keys(cleanedData).length > 0;
+
+      if (!hasData) {
         toast({
           variant: "destructive",
-          title: "Empty file",
-          description: "The file appears to be empty. Please upload a file with data.",
+          title: "No data found",
+          description: "Could not extract financial data from the file. Please check the format.",
         });
+        setIsUploading(false);
         return;
       }
 
-      try {
-        let parsedData: ParsedFinancialData = {};
-        const extension = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+      // Show success with what was found
+      const fields = Object.keys(cleanedData).length;
+      toast({
+        title: "Data imported",
+        description: `AI extracted ${fields} field${fields > 1 ? "s" : ""} from your file.`,
+      });
 
-        if (extension === ".json") {
-          parsedData = parseJSON(content);
-        } else {
-          // CSV or TXT
-          parsedData = parseCSV(content);
-        }
-
-        const hasData = Object.keys(parsedData).length > 0;
-
-        if (!hasData) {
-          toast({
-            variant: "destructive",
-            title: "No data found",
-            description: "Could not find financial data in the file. Please check the format.",
-          });
-          setIsUploading(false);
-          return;
-        }
-
-        // Show success with what was found
-        const fields = Object.keys(parsedData).length;
-        toast({
-          title: "Data imported",
-          description: `Successfully extracted ${fields} field${fields > 1 ? "s" : ""} from your file.`,
-        });
-
-        onDataParsed(parsedData as Record<string, unknown>);
-      } catch {
-        toast({
-          variant: "destructive",
-          title: "Parse error",
-          description: "Could not parse the file. Please check the format.",
-        });
-      }
-      
+      onDataParsed(cleanedData);
+    } catch (error) {
+      console.error("File upload error:", error);
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Could not process the file. Please try again.",
+      });
+    } finally {
       setIsUploading(false);
-    };
-
-    reader.readAsText(file);
+    }
   }, [onDataParsed, toast]);
 
   const validateAndProcessFile = useCallback((file: File) => {
@@ -226,7 +163,7 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
       />
       <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-3">
         {isUploading ? (
-          <CheckCircle className="w-12 h-12 text-green-500 animate-pulse" />
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
         ) : (
           <Upload className={cn(
             "w-12 h-12 transition-transform duration-200",
