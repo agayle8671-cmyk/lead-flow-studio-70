@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/landing/HeroSection";
@@ -10,14 +10,21 @@ import FoundersPricingBanner from "@/components/landing/FoundersPricingBanner";
 import LeadCaptureModal from "@/components/landing/LeadCaptureModal";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardContent from "@/components/dashboard/DashboardContent";
+import { useToast } from "@/hooks/use-toast";
+import type { ParsedFinancialData } from "@/components/landing/FinancialFileUpload";
 
 type AppState = "landing" | "calculator" | "analyzing" | "teaser" | "dashboard";
+
+const API_BASE_URL = "https://file-reader--agayle8671.replit.app";
+const MINIMUM_ANALYZING_TIME = 2000; // 2 seconds minimum for smooth UX
 
 const Index = () => {
   const [appState, setAppState] = useState<AppState>("landing");
   const [calculatorData, setCalculatorData] = useState<CalculatorData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState("");
+  const analysisStartTime = useRef<number>(0);
+  const { toast } = useToast();
 
   // Enable dark mode by default
   useEffect(() => {
@@ -38,14 +45,29 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const handleFileUploadSuccess = useCallback((data: CalculatorData) => {
-    setCalculatorData(data);
+  const handleFileUploadSuccess = useCallback((data: ParsedFinancialData) => {
+    // Convert parsed data to CalculatorData format
+    const calcData: CalculatorData = {
+      revenue: data.revenue || 0,
+      costs: data.costs || data.operationsCost || 0,
+      customers: data.customers || 0,
+      avgOrderValue: data.avgOrderValue || 0,
+    };
+    
+    setCalculatorData(calcData);
+    analysisStartTime.current = Date.now();
     setAppState("analyzing");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const handleAnalysisComplete = useCallback(() => {
-    setAppState("teaser");
+    // Ensure minimum 2 second delay for smooth UX
+    const elapsed = Date.now() - analysisStartTime.current;
+    const remainingTime = Math.max(0, MINIMUM_ANALYZING_TIME - elapsed);
+    
+    setTimeout(() => {
+      setAppState("teaser");
+    }, remainingTime);
   }, []);
 
   const handleUnlock = useCallback(() => {
@@ -58,12 +80,47 @@ const Index = () => {
     setAppState("dashboard");
   }, []);
 
+  const handleSaveReport = useCallback(async () => {
+    if (!calculatorData) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/save`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          ...calculatorData,
+          userName,
+          savedAt: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save report");
+      }
+
+      toast({
+        title: "Report saved",
+        description: "Your financial report has been saved successfully.",
+      });
+    } catch (error) {
+      console.error("Save error:", error);
+      toast({
+        variant: "destructive",
+        title: "Save failed",
+        description: "Could not save the report. Please try again.",
+      });
+    }
+  }, [calculatorData, userName, toast]);
+
   // Dashboard view
   if (appState === "dashboard" && calculatorData) {
     return (
       <div className="flex min-h-screen bg-background">
         <DashboardSidebar userName={userName} />
-        <DashboardContent data={calculatorData} userName={userName} />
+        <DashboardContent data={calculatorData} userName={userName} onSaveReport={handleSaveReport} />
       </div>
     );
   }
