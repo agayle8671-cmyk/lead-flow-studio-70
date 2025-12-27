@@ -17,6 +17,7 @@ import {
   Lightbulb
 } from "lucide-react";
 import MaestroHealthScore, { MaestroHealthScoreRef, HealthData } from "./MaestroHealthScore";
+import RecommendationDrawer from "./RecommendationDrawer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -157,9 +158,16 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [healthData, setHealthData] = useState<HealthData | null>(null);
+  const [selectedRecommendation, setSelectedRecommendation] = useState<Recommendation | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const healthScoreRef = useRef<MaestroHealthScoreRef>(null);
   const profitMargin = ((data.revenue - data.costs) / data.revenue) * 100;
   const profit = data.revenue - data.costs;
+
+  const handleRecommendationClick = (rec: Recommendation) => {
+    setSelectedRecommendation(rec);
+    setIsDrawerOpen(true);
+  };
 
   // Generate dynamic recommendations based on live health data
   const recommendations = useMemo(() => 
@@ -462,6 +470,7 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.4, delay: 0.1 + index * 0.1 }}
                       whileHover={{ x: 4 }}
+                      onClick={() => handleRecommendationClick(rec)}
                       className={`flex items-start gap-4 p-4 rounded-xl transition-colors cursor-pointer group ${
                         rec.status === "critical" 
                           ? "bg-destructive/5 hover:bg-destructive/10 border border-destructive/20" 
@@ -509,6 +518,15 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
           </Card>
         </motion.div>
       </main>
+
+      {/* Recommendation Detail Drawer */}
+      <RecommendationDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        recommendation={selectedRecommendation}
+        grade={healthData?.grade ?? "F"}
+        score={healthData?.score ?? 0}
+      />
     </div>
   );
 };
