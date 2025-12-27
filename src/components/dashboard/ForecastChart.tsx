@@ -58,11 +58,18 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 export default function ForecastChart() {
   const { combinedData, historicalData, forecastData, isLoading } = useForecast();
 
+  const formatYAxisTick = (v: any) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return "";
+    if (n >= 10000) return `$${Math.round(n / 1000)}k`;
+    return `$${Math.round(n).toLocaleString()}`;
+  };
+
   // Split data for different line styles - ensure forecast points have both values
   const chartData = useMemo(() => {
     return combinedData.map((point, index) => {
       const isLastHistorical = !point.isForecast && index === historicalData.length - 1;
-      
+
       return {
         ...point,
         // Historical values (solid lines)
@@ -114,7 +121,7 @@ export default function ForecastChart() {
           <YAxis
             stroke="hsl(var(--muted-foreground))"
             fontSize={12}
-            tickFormatter={(v) => `$${v / 1000}k`}
+            tickFormatter={formatYAxisTick}
           />
           <Tooltip content={<CustomTooltip />} />
 
@@ -164,6 +171,8 @@ export default function ForecastChart() {
             strokeWidth={2}
             strokeDasharray="6 4"
             connectNulls={false}
+            dot={{ r: 2, strokeWidth: 2, fill: "hsl(160, 84%, 45%)" }}
+            activeDot={{ r: 3 }}
             name="Revenue Forecast"
           />
           <Area
@@ -175,6 +184,8 @@ export default function ForecastChart() {
             strokeWidth={2}
             strokeDasharray="6 4"
             connectNulls={false}
+            dot={{ r: 2, strokeWidth: 2, fill: "hsl(200, 80%, 50%)" }}
+            activeDot={{ r: 3 }}
             name="Profit Forecast"
           />
         </AreaChart>

@@ -16,16 +16,67 @@ export interface ForecastResult {
   error: string | null;
 }
 
-const historicalData: ForecastDataPoint[] = [
-  { month: "Jan", revenue: 38000, profit: 12000, isForecast: false },
-  { month: "Feb", revenue: 42000, profit: 15000, isForecast: false },
-  { month: "Mar", revenue: 39000, profit: 11000, isForecast: false },
-  { month: "Apr", revenue: 48000, profit: 18000, isForecast: false },
-  { month: "May", revenue: 52000, profit: 22000, isForecast: false },
-  { month: "Jun", revenue: 50000, profit: 20000, isForecast: false },
+const DEFAULT_HISTORICAL: ForecastDataPoint[] = [
+  { month: "Jan", revenue: 185, profit: 70, isForecast: false },
+  { month: "Feb", revenue: 195, profit: 80, isForecast: false },
+  { month: "Mar", revenue: 205, profit: 85, isForecast: false },
+  { month: "Apr", revenue: 210, profit: 95, isForecast: false },
+  { month: "May", revenue: 205, profit: 90, isForecast: false },
+  { month: "Jun", revenue: 200, profit: 100, isForecast: false },
 ];
 
+const buildHistoricalFromMetrics = (metrics: any): ForecastDataPoint[] => {
+  const count = Math.max(1, Number(metrics?.historicalDataPoints ?? 6));
+  const monthLabels = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const labels =
+    count <= monthLabels.length
+      ? monthLabels.slice(0, count)
+      : Array.from({ length: count }, (_, i) => `M${i + 1}`);
+
+  const lastRevenue = Number(metrics?.lastMonthRevenue ?? labels.length);
+  const lastProfit = Number(metrics?.lastMonthProfit ?? 0);
+
+  const revGrowth = Number(metrics?.averageRevenueGrowthRate ?? 0) / 100;
+  const profitGrowth = Number(metrics?.averageProfitGrowthRate ?? 0) / 100;
+
+  const revDenom = 1 + revGrowth;
+  const profitDenom = 1 + profitGrowth;
+
+  const revenueSeries = Array.from({ length: count }, () => 0);
+  const profitSeries = Array.from({ length: count }, () => 0);
+
+  revenueSeries[count - 1] = Number.isFinite(lastRevenue) ? lastRevenue : 0;
+  profitSeries[count - 1] = Number.isFinite(lastProfit) ? lastProfit : 0;
+
+  for (let i = count - 2; i >= 0; i--) {
+    revenueSeries[i] = revenueSeries[i + 1] / (revDenom === 0 ? 1 : revDenom);
+    profitSeries[i] = profitSeries[i + 1] / (profitDenom === 0 ? 1 : profitDenom);
+  }
+
+  return labels.map((month, i) => ({
+    month,
+    revenue: Math.max(0, Math.round(revenueSeries[i])),
+    profit: Math.max(0, Math.round(profitSeries[i])),
+    isForecast: false,
+  }));
+};
+
 export function useForecast(): ForecastResult {
+  const [historical, setHistorical] = useState<ForecastDataPoint[]>(DEFAULT_HISTORICAL);
   const [forecastData, setForecastData] = useState<ForecastDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,15 +94,49 @@ export function useForecast(): ForecastResult {
         }
         
         const data = await response.json();
-        
-        // Transform API response to our format
-        const forecast: ForecastDataPoint[] = (data.forecast || []).map((item: any) => ({
-          month: item.month,
-          revenue: item.revenue,
-          profit: item.profit,
-          isForecast: true,
-        }));
-        
+
+        const metrics = (data as any)?.analysisMetrics;
+        if (
+          metrics &&
+          typeof metrics.lastMonthRevenue !== "undefined" &&
+          typeof metrics.lastMonthProfit !== "undefined"
+        ) {
+          setHistorical(buildHistoricalFromMetrics(metrics));
+        }
+
+        const rawForecast = Array.isArray((data as any)?.forecast)
+          ? (data as any).forecast
+          : Array.isArray(data)
+            ? data
+            : [];
+
+        // Transform API response to our format (supports multiple field names)
+        const forecast: ForecastDataPoint[] = rawForecast
+          .map((item: any) => {
+            const monthRaw = item?.month ?? item?.label ?? item?.period;
+            const revenueRaw =
+              item?.revenue ??
+              item?.projectedRevenue ??
+              item?.projected_revenue ??
+              item?.predictedRevenue;
+            const profitRaw =
+              item?.profit ??
+              item?.projectedProfit ??
+              item?.projected_profit ??
+              item?.predictedProfit;
+
+            const month =
+              typeof monthRaw === "number" ? String(monthRaw) : String(monthRaw ?? "");
+
+            return {
+              month,
+              revenue: Number(revenueRaw ?? 0),
+              profit: Number(profitRaw ?? 0),
+              isForecast: true,
+            } satisfies ForecastDataPoint;
+          })
+          .filter((p: ForecastDataPoint) => p.month.length > 0);
+
         setForecastData(forecast);
       } catch (err) {
         console.warn("Forecast API unavailable, using fallback data:", err);
@@ -71,11 +156,10 @@ export function useForecast(): ForecastResult {
     fetchForecast();
   }, []);
 
-  // Combine historical and forecast data
-  const combinedData = [...historicalData, ...forecastData];
+  const combinedData = [...historical, ...forecastData];
 
   return {
-    historicalData,
+    historicalData: historical,
     forecastData,
     combinedData,
     isLoading,
