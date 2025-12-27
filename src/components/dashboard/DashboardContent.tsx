@@ -19,7 +19,9 @@ import {
 import MaestroHealthScore, { MaestroHealthScoreRef, HealthData } from "./MaestroHealthScore";
 import RecommendationDrawer from "./RecommendationDrawer";
 import ForecastChart from "./ForecastChart";
+import StrategySimulator from "./StrategySimulator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   LineChart, 
@@ -36,6 +38,7 @@ import {
   Cell
 } from "recharts";
 import type { CalculatorData } from "@/components/landing/ProfitCalculator";
+import { SimulationResult } from "@/hooks/use-simulation";
 
 interface DashboardContentProps {
   data: CalculatorData;
@@ -243,6 +246,7 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [progressData, setProgressData] = useState<ProgressData>(loadProgress);
   const healthScoreRef = useRef<MaestroHealthScoreRef>(null);
+  const [simulationData, setSimulationData] = useState<SimulationResult | null>(null);
   const profitMargin = data.revenue > 0 ? ((data.revenue - data.costs) / data.revenue) * 100 : 0;
   const profit = data.revenue - data.costs;
 
@@ -386,8 +390,33 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
 
       {/* Content */}
       <main className="p-6 md:p-8 space-y-6">
-        {/* Maestro Health Score - Command Center */}
-        <MaestroHealthScore ref={healthScoreRef} onHealthDataChange={setHealthData} />
+        {/* Maestro Health Score - Command Center with Potential Badge */}
+        <div className="relative">
+          <MaestroHealthScore ref={healthScoreRef} onHealthDataChange={setHealthData} />
+          {/* Potential Badge - shows when simulation results in improvement */}
+          {simulationData && healthData && (() => {
+            const gradeOrder = ["F", "D", "C", "B", "A"];
+            const currentGradeIndex = gradeOrder.indexOf(healthData.grade);
+            const simulatedGradeIndex = gradeOrder.indexOf(simulationData.projectedGrade);
+            const isImprovement = simulatedGradeIndex > currentGradeIndex;
+            
+            if (isImprovement) {
+              return (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="absolute top-4 right-4"
+                >
+                  <Badge className="bg-primary/90 text-primary-foreground px-3 py-1 text-sm font-medium shadow-lg">
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    Potential: {simulationData.projectedGrade}
+                  </Badge>
+                </motion.div>
+              );
+            }
+            return null;
+          })()}
+        </div>
 
         {/* Stats Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -438,56 +467,66 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <ForecastChart />
+                <ForecastChart simulationData={simulationData} />
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Cost Breakdown */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
-            <Card variant="bento" className="p-6 h-full">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle>Cost Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="h-[200px] relative">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={costBreakdown}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {costBreakdown.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="grid grid-cols-2 gap-2 mt-4">
-                  {costBreakdown.map((item) => (
-                    <div key={item.name} className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="text-xs text-muted-foreground">{item.name}</span>
-                      <span className="text-xs font-medium ml-auto">{item.value}%</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          {/* Right Column - Strategy Simulator + Cost Breakdown */}
+          <div className="space-y-6">
+            {/* Strategy Simulator */}
+            <StrategySimulator
+              currentGrade={healthData?.grade ?? null}
+              currentScore={healthData?.score ?? null}
+              onSimulationChange={setSimulationData}
+            />
+
+            {/* Cost Breakdown */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <Card variant="bento" className="p-6">
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle>Cost Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="h-[160px] relative">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={costBreakdown}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={70}
+                          paddingAngle={2}
+                          dataKey="value"
+                        >
+                          {costBreakdown.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    {costBreakdown.map((item) => (
+                      <div key={item.name} className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-xs text-muted-foreground">{item.name}</span>
+                        <span className="text-xs font-medium ml-auto">{item.value}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
         </div>
 
         {/* Recommendations */}

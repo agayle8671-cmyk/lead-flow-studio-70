@@ -9,9 +9,15 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  Line,
 } from "recharts";
 import { useForecast, ForecastDataPoint } from "@/hooks/use-forecast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SimulationResult } from "@/hooks/use-simulation";
+
+interface ForecastChartProps {
+  simulationData?: SimulationResult | null;
+}
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -31,6 +37,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 
   const dataPoint = payload[0]?.payload as ForecastDataPoint;
   const isForecast = dataPoint?.isForecast;
+  const hasSimulation = payload.some(p => p.dataKey === "simulatedProfit" && p.value != null);
 
   return (
     <div
@@ -64,12 +71,23 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
             Profit: <span className="font-semibold">${payload[1]?.value?.toLocaleString()}</span>
           </p>
         )}
+        {hasSimulation && (
+          <p className="text-sm">
+            <span
+              className="inline-block w-3 h-3 rounded-full mr-2"
+              style={{ backgroundColor: "hsl(280, 60%, 60%)" }}
+            />
+            Simulated: <span className="font-semibold">
+              ${payload.find(p => p.dataKey === "simulatedProfit")?.value?.toLocaleString()}
+            </span>
+          </p>
+        )}
       </div>
     </div>
   );
 };
 
-export default function ForecastChart() {
+export default function ForecastChart({ simulationData }: ForecastChartProps) {
   const { combinedData, forecastData, isLoading, hasNegativeForecast } = useForecast();
   
   // Dynamic profit forecast color based on whether it goes negative
@@ -95,9 +113,19 @@ export default function ForecastChart() {
   }, [combinedData]);
 
   const chartData = useMemo(() => {
-    return combinedData.map((point) => {
+    return combinedData.map((point, index) => {
       const isBridgePoint =
         !point.isForecast && !!lastHistoricalDate && point.date === lastHistoricalDate;
+
+      // Find the forecast index for simulation data overlay
+      const forecastIndex = point.isForecast 
+        ? forecastData.findIndex(f => f.date === point.date)
+        : -1;
+
+      // Get simulation value for this forecast point
+      const simulatedProfit = simulationData && forecastIndex >= 0 && forecastIndex < simulationData.projectedProfit.length
+        ? simulationData.projectedProfit[forecastIndex]
+        : null;
 
       return {
         ...point,
@@ -107,9 +135,11 @@ export default function ForecastChart() {
         // Forecast values (dashed lines) - bridge from last historical point
         revenueForecast: point.isForecast || isBridgePoint ? point.revenue : null,
         profitForecast: point.isForecast || isBridgePoint ? point.profit : null,
+        // Simulation ghost line
+        simulatedProfit: isBridgePoint ? point.profit : simulatedProfit,
       };
     });
-  }, [combinedData, lastHistoricalDate]);
+  }, [combinedData, lastHistoricalDate, forecastData, simulationData]);
 
   const formatXAxisTick = (v: any) => formatDateLabel(String(v));
 
@@ -222,6 +252,21 @@ export default function ForecastChart() {
             activeDot={{ r: 3 }}
             name="Profit Forecast"
           />
+
+          {/* Simulation Ghost Line */}
+          {simulationData && (
+            <Line
+              type="monotone"
+              dataKey="simulatedProfit"
+              stroke="hsl(280, 60%, 60%)"
+              strokeWidth={2}
+              strokeDasharray="4 2"
+              dot={{ r: 3, strokeWidth: 2, fill: "hsl(280, 60%, 60%)" }}
+              activeDot={{ r: 4 }}
+              connectNulls={false}
+              name="Simulated Profit"
+            />
+          )}
         </AreaChart>
       </ResponsiveContainer>
     </div>
