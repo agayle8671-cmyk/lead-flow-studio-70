@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { 
   TrendingUp, 
@@ -10,9 +10,13 @@ import {
   CheckCircle,
   ArrowUpRight,
   Save,
-  Loader2
+  Loader2,
+  Sparkles,
+  ShieldAlert,
+  Rocket,
+  Lightbulb
 } from "lucide-react";
-import MaestroHealthScore, { MaestroHealthScoreRef } from "./MaestroHealthScore";
+import MaestroHealthScore, { MaestroHealthScoreRef, HealthData } from "./MaestroHealthScore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -38,6 +42,13 @@ interface DashboardContentProps {
   refreshHealthTrigger?: number;
 }
 
+interface Recommendation {
+  status: "critical" | "warning" | "success" | "info";
+  title: string;
+  description: string;
+  icon: React.ElementType;
+}
+
 const revenueData = [
   { month: "Jan", revenue: 38000, profit: 12000 },
   { month: "Feb", revenue: 42000, profit: 15000 },
@@ -54,30 +65,107 @@ const costBreakdown = [
   { name: "Other", value: 10, color: "hsl(40, 70%, 50%)" },
 ];
 
-const recommendations = [
-  { 
-    status: "critical",
-    title: "High Customer Acquisition Cost",
-    description: "Your CAC is 40% above industry average. Consider optimizing marketing channels.",
-  },
-  { 
-    status: "warning",
-    title: "Revenue Concentration Risk",
-    description: "Top 3 customers account for 45% of revenue. Diversify your customer base.",
-  },
-  { 
-    status: "success",
-    title: "Strong Profit Margins",
-    description: "Your margins are healthy at 30%. Focus on maintaining this through scaling.",
-  },
-];
+const generateRecommendations = (healthData: HealthData | null, profitMargin: number): Recommendation[] => {
+  if (!healthData) {
+    return [{
+      status: "info",
+      title: "Awaiting Data",
+      description: "Upload a financial report to receive personalized AI recommendations.",
+      icon: Lightbulb,
+    }];
+  }
+
+  const { grade, score, insight } = healthData;
+  const recommendations: Recommendation[] = [];
+
+  // Primary recommendation based on the insight from backend
+  if (insight) {
+    const isUrgent = insight.toLowerCase().includes("urgent") || grade === "F";
+    const isWarning = grade === "C" || insight.toLowerCase().includes("attention");
+    
+    recommendations.push({
+      status: isUrgent ? "critical" : isWarning ? "warning" : "success",
+      title: grade === "F" ? "Immediate Action Required" : grade === "C" ? "Areas Need Attention" : "Business Health Strong",
+      description: insight,
+      icon: isUrgent ? ShieldAlert : isWarning ? AlertCircle : Sparkles,
+    });
+  }
+
+  // Grade-specific recommendations
+  if (grade === "F") {
+    recommendations.push({
+      status: "critical",
+      title: "Cost Reduction Critical",
+      description: "Your expenses exceed revenue. Prioritize cutting non-essential costs and reviewing all vendor contracts immediately.",
+      icon: AlertCircle,
+    });
+    if (score < 20) {
+      recommendations.push({
+        status: "critical",
+        title: "Emergency Cash Flow Review",
+        description: "With a score below 20%, consider emergency measures: pause marketing spend, negotiate payment terms, and explore bridge financing.",
+        icon: ShieldAlert,
+      });
+    }
+  } else if (grade === "C") {
+    recommendations.push({
+      status: "warning",
+      title: "Optimize Marketing Efficiency",
+      description: "Your marketing spend ratio needs adjustment. Focus on channels with proven ROI and reduce experimental spending.",
+      icon: Target,
+    });
+    if (profitMargin < 15) {
+      recommendations.push({
+        status: "warning",
+        title: "Margin Improvement Opportunity",
+        description: "Consider price optimization and operational efficiencies to improve your profit margin above 15%.",
+        icon: TrendingUp,
+      });
+    }
+  } else if (grade === "B") {
+    recommendations.push({
+      status: "success",
+      title: "Strong Foundation",
+      description: "Your business fundamentals are solid. Focus on scaling what's working and maintaining operational discipline.",
+      icon: CheckCircle,
+    });
+    recommendations.push({
+      status: "info",
+      title: "Growth Opportunity",
+      description: "With your current health score, consider strategic investments in customer acquisition or product expansion.",
+      icon: Rocket,
+    });
+  } else if (grade === "A") {
+    recommendations.push({
+      status: "success",
+      title: "Excellent Performance",
+      description: "Your business is operating at peak efficiency. Consider reinvesting profits into growth initiatives.",
+      icon: Sparkles,
+    });
+    recommendations.push({
+      status: "success",
+      title: "Scale with Confidence",
+      description: "Your metrics support aggressive expansion. Explore new markets or product lines while maintaining current efficiency.",
+      icon: Rocket,
+    });
+  }
+
+  return recommendations.slice(0, 3); // Max 3 recommendations
+};
 
 const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }: DashboardContentProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [healthData, setHealthData] = useState<HealthData | null>(null);
   const healthScoreRef = useRef<MaestroHealthScoreRef>(null);
   const profitMargin = ((data.revenue - data.costs) / data.revenue) * 100;
   const profit = data.revenue - data.costs;
+
+  // Generate dynamic recommendations based on live health data
+  const recommendations = useMemo(() => 
+    generateRecommendations(healthData, profitMargin), 
+    [healthData, profitMargin]
+  );
 
   // Refresh health score when trigger changes
   useEffect(() => {
@@ -182,7 +270,7 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
       {/* Content */}
       <main className="p-6 md:p-8 space-y-6">
         {/* Maestro Health Score - Command Center */}
-        <MaestroHealthScore ref={healthScoreRef} />
+        <MaestroHealthScore ref={healthScoreRef} onHealthDataChange={setHealthData} />
 
         {/* Stats Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -337,47 +425,85 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
             <CardHeader className="p-0 mb-6">
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  <motion.div 
+                    className={`w-2 h-2 rounded-full ${
+                      healthData?.grade === "F" ? "bg-destructive" : 
+                      healthData?.grade === "C" ? "bg-yellow-500" : 
+                      "bg-primary"
+                    }`}
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
                   AI Recommendations
+                  {healthData && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      healthData.grade === "F" ? "bg-destructive/10 text-destructive" :
+                      healthData.grade === "C" ? "bg-yellow-500/10 text-yellow-600" :
+                      healthData.grade === "B" ? "bg-primary/10 text-primary" :
+                      "bg-emerald-500/10 text-emerald-600"
+                    }`}>
+                      Grade {healthData.grade} · {healthData.score}%
+                    </span>
+                  )}
                 </span>
                 <span className="text-sm font-normal text-muted-foreground">
-                  Updated just now
+                  {healthData ? "Live" : "Awaiting data"}
                 </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="space-y-4">
-                {recommendations.map((rec, index) => (
-                  <motion.div
-                    key={rec.title}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: 0.7 + index * 0.1 }}
-                    whileHover={{ x: 4 }}
-                    className="flex items-start gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer group"
-                  >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                      rec.status === "critical" 
-                        ? "bg-destructive/10" 
-                        : rec.status === "warning"
-                        ? "bg-yellow-500/10"
-                        : "bg-primary/10"
-                    }`}>
-                      {rec.status === "critical" ? (
-                        <AlertCircle className="w-5 h-5 text-destructive" />
-                      ) : rec.status === "warning" ? (
-                        <AlertCircle className="w-5 h-5 text-yellow-500" />
-                      ) : (
-                        <CheckCircle className="w-5 h-5 text-primary" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold mb-1 group-hover:text-primary transition-colors">{rec.title}</h4>
-                      <p className="text-sm text-muted-foreground">{rec.description}</p>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </motion.div>
-                ))}
+                {recommendations.map((rec, index) => {
+                  const IconComponent = rec.icon;
+                  return (
+                    <motion.div
+                      key={`${rec.title}-${healthData?.score ?? 0}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.1 + index * 0.1 }}
+                      whileHover={{ x: 4 }}
+                      className={`flex items-start gap-4 p-4 rounded-xl transition-colors cursor-pointer group ${
+                        rec.status === "critical" 
+                          ? "bg-destructive/5 hover:bg-destructive/10 border border-destructive/20" 
+                          : rec.status === "warning"
+                          ? "bg-yellow-500/5 hover:bg-yellow-500/10 border border-yellow-500/20"
+                          : rec.status === "info"
+                          ? "bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20"
+                          : "bg-primary/5 hover:bg-primary/10 border border-primary/20"
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        rec.status === "critical" 
+                          ? "bg-destructive/10" 
+                          : rec.status === "warning"
+                          ? "bg-yellow-500/10"
+                          : rec.status === "info"
+                          ? "bg-blue-500/10"
+                          : "bg-primary/10"
+                      }`}>
+                        <IconComponent className={`w-5 h-5 ${
+                          rec.status === "critical" ? "text-destructive" :
+                          rec.status === "warning" ? "text-yellow-500" :
+                          rec.status === "info" ? "text-blue-500" :
+                          "text-primary"
+                        }`} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className={`font-semibold mb-1 transition-colors ${
+                          rec.status === "critical" ? "text-destructive group-hover:text-destructive" :
+                          rec.status === "warning" ? "text-yellow-600 dark:text-yellow-500 group-hover:text-yellow-600" :
+                          "group-hover:text-primary"
+                        }`}>{rec.title}</h4>
+                        <p className="text-sm text-muted-foreground">{rec.description}</p>
+                      </div>
+                      <ArrowUpRight className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity ${
+                        rec.status === "critical" ? "text-destructive" :
+                        rec.status === "warning" ? "text-yellow-500" :
+                        "text-muted-foreground"
+                      }`} />
+                    </motion.div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

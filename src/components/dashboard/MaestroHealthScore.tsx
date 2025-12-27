@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { apiUrl } from "@/lib/config";
 
-interface HealthData {
+export interface HealthData {
   grade: "A" | "B" | "C" | "F";
   score: number;
   insight: string;
@@ -15,6 +15,10 @@ export interface MaestroHealthScoreRef {
   refresh: () => void;
 }
 
+interface MaestroHealthScoreProps {
+  onHealthDataChange?: (data: HealthData | null) => void;
+}
+
 const gradeColors = {
   A: { ring: "hsl(142, 76%, 45%)", bg: "hsl(142, 76%, 45%)", text: "text-emerald-400" },
   B: { ring: "hsl(142, 60%, 50%)", bg: "hsl(142, 60%, 50%)", text: "text-emerald-500" },
@@ -22,7 +26,7 @@ const gradeColors = {
   F: { ring: "hsl(0, 84%, 60%)", bg: "hsl(0, 84%, 60%)", text: "text-red-500" },
 };
 
-const MaestroHealthScore = forwardRef<MaestroHealthScoreRef>((_, ref) => {
+const MaestroHealthScore = forwardRef<MaestroHealthScoreRef, MaestroHealthScoreProps>(({ onHealthDataChange }, ref) => {
   const [healthData, setHealthData] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,9 +50,11 @@ const MaestroHealthScore = forwardRef<MaestroHealthScoreRef>((_, ref) => {
 
       const data = await response.json();
       setHealthData(data);
+      onHealthDataChange?.(data);
     } catch (err) {
       console.error("Error fetching health data:", err);
       setError("Unable to load health score");
+      onHealthDataChange?.(null);
     } finally {
       setLoading(false);
     }
