@@ -12,6 +12,7 @@ import {
   Save,
   Loader2
 } from "lucide-react";
+import MaestroHealthScore from "./MaestroHealthScore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -171,6 +172,9 @@ const DashboardContent = ({ data, userName, onSaveReport }: DashboardContentProp
 
       {/* Content */}
       <main className="p-6 md:p-8 space-y-6">
+        {/* Maestro Health Score - Command Center */}
+        <MaestroHealthScore />
+
         {/* Stats Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {statsCards.map((stat, index) => (
