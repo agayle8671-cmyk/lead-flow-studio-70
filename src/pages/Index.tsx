@@ -47,10 +47,15 @@ const Index = () => {
   }, []);
 
   const handleFileUploadSuccess = useCallback((data: ParsedFinancialData) => {
+    // Use the actual parsed values from the API
+    const marketingSpend = data.marketingSpend ?? 0;
+    const operationsCost = data.operationsCost ?? 0;
+    const totalCosts = data.costs ?? (marketingSpend + operationsCost);
+
     // Convert parsed data to CalculatorData format
     const calcData: CalculatorData = {
       revenue: data.revenue || 0,
-      costs: data.costs || data.operationsCost || 0,
+      costs: totalCosts,
       customers: data.customers || 0,
       avgOrderValue: data.avgOrderValue || 0,
     };
@@ -59,9 +64,9 @@ const Index = () => {
     void (async () => {
       try {
         const payload = {
-          revenue: String(calcData.revenue),
-          marketingSpend: String(data.marketingSpend ?? data.costs ?? 0),
-          operationsCost: String(data.operationsCost ?? data.costs ?? 0),
+          revenue: String(data.revenue ?? 0),
+          marketingSpend: String(marketingSpend),
+          operationsCost: String(operationsCost),
         };
 
         const endpoint = apiUrl("/api/save");
