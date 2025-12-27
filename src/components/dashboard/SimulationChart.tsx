@@ -46,7 +46,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
           <p className="text-sm">
             <span
               className="inline-block w-3 h-3 rounded-full mr-2"
-              style={{ backgroundColor: "hsl(280, 60%, 60%)" }}
+              style={{ backgroundColor: "hsl(200, 80%, 50%)" }}
             />
             Profit: <span className="font-semibold">${payload[1]?.value?.toLocaleString()}</span>
           </p>
@@ -78,14 +78,14 @@ export default function SimulationChart({ simulationData }: SimulationChartProps
 
   if (!simulationData || chartData.length === 0) {
     return (
-      <div className="h-[180px] flex items-center justify-center text-muted-foreground text-sm">
+      <div className="h-[280px] flex items-center justify-center text-muted-foreground text-sm">
         Adjust sliders to see projected outcomes
       </div>
     );
   }
 
   return (
-    <div className="h-[180px]">
+    <div className="h-[280px]">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData}>
           <defs>
@@ -94,21 +94,20 @@ export default function SimulationChart({ simulationData }: SimulationChartProps
               <stop offset="95%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="simColorProfit" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(280, 60%, 60%)" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="hsl(280, 60%, 60%)" stopOpacity={0} />
+              <stop offset="5%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis
             dataKey="month"
             stroke="hsl(var(--muted-foreground))"
-            fontSize={11}
+            fontSize={12}
           />
           <YAxis
             stroke="hsl(var(--muted-foreground))"
-            fontSize={11}
+            fontSize={12}
             tickFormatter={formatYAxisTick}
-            width={50}
           />
           <Tooltip content={<CustomTooltip />} />
           <Area
@@ -123,7 +122,7 @@ export default function SimulationChart({ simulationData }: SimulationChartProps
           <Area
             type="monotone"
             dataKey="profit"
-            stroke="hsl(280, 60%, 60%)"
+            stroke="hsl(200, 80%, 50%)"
             fillOpacity={1}
             fill="url(#simColorProfit)"
             strokeWidth={2}
