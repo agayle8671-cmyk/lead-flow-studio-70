@@ -6,14 +6,17 @@ export function useUploadFinancialFile() {
 
   return useMutation({
     mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("file", file);
-
+      // Read file content as text
+      const content = await file.text();
+      
       console.log("Uploading to:", apiUrl("/api/parse-finances"));
       
       const response = await fetch(apiUrl("/api/parse-finances"), {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content }),
         mode: "cors",
       });
 
