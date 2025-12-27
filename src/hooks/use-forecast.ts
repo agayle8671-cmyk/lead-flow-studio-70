@@ -74,7 +74,7 @@ const buildHistoricalFromMetrics = (metrics: any, endDate: Date): ForecastDataPo
   }));
 };
 
-export function useForecast(): ForecastResult {
+export function useForecast(clientId?: number | null): ForecastResult {
   const [historical, setHistorical] = useState<ForecastDataPoint[]>(DEFAULT_HISTORICAL);
   const [forecastData, setForecastData] = useState<ForecastDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,7 +87,8 @@ export function useForecast(): ForecastResult {
       setError(null);
 
       try {
-        const response = await fetch(apiUrl("/api/financial-forecast"));
+        const qs = clientId ? `?clientId=${clientId}` : "";
+        const response = await fetch(apiUrl(`/api/financial-forecast${qs}`));
 
         if (!response.ok) {
           throw new Error("Failed to fetch forecast data");
@@ -187,7 +188,7 @@ export function useForecast(): ForecastResult {
     };
 
     fetchForecast();
-  }, []);
+  }, [clientId]);
 
   const combinedData = useMemo(() => {
     const all = [...historical, ...forecastData];

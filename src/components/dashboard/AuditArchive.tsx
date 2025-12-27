@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { Archive, FileText, Calendar } from "lucide-react";
+import { forwardRef } from "react";
 
-const AuditArchive = () => {
+const AuditArchive = forwardRef<HTMLDivElement>((_, ref) => {
   return (
-    <div className="flex-1 overflow-auto">
+    <div ref={ref} className="flex-1 overflow-auto">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-8 py-5">
@@ -43,6 +44,8 @@ const AuditArchive = () => {
       </main>
     </div>
   );
-};
+});
+
+AuditArchive.displayName = "AuditArchive";
 
 export default AuditArchive;

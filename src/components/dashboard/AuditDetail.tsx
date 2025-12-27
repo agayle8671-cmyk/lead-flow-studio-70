@@ -144,7 +144,7 @@ const AuditDetail = ({ client, onBack }: AuditDetailProps) => {
             </div>
           </div>
           <div className="h-[320px]">
-            <ForecastChart />
+            <ForecastChart clientId={client.id} />
           </div>
         </motion.div>
 

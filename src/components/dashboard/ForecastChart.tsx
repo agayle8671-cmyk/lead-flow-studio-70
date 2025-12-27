@@ -69,8 +69,8 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   );
 };
 
-export default function ForecastChart() {
-  const { combinedData, forecastData, isLoading, hasNegativeForecast } = useForecast();
+export default function ForecastChart({ clientId }: { clientId?: number }) {
+  const { combinedData, forecastData, isLoading, hasNegativeForecast } = useForecast(clientId);
   
   // Dynamic profit forecast color based on whether it goes negative
   const profitForecastColor = hasNegativeForecast ? "hsl(0, 84%, 60%)" : "hsl(200, 80%, 50%)";
