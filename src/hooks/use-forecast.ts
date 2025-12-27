@@ -18,6 +18,8 @@ export interface ForecastResult {
   combinedData: ForecastDataPoint[];
   isLoading: boolean;
   error: string | null;
+  forecastWarning: string | null;
+  hasNegativeForecast: boolean;
 }
 
 const isValidDate = (d: Date) => Number.isFinite(d.getTime());
@@ -77,6 +79,7 @@ export function useForecast(): ForecastResult {
   const [forecastData, setForecastData] = useState<ForecastDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [forecastWarning, setForecastWarning] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchForecast = async () => {
@@ -157,6 +160,10 @@ export function useForecast(): ForecastResult {
 
         setForecastData(forecast);
         setError(null);
+        
+        // Extract forecast warning from backend response
+        const warning = (data as any)?.forecast_warning ?? (data as any)?.forecastWarning ?? null;
+        setForecastWarning(warning);
       } catch (err) {
         console.warn("Forecast API unavailable, using fallback data:", err);
 
@@ -187,11 +194,18 @@ export function useForecast(): ForecastResult {
     return all.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [historical, forecastData]);
 
+  // Check if any forecast profit goes negative
+  const hasNegativeForecast = useMemo(() => {
+    return forecastData.some((point) => point.profit < 0);
+  }, [forecastData]);
+
   return {
     historicalData: historical,
     forecastData,
     combinedData,
     isLoading,
     error,
+    forecastWarning,
+    hasNegativeForecast,
   };
 }
