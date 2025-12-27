@@ -23,6 +23,7 @@ const Index = () => {
   const [calculatorData, setCalculatorData] = useState<CalculatorData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState("");
+  const [healthRefreshTrigger, setHealthRefreshTrigger] = useState(0);
   const analysisStartTime = useRef<number>(0);
   const { toast } = useToast();
 
@@ -82,6 +83,8 @@ const Index = () => {
         }
 
         console.log("Auto-save succeeded");
+        // Trigger health score refresh after successful save
+        setHealthRefreshTrigger(prev => prev + 1);
       } catch (e) {
         console.error("Auto-save failed:", e);
       }
@@ -139,6 +142,8 @@ const Index = () => {
         title: "Report saved",
         description: "Your financial report has been saved successfully.",
       });
+      // Trigger health score refresh after manual save
+      setHealthRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error("Save error:", error);
       toast({
@@ -154,7 +159,7 @@ const Index = () => {
     return (
       <div className="flex min-h-screen bg-background">
         <DashboardSidebar userName={userName} />
-        <DashboardContent data={calculatorData} userName={userName} onSaveReport={handleSaveReport} />
+        <DashboardContent data={calculatorData} userName={userName} onSaveReport={handleSaveReport} refreshHealthTrigger={healthRefreshTrigger} />
       </div>
     );
   }

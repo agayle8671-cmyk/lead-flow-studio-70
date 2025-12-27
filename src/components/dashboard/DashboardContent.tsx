@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   TrendingUp, 
@@ -12,7 +12,7 @@ import {
   Save,
   Loader2
 } from "lucide-react";
-import MaestroHealthScore from "./MaestroHealthScore";
+import MaestroHealthScore, { MaestroHealthScoreRef } from "./MaestroHealthScore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -35,6 +35,7 @@ interface DashboardContentProps {
   data: CalculatorData;
   userName: string;
   onSaveReport?: () => void;
+  refreshHealthTrigger?: number;
 }
 
 const revenueData = [
@@ -71,11 +72,19 @@ const recommendations = [
   },
 ];
 
-const DashboardContent = ({ data, userName, onSaveReport }: DashboardContentProps) => {
+const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }: DashboardContentProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const healthScoreRef = useRef<MaestroHealthScoreRef>(null);
   const profitMargin = ((data.revenue - data.costs) / data.revenue) * 100;
   const profit = data.revenue - data.costs;
+
+  // Refresh health score when trigger changes
+  useEffect(() => {
+    if (refreshHealthTrigger && refreshHealthTrigger > 0) {
+      healthScoreRef.current?.refresh();
+    }
+  }, [refreshHealthTrigger]);
 
   const handleSave = async () => {
     if (!onSaveReport) return;
@@ -173,7 +182,7 @@ const DashboardContent = ({ data, userName, onSaveReport }: DashboardContentProp
       {/* Content */}
       <main className="p-6 md:p-8 space-y-6">
         {/* Maestro Health Score - Command Center */}
-        <MaestroHealthScore />
+        <MaestroHealthScore ref={healthScoreRef} />
 
         {/* Stats Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
