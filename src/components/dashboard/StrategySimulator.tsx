@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, RotateCcw, TrendingUp, DollarSign, Settings2 } from "lucide-react";
+import { Sparkles, RotateCcw, TrendingUp, DollarSign, Settings2, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSimulation, SimulationParams, SimulationResult } from "@/hooks/use-simulation";
+import { usePlan } from "@/contexts/PlanContext";
+import UpgradeModal from "./UpgradeModal";
 
 interface StrategySimulatorProps {
   currentGrade: string | null;
@@ -18,6 +20,8 @@ export default function StrategySimulator({
   currentScore, 
   onSimulationChange 
 }: StrategySimulatorProps) {
+  const { isPro } = usePlan();
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [params, setParams] = useState<SimulationParams>({
     marketingOptimization: 0,
     revenueGrowth: 0,
@@ -25,6 +29,12 @@ export default function StrategySimulator({
   });
 
   const { simulationData, isSimulating, runSimulation, clearSimulation } = useSimulation();
+
+  const handleLockedClick = () => {
+    if (!isPro) {
+      setIsUpgradeModalOpen(true);
+    }
+  };
 
   // Debounced simulation call
   useEffect(() => {
@@ -68,7 +78,7 @@ export default function StrategySimulator({
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card variant="bento" className="p-5">
+      <Card variant="bento" className="p-5 relative overflow-hidden">
         <CardHeader className="p-0 mb-5">
           <CardTitle className="flex items-center justify-between text-base">
             <div className="flex items-center gap-2">
@@ -89,8 +99,25 @@ export default function StrategySimulator({
         </CardHeader>
 
         <CardContent className="p-0 space-y-5">
+          {/* Locked Overlay for Free Users */}
+          {!isPro && (
+            <div 
+              className="absolute inset-0 z-10 cursor-pointer flex items-center justify-center rounded-xl"
+              onClick={handleLockedClick}
+            >
+              <div className="absolute inset-0 bg-background/60 backdrop-blur-sm rounded-xl" />
+              <div className="relative flex flex-col items-center gap-2 text-center p-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Lock className="w-6 h-6 text-primary" />
+                </div>
+                <p className="text-sm font-medium">Click to Unlock</p>
+                <p className="text-xs text-muted-foreground">Pro feature</p>
+              </div>
+            </div>
+          )}
+
           {/* Marketing Optimization Slider */}
-          <div className="space-y-2">
+          <div className={`space-y-2 ${!isPro ? 'pointer-events-none' : ''}`}>
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium flex items-center gap-2">
                 <TrendingUp className="w-3.5 h-3.5 text-muted-foreground" />
@@ -107,6 +134,7 @@ export default function StrategySimulator({
               max={50}
               step={5}
               className="w-full"
+              disabled={!isPro}
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>-50%</span>
@@ -115,7 +143,7 @@ export default function StrategySimulator({
           </div>
 
           {/* Revenue Growth Slider */}
-          <div className="space-y-2">
+          <div className={`space-y-2 ${!isPro ? 'pointer-events-none' : ''}`}>
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium flex items-center gap-2">
                 <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
@@ -132,6 +160,7 @@ export default function StrategySimulator({
               max={100}
               step={5}
               className="w-full"
+              disabled={!isPro}
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>0%</span>
@@ -140,7 +169,7 @@ export default function StrategySimulator({
           </div>
 
           {/* Operational Lean Slider */}
-          <div className="space-y-2">
+          <div className={`space-y-2 ${!isPro ? 'pointer-events-none' : ''}`}>
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium flex items-center gap-2">
                 <Settings2 className="w-3.5 h-3.5 text-muted-foreground" />
@@ -157,6 +186,7 @@ export default function StrategySimulator({
               max={0}
               step={5}
               className="w-full"
+              disabled={!isPro}
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>-30%</span>
@@ -199,6 +229,9 @@ export default function StrategySimulator({
           )}
         </CardContent>
       </Card>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
     </motion.div>
   );
 }
