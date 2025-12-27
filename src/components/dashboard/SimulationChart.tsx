@@ -111,7 +111,7 @@ export default function SimulationChart({ simulationData }: SimulationChartProps
           />
           <Tooltip content={<CustomTooltip />} />
           <Area
-            type="monotone"
+            type="natural"
             dataKey="revenue"
             stroke="hsl(160, 84%, 45%)"
             fillOpacity={1}
@@ -120,7 +120,7 @@ export default function SimulationChart({ simulationData }: SimulationChartProps
             name="Revenue"
           />
           <Area
-            type="monotone"
+            type="natural"
             dataKey="profit"
             stroke="hsl(200, 80%, 50%)"
             fillOpacity={1}
