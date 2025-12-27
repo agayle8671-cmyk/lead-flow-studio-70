@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Activity, Loader2, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,10 @@ interface HealthData {
   insight: string;
 }
 
+export interface MaestroHealthScoreRef {
+  refresh: () => void;
+}
+
 const gradeColors = {
   A: { ring: "hsl(142, 76%, 45%)", bg: "hsl(142, 76%, 45%)", text: "text-emerald-400" },
   B: { ring: "hsl(142, 60%, 50%)", bg: "hsl(142, 60%, 50%)", text: "text-emerald-500" },
@@ -18,14 +22,7 @@ const gradeColors = {
   F: { ring: "hsl(0, 84%, 60%)", bg: "hsl(0, 84%, 60%)", text: "text-red-500" },
 };
 
-const gradeToScore = {
-  A: 95,
-  B: 80,
-  C: 65,
-  F: 35,
-};
-
-const MaestroHealthScore = () => {
+const MaestroHealthScore = forwardRef<MaestroHealthScoreRef>((_, ref) => {
   const [healthData, setHealthData] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,23 +49,21 @@ const MaestroHealthScore = () => {
     } catch (err) {
       console.error("Error fetching health data:", err);
       setError("Unable to load health score");
-      // Fallback data for demo
-      setHealthData({
-        grade: "B",
-        score: 78,
-        insight: "Your business is performing well. Focus on reducing operational costs to reach the next tier.",
-      });
     } finally {
       setLoading(false);
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    refresh: fetchHealthData,
+  }));
 
   useEffect(() => {
     fetchHealthData();
   }, []);
 
   const currentGrade = healthData?.grade || "B";
-  const currentScore = healthData?.score || gradeToScore[currentGrade];
+  const currentScore = healthData?.score || 0;
   const colors = gradeColors[currentGrade];
   
   // Calculate the circumference and stroke dashoffset for the progress ring
@@ -110,6 +105,13 @@ const MaestroHealthScore = () => {
                 <div className="w-[180px] h-[180px] flex items-center justify-center">
                   <Loader2 className="w-12 h-12 animate-spin text-muted-foreground" />
                 </div>
+              ) : error && !healthData ? (
+                <div className="w-[180px] h-[180px] flex flex-col items-center justify-center text-center">
+                  <span className="text-muted-foreground text-sm">Unable to load</span>
+                  <Button variant="ghost" size="sm" onClick={fetchHealthData} className="mt-2">
+                    Retry
+                  </Button>
+                </div>
               ) : (
                 <div className="relative w-[180px] h-[180px]">
                   {/* Background Ring */}
@@ -144,6 +146,7 @@ const MaestroHealthScore = () => {
                   {/* Grade Display */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <motion.span
+                      key={currentGrade}
                       initial={{ scale: 0.5, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ duration: 0.5, delay: 0.5, type: "spring" }}
@@ -183,21 +186,20 @@ const MaestroHealthScore = () => {
               </div>
 
               {/* Score Badge */}
-              <div className="flex items-center justify-center lg:justify-start gap-4 mb-4">
-                <div 
-                  className="px-4 py-1.5 rounded-full text-sm font-bold tracking-wide"
-                  style={{ 
-                    backgroundColor: `${colors.bg}20`,
-                    color: colors.bg,
-                    border: `1px solid ${colors.bg}40`,
-                  }}
-                >
-                  {currentScore}% Performance
+              {healthData && (
+                <div className="flex items-center justify-center lg:justify-start gap-4 mb-4">
+                  <div 
+                    className="px-4 py-1.5 rounded-full text-sm font-bold tracking-wide"
+                    style={{ 
+                      backgroundColor: `${colors.bg}20`,
+                      color: colors.bg,
+                      border: `1px solid ${colors.bg}40`,
+                    }}
+                  >
+                    {currentScore}% Performance
+                  </div>
                 </div>
-                {error && (
-                  <span className="text-xs text-muted-foreground">(Demo Mode)</span>
-                )}
-              </div>
+              )}
 
               {/* Insight Text */}
               <div className="relative">
@@ -205,35 +207,41 @@ const MaestroHealthScore = () => {
                 <p className="text-muted-foreground leading-relaxed max-w-lg">
                   {loading ? (
                     <span className="inline-block animate-pulse">Analyzing your business health...</span>
+                  ) : error && !healthData ? (
+                    <span>Connect to your backend to view health insights.</span>
                   ) : (
-                    healthData?.insight || "Your business metrics are being analyzed. Check back for personalized insights."
+                    healthData?.insight || "Your business metrics are being analyzed."
                   )}
                 </p>
               </div>
 
               {/* Mini Stats Row */}
-              <div className="flex items-center justify-center lg:justify-start gap-6 mt-6 pt-4 border-t border-border/50">
-                <div className="text-center lg:text-left">
-                  <span className="text-2xl font-bold text-foreground">{currentScore}%</span>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Overall</p>
+              {healthData && (
+                <div className="flex items-center justify-center lg:justify-start gap-6 mt-6 pt-4 border-t border-border/50">
+                  <div className="text-center lg:text-left">
+                    <span className="text-2xl font-bold text-foreground">{currentScore}%</span>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Overall</p>
+                  </div>
+                  <div className="w-px h-8 bg-border" />
+                  <div className="text-center lg:text-left">
+                    <span className={`text-2xl font-bold ${colors.text}`}>{currentGrade}</span>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Grade</p>
+                  </div>
+                  <div className="w-px h-8 bg-border" />
+                  <div className="text-center lg:text-left">
+                    <span className="text-2xl font-bold text-foreground">Live</span>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
+                  </div>
                 </div>
-                <div className="w-px h-8 bg-border" />
-                <div className="text-center lg:text-left">
-                  <span className={`text-2xl font-bold ${colors.text}`}>{currentGrade}</span>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Grade</p>
-                </div>
-                <div className="w-px h-8 bg-border" />
-                <div className="text-center lg:text-left">
-                  <span className="text-2xl font-bold text-foreground">Live</span>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
     </motion.div>
   );
-};
+});
+
+MaestroHealthScore.displayName = "MaestroHealthScore";
 
 export default MaestroHealthScore;
