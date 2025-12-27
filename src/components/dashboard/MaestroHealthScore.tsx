@@ -17,6 +17,7 @@ export interface MaestroHealthScoreRef {
 
 interface MaestroHealthScoreProps {
   onHealthDataChange?: (data: HealthData | null) => void;
+  clientId?: number;
 }
 
 const gradeColors = {
@@ -26,7 +27,7 @@ const gradeColors = {
   F: { ring: "hsl(0, 84%, 60%)", bg: "hsl(0, 84%, 60%)", text: "text-red-500" },
 };
 
-const MaestroHealthScore = forwardRef<MaestroHealthScoreRef, MaestroHealthScoreProps>(({ onHealthDataChange }, ref) => {
+const MaestroHealthScore = forwardRef<MaestroHealthScoreRef, MaestroHealthScoreProps>(({ onHealthDataChange, clientId }, ref) => {
   const [healthData, setHealthData] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +36,8 @@ const MaestroHealthScore = forwardRef<MaestroHealthScoreRef, MaestroHealthScoreP
     setLoading(true);
     setError(null);
     try {
-      const endpoint = apiUrl("/api/business-health");
+      const params = clientId ? `?clientId=${clientId}` : "";
+      const endpoint = apiUrl(`/api/business-health${params}`);
       const response = await fetch(endpoint, {
         method: "GET",
         headers: {
