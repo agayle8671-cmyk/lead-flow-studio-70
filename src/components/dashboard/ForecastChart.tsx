@@ -56,39 +56,24 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export default function ForecastChart() {
-  const { combinedData, historicalData, isLoading } = useForecast();
+  const { combinedData, historicalData, forecastData, isLoading } = useForecast();
 
-  // Split data for different line styles
+  // Split data for different line styles - ensure forecast points have both values
   const chartData = useMemo(() => {
-    return combinedData.map((point) => ({
-      ...point,
-      // Historical values (solid lines)
-      revenueHistorical: point.isForecast ? null : point.revenue,
-      profitHistorical: point.isForecast ? null : point.profit,
-      // Forecast values (dashed lines)
-      revenueForecast: point.isForecast ? point.revenue : null,
-      profitForecast: point.isForecast ? point.profit : null,
-    }));
-  }, [combinedData]);
-
-  // Add bridge point for smooth transition (last historical point also in forecast)
-  const chartDataWithBridge = useMemo(() => {
-    if (chartData.length === 0) return chartData;
-    
-    const lastHistoricalIndex = chartData.findIndex((d) => d.isForecast) - 1;
-    if (lastHistoricalIndex < 0) return chartData;
-
-    return chartData.map((point, index) => {
-      if (index === lastHistoricalIndex) {
-        return {
-          ...point,
-          revenueForecast: point.revenue,
-          profitForecast: point.profit,
-        };
-      }
-      return point;
+    return combinedData.map((point, index) => {
+      const isLastHistorical = !point.isForecast && index === historicalData.length - 1;
+      
+      return {
+        ...point,
+        // Historical values (solid lines)
+        revenueHistorical: point.isForecast ? null : point.revenue,
+        profitHistorical: point.isForecast ? null : point.profit,
+        // Forecast values (dashed lines) - bridge from last historical point
+        revenueForecast: point.isForecast || isLastHistorical ? point.revenue : null,
+        profitForecast: point.isForecast || isLastHistorical ? point.profit : null,
+      };
     });
-  }, [chartData]);
+  }, [combinedData, historicalData.length]);
 
   // Find where forecast starts for reference line
   const forecastStartMonth = historicalData[historicalData.length - 1]?.month;
@@ -97,10 +82,15 @@ export default function ForecastChart() {
     return <Skeleton className="w-full h-[280px] rounded-lg" />;
   }
 
+  // Debug: ensure we have forecast data
+  if (forecastData.length === 0) {
+    console.warn("No forecast data available");
+  }
+
   return (
     <div className="h-[280px]">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartDataWithBridge}>
+        <AreaChart data={chartData}>
           <defs>
             <linearGradient id="colorRevenueHistorical" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0.3} />
