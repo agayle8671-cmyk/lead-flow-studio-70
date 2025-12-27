@@ -1,21 +1,22 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, Lock, Rocket, Loader2 } from "lucide-react";
+import { X, Building2, Users, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { apiUrl } from "@/lib/config";
 
 interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
+  clientCount?: number;
 }
 
-export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
+export default function UpgradeModal({ isOpen, onClose, clientCount = 10 }: UpgradeModalProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleUpgrade = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(apiUrl("/api/create-checkout-session"), {
+      const response = await fetch(apiUrl("/api/create-firm-session"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -70,9 +71,9 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", delay: 0.1, duration: 0.5 }}
-                  className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mb-6 shadow-lg shadow-primary/30"
+                  className="mx-auto w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-6"
                 >
-                  <Lock className="w-8 h-8 text-primary-foreground" />
+                  <AlertTriangle className="w-8 h-8 text-amber-500" />
                 </motion.div>
 
                 {/* Title */}
@@ -82,7 +83,7 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
                   transition={{ delay: 0.15 }}
                   className="text-2xl font-bold mb-2"
                 >
-                  Unlock the Symphony of Solutions
+                  Portfolio Limit Reached
                 </motion.h2>
 
                 {/* Description */}
@@ -92,59 +93,81 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
                   transition={{ delay: 0.2 }}
                   className="text-muted-foreground mb-6"
                 >
-                  Simulate growth and optimize margins with our powerful Strategy Simulator.
+                  Your Solo Auditor plan supports up to <span className="font-semibold text-foreground">10 clients</span>. 
+                  Upgrade to <span className="font-semibold text-primary">Firm Scale</span> for unlimited Portfolio Management.
                 </motion.p>
+
+                {/* Current Status */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="bg-muted/50 rounded-xl p-4 mb-6"
+                >
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Current Automated Audit Capacity</span>
+                    <span className="font-mono font-semibold text-foreground">{clientCount}/10</span>
+                  </div>
+                  <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full gradient-gold rounded-full"
+                      style={{ width: `${Math.min((clientCount / 10) * 100, 100)}%` }}
+                    />
+                  </div>
+                </motion.div>
+
+                {/* Firm Scale Benefits */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-left space-y-2 mb-8"
+                >
+                  <p className="text-sm font-semibold text-foreground mb-3">Firm Scale includes:</p>
+                  {[
+                    "Unlimited Portfolio Management",
+                    "Advanced predictive forecasting",
+                    "Multi-user collaboration",
+                    "Priority support & API access",
+                  ].map((feature, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Building2 className="w-3 h-3 text-primary" />
+                      </div>
+                      <span className="text-muted-foreground">{feature}</span>
+                    </div>
+                  ))}
+                </motion.div>
 
                 {/* Price */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25 }}
+                  transition={{ delay: 0.35 }}
                   className="flex items-baseline justify-center gap-1 mb-6"
                 >
-                  <span className="text-4xl font-bold">$24</span>
+                  <span className="text-4xl font-bold">$199</span>
                   <span className="text-muted-foreground">/mo</span>
                 </motion.div>
-
-                {/* Features */}
-                <motion.ul
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-sm text-left space-y-2 mb-8"
-                >
-                  {[
-                    "Unlimited strategy simulations",
-                    "AI-powered growth recommendations",
-                    "Priority support",
-                    "Early access to new features",
-                  ].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-primary shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </motion.ul>
 
                 {/* CTA Button */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.35 }}
+                  transition={{ delay: 0.4 }}
                 >
                   <Button
-                    variant="hero"
                     size="lg"
-                    className="w-full shadow-lg shadow-primary/20"
+                    className="w-full gradient-gold text-charcoal font-semibold shadow-gold hover:shadow-lg transition-shadow"
                     onClick={handleUpgrade}
                     disabled={isLoading}
                   >
                     {isLoading ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     ) : (
-                      <Rocket className="w-4 h-4 mr-2" />
+                      <Users className="w-4 h-4 mr-2" />
                     )}
-                    {isLoading ? "Redirecting..." : "Upgrade Now"}
+                    {isLoading ? "Redirecting to Stripe..." : "Upgrade to Firm Scale"}
                   </Button>
                 </motion.div>
 
@@ -152,7 +175,7 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
+                  transition={{ delay: 0.45 }}
                   className="text-xs text-muted-foreground mt-4"
                 >
                   30-day money-back guarantee • Cancel anytime

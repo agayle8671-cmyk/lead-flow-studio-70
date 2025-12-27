@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Briefcase, ArrowRight, RefreshCw, Loader2, TrendingUp, Users, Calendar } from "lucide-react";
+import { Briefcase, ArrowRight, RefreshCw, Loader2, TrendingUp, Users, Calendar, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useClient, Client } from "@/contexts/ClientContext";
+import { usePlan } from "@/contexts/PlanContext";
 import { format } from "date-fns";
+import UpgradeModal from "./UpgradeModal";
 
 interface ClientPortfolioProps {
   onClientSelect: (client: Client) => void;
@@ -10,6 +13,13 @@ interface ClientPortfolioProps {
 
 const ClientPortfolio = ({ onClientSelect }: ClientPortfolioProps) => {
   const { clients, isLoading, error, refreshClients } = useClient();
+  const { clientLimit, isFirm } = usePlan();
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+
+  // Apply tier limit - Solo tier shows max 10 clients
+  const displayedClients = clients.slice(0, clientLimit);
+  const hasHiddenClients = clients.length > clientLimit;
+  const isAtLimit = clients.length >= clientLimit;
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "—";
@@ -30,12 +40,12 @@ const ClientPortfolio = ({ onClientSelect }: ClientPortfolioProps) => {
     }
   };
 
-  // Stats summary
-  const totalClients = clients.length;
-  const avgScore = clients.length > 0 
-    ? Math.round(clients.reduce((sum, c) => sum + (c.score || 0), 0) / clients.length)
+  // Stats summary - only count displayed clients
+  const totalClients = displayedClients.length;
+  const avgScore = displayedClients.length > 0 
+    ? Math.round(displayedClients.reduce((sum, c) => sum + (c.score || 0), 0) / displayedClients.length)
     : 0;
-  const gradeACount = clients.filter(c => c.grade === "A").length;
+  const gradeACount = displayedClients.filter(c => c.grade === "A").length;
 
   return (
     <div className="flex-1 overflow-auto scrollbar-thin">
@@ -44,7 +54,11 @@ const ClientPortfolio = ({ onClientSelect }: ClientPortfolioProps) => {
         <div className="px-8 py-5 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Client Portfolio</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Manage and audit your client accounts</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {isFirm 
+                ? "Unlimited Portfolio Management" 
+                : `Automated Audit Capacity: ${clients.length}/10 clients`}
+            </p>
           </div>
           <Button 
             variant="outline" 
@@ -61,6 +75,34 @@ const ClientPortfolio = ({ onClientSelect }: ClientPortfolioProps) => {
 
       {/* Content */}
       <main className="p-8">
+        {/* Capacity Warning for Solo users at limit */}
+        {!isFirm && isAtLimit && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-xl border border-amber-500/30 bg-amber-500/5"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-500" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground">Audit Capacity Reached</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Your Solo Auditor plan supports up to 10 clients. Upgrade to Firm Scale for unlimited Portfolio Management.
+                </p>
+              </div>
+              <Button 
+                size="sm" 
+                className="gradient-gold text-charcoal font-semibold shadow-gold"
+                onClick={() => setIsUpgradeModalOpen(true)}
+              >
+                Upgrade Now
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
         {/* Stats Row */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
@@ -74,7 +116,9 @@ const ClientPortfolio = ({ onClientSelect }: ClientPortfolioProps) => {
               </div>
               <div>
                 <p className="stat-value text-foreground">{totalClients}</p>
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Clients</p>
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                  {isFirm ? "Total Clients" : `of 10 Clients`}
+                </p>
               </div>
             </div>
           </div>
@@ -143,7 +187,7 @@ const ClientPortfolio = ({ onClientSelect }: ClientPortfolioProps) => {
 
             {/* Table Body */}
             <div className="divide-y divide-border">
-              {clients.map((client, index) => (
+              {displayedClients.map((client, index) => (
                 <motion.div
                   key={client.id}
                   initial={{ opacity: 0, x: -10 }}
@@ -187,10 +231,36 @@ const ClientPortfolio = ({ onClientSelect }: ClientPortfolioProps) => {
                   </div>
                 </motion.div>
               ))}
+
+              {/* Hidden clients indicator for Solo users */}
+              {hasHiddenClients && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="px-6 py-4 bg-muted/30 text-center"
+                >
+                  <p className="text-sm text-muted-foreground">
+                    +{clients.length - clientLimit} more clients hidden • 
+                    <button 
+                      onClick={() => setIsUpgradeModalOpen(true)}
+                      className="ml-1 text-primary font-medium hover:underline"
+                    >
+                      Upgrade to Firm Scale
+                    </button>
+                  </p>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         )}
       </main>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal 
+        isOpen={isUpgradeModalOpen} 
+        onClose={() => setIsUpgradeModalOpen(false)}
+        clientCount={clients.length}
+      />
     </div>
   );
 };
