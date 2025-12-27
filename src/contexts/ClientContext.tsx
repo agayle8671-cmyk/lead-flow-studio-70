@@ -42,12 +42,12 @@ export function ClientProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
       const clientList: Client[] = (data.clients || []).map((c: any) => ({
-        id: c.id || c.clientId,
-        name: c.name || c.clientName || `Client ${c.id || c.clientId}`,
+        id: Number(c.id ?? c.clientId),
+        name: c.name || c.clientName || `Client ${c.id ?? c.clientId}`,
         industry: c.industry || "General",
-        grade: c.grade || null,
-        score: c.score ?? null,
-        lastAuditDate: c.lastAuditDate || c.reportDate || null,
+        grade: (c.healthGrade ?? c.grade ?? null) as any,
+        score: (c.performanceScore ?? c.score ?? null) as any,
+        lastAuditDate: c.latestReportDate ?? c.lastAuditDate ?? c.reportDate ?? null,
       }));
       setClients(clientList);
     } catch (err) {

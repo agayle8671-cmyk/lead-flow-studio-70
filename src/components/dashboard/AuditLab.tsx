@@ -86,11 +86,12 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
         description: "Financial data has been extracted and saved.",
       });
 
+      const selected = clients.find((c) => c.id === parseInt(selectedClientId));
+
       await refreshClients();
-      
-      const client = clients.find(c => c.id === parseInt(selectedClientId));
-      if (client) {
-        setTimeout(() => onAuditComplete(client), 1500);
+
+      if (selected) {
+        setTimeout(() => onAuditComplete(selected), 1500);
       }
     } catch (error) {
       console.error("Upload error:", error);

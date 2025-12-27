@@ -2,12 +2,13 @@ import { motion } from "framer-motion";
 import { Settings, Building2, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePlan } from "@/contexts/PlanContext";
+import { forwardRef } from "react";
 
-const FirmSettings = () => {
+const FirmSettings = forwardRef<HTMLDivElement>((_, ref) => {
   const { isPro } = usePlan();
 
   return (
-    <div className="flex-1 overflow-auto">
+    <div ref={ref} className="flex-1 overflow-auto">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-8 py-5">
@@ -100,6 +101,8 @@ const FirmSettings = () => {
       </main>
     </div>
   );
-};
+});
+
+FirmSettings.displayName = "FirmSettings";
 
 export default FirmSettings;
