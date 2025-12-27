@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckSquare, Square, ArrowRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ActionItem {
   id: string;
@@ -25,9 +25,12 @@ interface RecommendationDrawerProps {
     title: string;
     status: "critical" | "warning" | "success" | "info";
     description: string;
+    metric?: string;
   } | null;
   grade: string;
   score: number;
+  initialCompletedItems?: string[];
+  onProgressUpdate?: (recTitle: string, completedItems: string[]) => void;
 }
 
 const getRecommendationDetails = (
@@ -176,8 +179,21 @@ const priorityColors = {
   low: "text-muted-foreground bg-secondary border-border",
 };
 
-const RecommendationDrawer = ({ isOpen, onClose, recommendation, grade, score }: RecommendationDrawerProps) => {
-  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
+const RecommendationDrawer = ({ 
+  isOpen, 
+  onClose, 
+  recommendation, 
+  grade, 
+  score,
+  initialCompletedItems = [],
+  onProgressUpdate,
+}: RecommendationDrawerProps) => {
+  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set(initialCompletedItems));
+
+  // Sync with initial completed items when recommendation changes
+  useEffect(() => {
+    setCompletedItems(new Set(initialCompletedItems));
+  }, [recommendation?.title, initialCompletedItems]);
 
   if (!recommendation) return null;
 
@@ -190,6 +206,10 @@ const RecommendationDrawer = ({ isOpen, onClose, recommendation, grade, score }:
         newSet.delete(id);
       } else {
         newSet.add(id);
+      }
+      // Persist to parent
+      if (onProgressUpdate && recommendation) {
+        onProgressUpdate(recommendation.title, Array.from(newSet));
       }
       return newSet;
     });

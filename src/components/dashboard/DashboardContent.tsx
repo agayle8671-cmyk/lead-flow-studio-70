@@ -43,11 +43,13 @@ interface DashboardContentProps {
   refreshHealthTrigger?: number;
 }
 
-interface Recommendation {
+export interface Recommendation {
   status: "critical" | "warning" | "success" | "info";
   title: string;
   description: string;
   icon: React.ElementType;
+  metric?: string; // Contextual metric from real data
+  priority: number; // 1 = highest priority
 }
 
 const revenueData = [
@@ -66,18 +68,36 @@ const costBreakdown = [
   { name: "Other", value: 10, color: "hsl(40, 70%, 50%)" },
 ];
 
-const generateRecommendations = (healthData: HealthData | null, profitMargin: number): Recommendation[] => {
+interface FinancialMetrics {
+  revenue: number;
+  costs: number;
+  profitMargin: number;
+  marketingSpend?: number;
+  operationsCost?: number;
+}
+
+const generateRecommendations = (
+  healthData: HealthData | null, 
+  metrics: FinancialMetrics
+): Recommendation[] => {
   if (!healthData) {
     return [{
       status: "info",
       title: "Awaiting Data",
       description: "Upload a financial report to receive personalized AI recommendations.",
       icon: Lightbulb,
+      priority: 4,
     }];
   }
 
   const { grade, score, insight } = healthData;
+  const { revenue, costs, profitMargin, marketingSpend, operationsCost } = metrics;
   const recommendations: Recommendation[] = [];
+
+  // Calculate contextual metrics
+  const marketingRatio = marketingSpend && revenue > 0 ? (marketingSpend / revenue * 100) : null;
+  const operationsRatio = operationsCost && revenue > 0 ? (operationsCost / revenue * 100) : null;
+  const lossAmount = costs > revenue ? costs - revenue : 0;
 
   // Primary recommendation based on the insight from backend
   if (insight) {
@@ -89,69 +109,129 @@ const generateRecommendations = (healthData: HealthData | null, profitMargin: nu
       title: grade === "F" ? "Immediate Action Required" : grade === "C" ? "Areas Need Attention" : "Business Health Strong",
       description: insight,
       icon: isUrgent ? ShieldAlert : isWarning ? AlertCircle : Sparkles,
+      metric: `Health Score: ${score}%`,
+      priority: isUrgent ? 1 : isWarning ? 2 : 3,
     });
   }
 
-  // Grade-specific recommendations
+  // Grade-specific recommendations with contextual metrics
   if (grade === "F") {
     recommendations.push({
       status: "critical",
       title: "Cost Reduction Critical",
-      description: "Your expenses exceed revenue. Prioritize cutting non-essential costs and reviewing all vendor contracts immediately.",
+      description: lossAmount > 0 
+        ? `You're losing $${lossAmount.toLocaleString()}/mo. Prioritize cutting non-essential costs immediately.`
+        : "Your expenses exceed revenue. Prioritize cutting non-essential costs and reviewing all vendor contracts immediately.",
       icon: AlertCircle,
+      metric: lossAmount > 0 ? `-$${lossAmount.toLocaleString()}/mo loss` : `${profitMargin.toFixed(1)}% margin`,
+      priority: 1,
     });
     if (score < 20) {
       recommendations.push({
         status: "critical",
         title: "Emergency Cash Flow Review",
-        description: "With a score below 20%, consider emergency measures: pause marketing spend, negotiate payment terms, and explore bridge financing.",
+        description: `With a ${score}% score, consider emergency measures: pause marketing spend, negotiate payment terms, and explore bridge financing.`,
         icon: ShieldAlert,
+        metric: `${score}% health score`,
+        priority: 1,
       });
     }
   } else if (grade === "C") {
-    recommendations.push({
-      status: "warning",
-      title: "Optimize Marketing Efficiency",
-      description: "Your marketing spend ratio needs adjustment. Focus on channels with proven ROI and reduce experimental spending.",
-      icon: Target,
-    });
+    if (marketingRatio !== null && marketingRatio > 15) {
+      recommendations.push({
+        status: "warning",
+        title: "Marketing Spend Too High",
+        description: `Marketing is ${marketingRatio.toFixed(0)}% of revenue (ideal: 5-15%). Cut low-ROI channels and focus on proven performers.`,
+        icon: Target,
+        metric: `${marketingRatio.toFixed(0)}% of revenue → marketing`,
+        priority: 2,
+      });
+    } else {
+      recommendations.push({
+        status: "warning",
+        title: "Optimize Marketing Efficiency",
+        description: "Your marketing spend ratio needs adjustment. Focus on channels with proven ROI and reduce experimental spending.",
+        icon: Target,
+        metric: marketingRatio !== null ? `${marketingRatio.toFixed(0)}% marketing ratio` : undefined,
+        priority: 2,
+      });
+    }
     if (profitMargin < 15) {
       recommendations.push({
         status: "warning",
-        title: "Margin Improvement Opportunity",
-        description: "Consider price optimization and operational efficiencies to improve your profit margin above 15%.",
+        title: "Margin Improvement Needed",
+        description: `Your ${profitMargin.toFixed(1)}% margin is below the 15% target. Consider price optimization and operational efficiencies.`,
         icon: TrendingUp,
+        metric: `${profitMargin.toFixed(1)}% → target 15%+`,
+        priority: 2,
       });
     }
   } else if (grade === "B") {
     recommendations.push({
       status: "success",
       title: "Strong Foundation",
-      description: "Your business fundamentals are solid. Focus on scaling what's working and maintaining operational discipline.",
+      description: `With ${profitMargin.toFixed(1)}% margins and ${score}% health, focus on scaling what's working while maintaining discipline.`,
       icon: CheckCircle,
+      metric: `${profitMargin.toFixed(1)}% profit margin`,
+      priority: 3,
     });
     recommendations.push({
       status: "info",
       title: "Growth Opportunity",
-      description: "With your current health score, consider strategic investments in customer acquisition or product expansion.",
+      description: `Your $${(revenue - costs).toLocaleString()} monthly profit supports reinvestment. Consider strategic customer acquisition.`,
       icon: Rocket,
+      metric: `$${(revenue - costs).toLocaleString()}/mo available`,
+      priority: 4,
     });
   } else if (grade === "A") {
     recommendations.push({
       status: "success",
       title: "Excellent Performance",
-      description: "Your business is operating at peak efficiency. Consider reinvesting profits into growth initiatives.",
+      description: `${profitMargin.toFixed(1)}% margins put you in the top tier. Consider reinvesting $${((revenue - costs) * 0.2).toLocaleString()}/mo (20% of profit) into growth.`,
       icon: Sparkles,
+      metric: `${profitMargin.toFixed(1)}% profit margin`,
+      priority: 3,
     });
     recommendations.push({
       status: "success",
       title: "Scale with Confidence",
-      description: "Your metrics support aggressive expansion. Explore new markets or product lines while maintaining current efficiency.",
+      description: `Your ${score}% health score supports aggressive expansion. Explore new markets while maintaining current efficiency.`,
       icon: Rocket,
+      metric: `${score}% health score`,
+      priority: 3,
     });
   }
 
-  return recommendations.slice(0, 3); // Max 3 recommendations
+  // Sort by priority (1 = highest) and limit to 4
+  return recommendations
+    .sort((a, b) => a.priority - b.priority)
+    .slice(0, 4);
+};
+
+// Progress tracking with localStorage persistence
+const PROGRESS_STORAGE_KEY = 'maestro_recommendation_progress';
+
+interface ProgressData {
+  completedItems: Record<string, string[]>; // recTitle -> completed item IDs
+  lastUpdated: string;
+}
+
+const loadProgress = (): ProgressData => {
+  try {
+    const stored = localStorage.getItem(PROGRESS_STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch (e) {
+    console.warn('Failed to load progress:', e);
+  }
+  return { completedItems: {}, lastUpdated: new Date().toISOString() };
+};
+
+const saveProgress = (data: ProgressData) => {
+  try {
+    localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Failed to save progress:', e);
+  }
 };
 
 const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }: DashboardContentProps) => {
@@ -160,8 +240,9 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
   const [healthData, setHealthData] = useState<HealthData | null>(null);
   const [selectedRecommendation, setSelectedRecommendation] = useState<Recommendation | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [progressData, setProgressData] = useState<ProgressData>(loadProgress);
   const healthScoreRef = useRef<MaestroHealthScoreRef>(null);
-  const profitMargin = ((data.revenue - data.costs) / data.revenue) * 100;
+  const profitMargin = data.revenue > 0 ? ((data.revenue - data.costs) / data.revenue) * 100 : 0;
   const profit = data.revenue - data.costs;
 
   const handleRecommendationClick = (rec: Recommendation) => {
@@ -169,10 +250,37 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
     setIsDrawerOpen(true);
   };
 
-  // Generate dynamic recommendations based on live health data
+  // Calculate overall progress
+  const calculateOverallProgress = useMemo(() => {
+    const totalItems = recommendations.reduce((acc, rec) => acc + 5, 0); // Assume 5 items per rec
+    const completedCount = Object.values(progressData.completedItems).flat().length;
+    return { completed: completedCount, total: totalItems, percentage: totalItems > 0 ? (completedCount / totalItems) * 100 : 0 };
+  }, [progressData.completedItems]);
+
+  // Update progress from drawer
+  const handleProgressUpdate = (recTitle: string, completedItems: string[]) => {
+    const newProgress = {
+      ...progressData,
+      completedItems: {
+        ...progressData.completedItems,
+        [recTitle]: completedItems,
+      },
+      lastUpdated: new Date().toISOString(),
+    };
+    setProgressData(newProgress);
+    saveProgress(newProgress);
+  };
+
+  // Generate dynamic recommendations based on live health data with real metrics
   const recommendations = useMemo(() => 
-    generateRecommendations(healthData, profitMargin), 
-    [healthData, profitMargin]
+    generateRecommendations(healthData, {
+      revenue: data.revenue,
+      costs: data.costs,
+      profitMargin,
+      marketingSpend: (data as any).marketingSpend,
+      operationsCost: (data as any).operationsCost,
+    }), 
+    [healthData, data, profitMargin]
   );
 
   // Refresh health score when trigger changes
@@ -458,11 +566,38 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
                   {healthData ? "Live" : "Awaiting data"}
                 </span>
               </CardTitle>
+              
+              {/* Overall Progress Bar */}
+              {healthData && calculateOverallProgress.completed > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 p-3 rounded-lg bg-secondary/50 border border-border"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-muted-foreground">Action Progress</span>
+                    <span className="text-xs font-semibold text-primary">
+                      {calculateOverallProgress.percentage.toFixed(0)}% complete
+                    </span>
+                  </div>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${calculateOverallProgress.percentage}%` }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                      className="h-full bg-gradient-to-r from-primary to-emerald-500 rounded-full"
+                    />
+                  </div>
+                </motion.div>
+              )}
             </CardHeader>
             <CardContent className="p-0">
               <div className="space-y-4">
                 {recommendations.map((rec, index) => {
                   const IconComponent = rec.icon;
+                  const recProgress = progressData.completedItems[rec.title] || [];
+                  const hasProgress = recProgress.length > 0;
+                  
                   return (
                     <motion.div
                       key={`${rec.title}-${healthData?.score ?? 0}`}
@@ -471,7 +606,7 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
                       transition={{ duration: 0.4, delay: 0.1 + index * 0.1 }}
                       whileHover={{ x: 4 }}
                       onClick={() => handleRecommendationClick(rec)}
-                      className={`flex items-start gap-4 p-4 rounded-xl transition-colors cursor-pointer group ${
+                      className={`relative flex items-start gap-4 p-4 rounded-xl transition-colors cursor-pointer group ${
                         rec.status === "critical" 
                           ? "bg-destructive/5 hover:bg-destructive/10 border border-destructive/20" 
                           : rec.status === "warning"
@@ -481,6 +616,13 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
                           : "bg-primary/5 hover:bg-primary/10 border border-primary/20"
                       }`}
                     >
+                      {/* Priority indicator */}
+                      {rec.priority <= 2 && (
+                        <div className={`absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full ${
+                          rec.priority === 1 ? "bg-destructive" : "bg-yellow-500"
+                        }`} />
+                      )}
+                      
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                         rec.status === "critical" 
                           ? "bg-destructive/10" 
@@ -497,15 +639,32 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
                           "text-primary"
                         }`} />
                       </div>
-                      <div className="flex-1">
-                        <h4 className={`font-semibold mb-1 transition-colors ${
-                          rec.status === "critical" ? "text-destructive group-hover:text-destructive" :
-                          rec.status === "warning" ? "text-yellow-600 dark:text-yellow-500 group-hover:text-yellow-600" :
-                          "group-hover:text-primary"
-                        }`}>{rec.title}</h4>
-                        <p className="text-sm text-muted-foreground">{rec.description}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className={`font-semibold transition-colors ${
+                            rec.status === "critical" ? "text-destructive group-hover:text-destructive" :
+                            rec.status === "warning" ? "text-yellow-600 dark:text-yellow-500 group-hover:text-yellow-600" :
+                            "group-hover:text-primary"
+                          }`}>{rec.title}</h4>
+                          {rec.metric && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              rec.status === "critical" ? "bg-destructive/10 text-destructive" :
+                              rec.status === "warning" ? "bg-yellow-500/10 text-yellow-600" :
+                              rec.status === "info" ? "bg-blue-500/10 text-blue-600" :
+                              "bg-primary/10 text-primary"
+                            }`}>
+                              {rec.metric}
+                            </span>
+                          )}
+                          {hasProgress && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
+                              {recProgress.length} done
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{rec.description}</p>
                       </div>
-                      <ArrowUpRight className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity ${
+                      <ArrowUpRight className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ${
                         rec.status === "critical" ? "text-destructive" :
                         rec.status === "warning" ? "text-yellow-500" :
                         "text-muted-foreground"
@@ -526,6 +685,8 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
         recommendation={selectedRecommendation}
         grade={healthData?.grade ?? "F"}
         score={healthData?.score ?? 0}
+        initialCompletedItems={selectedRecommendation ? (progressData.completedItems[selectedRecommendation.title] || []) : []}
+        onProgressUpdate={handleProgressUpdate}
       />
     </div>
   );
