@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { 
   LayoutDashboard, 
-  History, 
+  Archive, 
   Settings, 
-  Sparkles, 
+  Compass, 
   LogOut,
   ChevronLeft,
   Rocket,
@@ -13,22 +13,24 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { usePlan } from "@/contexts/PlanContext";
+import { apiUrl } from "@/lib/config";
 
 interface DashboardSidebarProps {
   userName: string;
 }
 
-type NavItem = "dashboard" | "history" | "settings";
+type NavItem = "dashboard" | "archive" | "settings";
 
 const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState<NavItem>("dashboard");
+  const [isUpgrading, setIsUpgrading] = useState(false);
   const { toast } = useToast();
-  const { isPro, upgrade } = usePlan();
+  const { isPro } = usePlan();
 
   const navItems = [
-    { id: "dashboard" as NavItem, icon: LayoutDashboard, label: "Dashboard" },
-    { id: "history" as NavItem, icon: History, label: "History" },
+    { id: "dashboard" as NavItem, icon: LayoutDashboard, label: "Command Center" },
+    { id: "archive" as NavItem, icon: Archive, label: "Audit Archive" },
     { id: "settings" as NavItem, icon: Settings, label: "Settings" },
   ];
 
@@ -36,18 +38,32 @@ const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
     setActiveItem(id);
     if (id !== "dashboard") {
       toast({
-        title: `${id.charAt(0).toUpperCase() + id.slice(1)} coming soon`,
+        title: `${id === "archive" ? "Audit Archive" : "Settings"} coming soon`,
         description: "This feature is currently under development.",
       });
     }
   };
 
-  const handleUpgrade = () => {
-    upgrade();
-    toast({
-      title: "Welcome to Pro!",
-      description: "You now have access to all premium features.",
-    });
+  const handleUpgrade = async () => {
+    setIsUpgrading(true);
+    try {
+      const response = await fetch(apiUrl("/api/create-checkout-session"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast({
+        variant: "destructive",
+        title: "Checkout failed",
+        description: "Could not initiate checkout. Please try again.",
+      });
+      setIsUpgrading(false);
+    }
   };
 
   const handleLogout = () => {
@@ -74,16 +90,19 @@ const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
               className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shrink-0 shadow-lg shadow-primary/20"
               whileHover={{ scale: 1.05, rotate: 5 }}
             >
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
+              <Compass className="w-5 h-5 text-primary-foreground" />
             </motion.div>
             {!collapsed && (
-              <motion.span 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-lg font-bold tracking-tight"
-              >
-                ProfitPulse
-              </motion.span>
+              <div className="flex flex-col">
+                <motion.span 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-lg font-bold tracking-tight leading-none"
+                >
+                  M.A.P.
+                </motion.span>
+                <span className="text-[9px] text-muted-foreground tracking-wide">MARGIN AUDIT PRO</span>
+              </div>
             )}
           </a>
           <motion.button
@@ -158,9 +177,14 @@ const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
                 size="sm" 
                 className="w-full shadow-lg shadow-primary/20"
                 onClick={handleUpgrade}
+                disabled={isUpgrading}
               >
-                <Rocket className="w-4 h-4 mr-2" />
-                Upgrade Now
+                {isUpgrading ? (
+                  <span className="animate-spin mr-2">⏳</span>
+                ) : (
+                  <Rocket className="w-4 h-4 mr-2" />
+                )}
+                {isUpgrading ? "Redirecting..." : "Upgrade Now"}
               </Button>
             </div>
           </motion.div>

@@ -329,7 +329,7 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
             transition={{ duration: 0.4 }}
           >
             <h1 className="text-2xl font-bold">Welcome back, {userName.split(" ")[0]}</h1>
-            <p className="text-muted-foreground">Here's your profit analysis overview</p>
+            <p className="text-muted-foreground">Client Margin Audit Overview</p>
           </motion.div>
           {onSaveReport && (
             <motion.div
@@ -415,8 +415,8 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
             <Card variant="bento" className="p-6">
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="flex items-center justify-between">
-                  <span>Revenue vs Profit</span>
-                  <span className="text-sm font-normal text-muted-foreground">Historical + AI Forecast</span>
+                  <span>Financial Trajectory Map</span>
+                  <span className="text-sm font-normal text-muted-foreground">Historical + Projected Route</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -497,7 +497,7 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   />
-                  AI Recommendations
+                  Solution Compass
                   {healthData && (
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                       healthData.grade === "F" ? "bg-destructive/10 text-destructive" :

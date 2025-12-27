@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { apiUrl } from "@/lib/config";
@@ -15,9 +15,10 @@ export interface ParsedFinancialData {
 
 interface FileUploadProps {
   onDataParsed: (data: ParsedFinancialData) => void;
+  clientId?: string;
 }
 
-// Local fallback parsers
+// Local fallback parsers for CSV/JSON
 const parseCSV = (content: string): ParsedFinancialData => {
   const lines = content.trim().split(/\r?\n/);
   const data: ParsedFinancialData = {};
@@ -75,9 +76,10 @@ const parseJSON = (content: string): ParsedFinancialData => {
   return data;
 };
 
-const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
+const FinancialFileUpload = ({ onDataParsed, clientId }: FileUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState<string>("");
   const { toast } = useToast();
 
   const parseFileLocally = useCallback((file: File): Promise<ParsedFinancialData> => {
@@ -102,65 +104,126 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
     });
   }, []);
 
+  const processPDFFile = useCallback(async (file: File): Promise<ParsedFinancialData> => {
+    setProcessingStatus("Uploading PDF to AI parser...");
+    
+    const formData = new FormData();
+    formData.append("file", file);
+    if (clientId) {
+      formData.append("clientId", clientId);
+    }
+
+    const endpoint = apiUrl("/api/upload");
+    console.log("Uploading PDF to:", endpoint);
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      body: formData,
+      mode: "cors",
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "Unknown error");
+      throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+    }
+
+    setProcessingStatus("Processing with AI...");
+    
+    const result = await response.json();
+    
+    const marketingSpend =
+      result.marketingSpend !== undefined && result.marketingSpend !== null
+        ? Number(result.marketingSpend)
+        : undefined;
+    const operationsCost =
+      result.operationsCost !== undefined && result.operationsCost !== null
+        ? Number(result.operationsCost)
+        : undefined;
+
+    const costs =
+      result.costs !== undefined && result.costs !== null
+        ? Number(result.costs)
+        : marketingSpend !== undefined || operationsCost !== undefined
+          ? (marketingSpend ?? 0) + (operationsCost ?? 0)
+          : undefined;
+
+    return {
+      revenue: result.revenue ? Number(result.revenue) : undefined,
+      costs,
+      customers: result.customers ? Math.round(Number(result.customers)) : undefined,
+      avgOrderValue: result.avgOrderValue ? Number(result.avgOrderValue) : undefined,
+      marketingSpend,
+      operationsCost,
+    };
+  }, [clientId]);
+
   const processFile = useCallback(async (file: File) => {
     setIsUploading(true);
+    setProcessingStatus("");
 
     try {
       let parsedData: ParsedFinancialData = {};
+      const extension = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+      const isPDF = extension === ".pdf";
 
-      // Try API first, fall back to local parsing
-      try {
-        const content = await file.text();
+      if (isPDF) {
+        // Use FormData upload for PDF files
+        parsedData = await processPDFFile(file);
+      } else {
+        // Try API first for text files, fall back to local parsing
+        try {
+          const content = await file.text();
 
-        const endpoint = apiUrl("/api/parse-finances");
-        console.log("Uploading to:", endpoint);
+          const endpoint = apiUrl("/api/parse-finances");
+          console.log("Uploading to:", endpoint);
 
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({ content }),
-          mode: "cors",
-        });
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ content, clientId }),
+            mode: "cors",
+          });
 
-        const contentType = response.headers.get("content-type") || "";
+          const contentType = response.headers.get("content-type") || "";
 
-        if (response.ok && contentType.includes("application/json")) {
-          const result = await response.json();
+          if (response.ok && contentType.includes("application/json")) {
+            const result = await response.json();
 
-          const marketingSpend =
-            result.marketingSpend !== undefined && result.marketingSpend !== null
-              ? Number(result.marketingSpend)
-              : undefined;
-          const operationsCost =
-            result.operationsCost !== undefined && result.operationsCost !== null
-              ? Number(result.operationsCost)
-              : undefined;
-
-          const costs =
-            result.costs !== undefined && result.costs !== null
-              ? Number(result.costs)
-              : marketingSpend !== undefined || operationsCost !== undefined
-                ? (marketingSpend ?? 0) + (operationsCost ?? 0)
+            const marketingSpend =
+              result.marketingSpend !== undefined && result.marketingSpend !== null
+                ? Number(result.marketingSpend)
+                : undefined;
+            const operationsCost =
+              result.operationsCost !== undefined && result.operationsCost !== null
+                ? Number(result.operationsCost)
                 : undefined;
 
-          parsedData = {
-            revenue: result.revenue ? Number(result.revenue) : undefined,
-            costs,
-            customers: result.customers ? Math.round(Number(result.customers)) : undefined,
-            avgOrderValue: result.avgOrderValue ? Number(result.avgOrderValue) : undefined,
-            marketingSpend,
-            operationsCost,
-          };
-        } else {
-          console.log("API unavailable, using local parsing");
+            const costs =
+              result.costs !== undefined && result.costs !== null
+                ? Number(result.costs)
+                : marketingSpend !== undefined || operationsCost !== undefined
+                  ? (marketingSpend ?? 0) + (operationsCost ?? 0)
+                  : undefined;
+
+            parsedData = {
+              revenue: result.revenue ? Number(result.revenue) : undefined,
+              costs,
+              customers: result.customers ? Math.round(Number(result.customers)) : undefined,
+              avgOrderValue: result.avgOrderValue ? Number(result.avgOrderValue) : undefined,
+              marketingSpend,
+              operationsCost,
+            };
+          } else {
+            console.log("API unavailable, using local parsing");
+            parsedData = await parseFileLocally(file);
+          }
+        } catch (apiError) {
+          console.log("API error, falling back to local parsing:", apiError);
           parsedData = await parseFileLocally(file);
         }
-      } catch (apiError) {
-        console.log("API error, falling back to local parsing:", apiError);
-        parsedData = await parseFileLocally(file);
       }
 
       // Filter out undefined values
@@ -172,16 +235,19 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
         toast({
           variant: "destructive",
           title: "No data found",
-          description: "Could not extract financial data. Use format: 'revenue, 50000' per line.",
+          description: isPDF 
+            ? "Could not extract financial data from PDF. Ensure the document contains revenue/cost information."
+            : "Could not extract financial data. Use format: 'revenue, 50000' per line.",
         });
         setIsUploading(false);
+        setProcessingStatus("");
         return;
       }
 
       const fields = Object.keys(cleanedData).length;
       toast({
         title: "Data imported",
-        description: `Extracted ${fields} field${fields > 1 ? "s" : ""} from your file.`,
+        description: `Extracted ${fields} field${fields > 1 ? "s" : ""} from your ${isPDF ? "PDF" : "file"}.`,
       });
 
       onDataParsed(cleanedData);
@@ -194,28 +260,30 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
       });
     } finally {
       setIsUploading(false);
+      setProcessingStatus("");
     }
-  }, [onDataParsed, toast, parseFileLocally]);
+  }, [onDataParsed, toast, parseFileLocally, processPDFFile]);
 
   const validateAndProcessFile = useCallback((file: File) => {
-    const validTypes = [".csv", ".txt", ".json"];
+    const validTypes = [".csv", ".txt", ".json", ".pdf"];
     const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
     
     if (!validTypes.includes(fileExtension)) {
       toast({
         variant: "destructive",
         title: "Invalid file type",
-        description: `Please upload a CSV, TXT, or JSON file. Got: ${fileExtension}`,
+        description: `Please upload a CSV, TXT, JSON, or PDF file. Got: ${fileExtension}`,
       });
       return;
     }
 
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Check file size (max 10MB for PDFs, 5MB for others)
+    const maxSize = fileExtension === ".pdf" ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
       toast({
         variant: "destructive",
         title: "File too large",
-        description: "Please upload a file smaller than 5MB.",
+        description: `Please upload a file smaller than ${fileExtension === ".pdf" ? "10MB" : "5MB"}.`,
       });
       return;
     }
@@ -269,26 +337,37 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
         id="file-upload"
         className="hidden"
         onChange={handleFileChange}
-        accept=".csv,.txt,.json"
+        accept=".csv,.txt,.json,.pdf"
       />
       <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-3">
         {isUploading ? (
-          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+          <>
+            <Loader2 className="w-12 h-12 text-primary animate-spin" />
+            <span className="text-lg font-medium">
+              {processingStatus || "Processing..."}
+            </span>
+          </>
         ) : (
-          <Upload className={cn(
-            "w-12 h-12 transition-transform duration-200",
-            isDragging ? "text-primary scale-110" : "text-primary"
-          )} />
+          <>
+            <div className="flex items-center gap-2">
+              <Upload className={cn(
+                "w-10 h-10 transition-transform duration-200",
+                isDragging ? "text-primary scale-110" : "text-primary"
+              )} />
+              <FileText className={cn(
+                "w-8 h-8 transition-transform duration-200",
+                isDragging ? "text-primary scale-110" : "text-muted-foreground"
+              )} />
+            </div>
+            <span className="text-lg font-medium">
+              {isDragging
+                ? "Drop your file here"
+                : "Drag & drop or click to upload"}
+            </span>
+          </>
         )}
-        <span className="text-lg font-medium">
-          {isUploading
-            ? "Reading financial data..."
-            : isDragging
-            ? "Drop your file here"
-            : "Drag & drop or click to upload"}
-        </span>
         <span className="text-sm text-muted-foreground">
-          CSV, TXT, or JSON • Let our AI auto-fill the calculator
+          PDF, CSV, TXT, or JSON • AI-powered financial parsing
         </span>
       </label>
     </div>
