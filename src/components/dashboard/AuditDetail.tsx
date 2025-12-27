@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, RefreshCw, Loader2 } from "lucide-react";
+import { ArrowLeft, RefreshCw, Loader2, TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Client, useClient } from "@/contexts/ClientContext";
 import MaestroHealthScore, { MaestroHealthScoreRef, HealthData } from "./MaestroHealthScore";
@@ -15,6 +15,7 @@ interface AuditDetailProps {
 interface AuditInsight {
   title: string;
   summary: string;
+  priority: "high" | "medium" | "low";
   actionItems: string[];
 }
 
@@ -42,13 +43,13 @@ const AuditDetail = ({ client, onBack }: AuditDetailProps) => {
       
       if (response.ok) {
         const data = await response.json();
-        // Generate insights from health data
         const generatedInsights: AuditInsight[] = [];
         
         if (data.insight) {
           generatedInsights.push({
-            title: "Primary Assessment",
+            title: "Executive Summary",
             summary: data.insight,
+            priority: data.grade === "F" ? "high" : data.grade === "C" ? "medium" : "low",
             actionItems: [
               "Review margin trends over the past quarter",
               "Compare against industry benchmarks",
@@ -59,8 +60,9 @@ const AuditDetail = ({ client, onBack }: AuditDetailProps) => {
 
         if (data.grade === "A" || data.grade === "B") {
           generatedInsights.push({
-            title: "Growth Opportunity",
-            summary: "Strong fundamentals support strategic expansion. Consider reinvesting a portion of profits into customer acquisition.",
+            title: "Growth Trajectory",
+            summary: "Strong fundamentals support strategic expansion. Consider reinvesting profits into customer acquisition.",
+            priority: "low",
             actionItems: [
               "Analyze customer lifetime value metrics",
               "Evaluate marketing channel ROI",
@@ -69,8 +71,9 @@ const AuditDetail = ({ client, onBack }: AuditDetailProps) => {
           });
         } else if (data.grade === "C" || data.grade === "F") {
           generatedInsights.push({
-            title: "Remediation Priority",
-            summary: "Immediate attention required on operational efficiency. Focus on cost optimization before growth initiatives.",
+            title: "Remediation Required",
+            summary: "Immediate attention required on operational efficiency. Focus on cost optimization.",
+            priority: "high",
             actionItems: [
               "Conduct vendor contract renegotiations",
               "Review fixed vs variable cost structure",
@@ -88,31 +91,73 @@ const AuditDetail = ({ client, onBack }: AuditDetailProps) => {
     }
   };
 
+  const getPriorityBadge = (priority: string) => {
+    switch (priority) {
+      case "high": return "bg-destructive/10 text-destructive border-destructive/20";
+      case "medium": return "bg-primary/10 text-primary border-primary/20";
+      case "low": return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+      default: return "bg-muted text-muted-foreground";
+    }
+  };
+
   return (
-    <div className="flex-1 overflow-auto">
+    <div className="flex-1 overflow-auto scrollbar-thin">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
-        <div className="px-8 py-5 flex items-center justify-between">
+      <header className="sticky top-0 z-10 glass border-b border-border">
+        <div className="px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={onBack}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Portfolio
+            <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back
             </Button>
-            <div className="h-6 w-px bg-border" />
+            <div className="h-8 w-px bg-border" />
             <div>
-              <h1 className="text-lg font-bold tracking-tight">{client.name}</h1>
-              <p className="text-sm text-muted-foreground">{client.industry} • Client ID: {client.id}</p>
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-bold tracking-tight text-foreground">{client.name}</h1>
+                {client.grade && (
+                  <span className={`badge-grade badge-grade-${client.grade.toLowerCase()}`}>
+                    {client.grade}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">{client.industry} • Client #{client.id}</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => healthScoreRef.current?.refresh()}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh Data
+          <Button variant="outline" size="sm" onClick={() => healthScoreRef.current?.refresh()} className="gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Refresh
           </Button>
         </div>
       </header>
 
       {/* Content */}
       <main className="p-8 space-y-6">
+        {/* Quick Stats */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-4 gap-4"
+        >
+          {[
+            { icon: TrendingUp, label: "Performance", value: `${client.score || 0}%`, color: "text-primary" },
+            { icon: Target, label: "Grade", value: client.grade || "—", color: "text-emerald-500" },
+            { icon: DollarSign, label: "Status", value: "Active", color: "text-foreground" },
+            { icon: Calendar, label: "Last Audit", value: client.lastAuditDate ? new Date(client.lastAuditDate).toLocaleDateString() : "—", color: "text-muted-foreground" },
+          ].map((stat, i) => (
+            <div key={stat.label} className="card-elevated rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                </div>
+                <div>
+                  <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
         {/* Health Score */}
         <MaestroHealthScore ref={healthScoreRef} onHealthDataChange={setHealthData} clientId={client.id} />
 
@@ -121,29 +166,29 @@ const AuditDetail = ({ client, onBack }: AuditDetailProps) => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-card border border-border rounded-lg p-6"
+          className="card-elevated rounded-xl p-6"
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-semibold">Financial Trajectory Map</h2>
-              <p className="text-sm text-muted-foreground">Historical performance with Projected Path overlay</p>
+              <h2 className="text-lg font-semibold text-foreground">Financial Trajectory Map</h2>
+              <p className="text-sm text-muted-foreground">Historical performance with projected path overlay</p>
             </div>
-            <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-6 text-xs">
               <div className="flex items-center gap-2">
-                <span className="w-8 h-0.5 bg-[hsl(160,84%,45%)]" />
-                <span className="text-muted-foreground">Revenue</span>
+                <div className="w-8 h-[3px] rounded-full bg-emerald-500" />
+                <span className="text-muted-foreground font-medium">Revenue</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-8 h-0.5 bg-[hsl(200,80%,50%)]" />
-                <span className="text-muted-foreground">Profit</span>
+                <div className="w-8 h-[3px] rounded-full bg-blue-500" />
+                <span className="text-muted-foreground font-medium">Profit</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-8 h-0.5 border-t-2 border-dashed border-muted-foreground" />
-                <span className="text-muted-foreground">Projected Path</span>
+                <div className="w-8 h-[3px] rounded-full border-t-2 border-dashed border-muted-foreground" />
+                <span className="text-muted-foreground font-medium">Projected</span>
               </div>
             </div>
           </div>
-          <div className="h-[320px]">
+          <div className="h-[340px]">
             <ForecastChart clientId={client.id} />
           </div>
         </motion.div>
@@ -153,39 +198,46 @@ const AuditDetail = ({ client, onBack }: AuditDetailProps) => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-card border border-border rounded-lg p-6"
+          className="card-elevated rounded-xl p-6"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-lg font-semibold">Audit Insights</h2>
-              <p className="text-sm text-muted-foreground">AI-generated executive summary and action items</p>
-            </div>
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-foreground">Audit Insights</h2>
+            <p className="text-sm text-muted-foreground">AI-generated recommendations and action items</p>
           </div>
 
           {isLoadingInsights ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <div className="flex items-center justify-center py-16">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Generating insights...</p>
+              </div>
             </div>
           ) : insights.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              Upload financial data to generate audit insights.
-            </p>
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Upload financial data to generate audit insights.</p>
+            </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {insights.map((insight, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="border-l-2 border-primary pl-4"
+                  className="p-5 rounded-lg bg-muted/30 border border-border"
                 >
-                  <h3 className="font-semibold text-foreground mb-2">{insight.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-3">{insight.summary}</p>
-                  <div className="space-y-1">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="font-semibold text-foreground">{insight.title}</h3>
+                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${getPriorityBadge(insight.priority)}`}>
+                      {insight.priority.toUpperCase()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{insight.summary}</p>
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action Items</p>
                     {insight.actionItems.map((item, i) => (
                       <div key={i} className="flex items-start gap-2 text-sm">
-                        <span className="text-primary mt-1">•</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                         <span className="text-foreground/80">{item}</span>
                       </div>
                     ))}
