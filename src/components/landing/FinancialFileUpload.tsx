@@ -110,18 +110,18 @@ const FinancialFileUpload = ({ onDataParsed }: FileUploadProps) => {
 
       // Try API first, fall back to local parsing
       try {
-        const formData = new FormData();
-        formData.append("file", file);
+        const content = await file.text();
 
         const endpoint = apiUrl("/api/parse-finances");
         console.log("Uploading to:", endpoint);
 
         const response = await fetch(endpoint, {
           method: "POST",
-          body: formData,
           headers: {
+            "Content-Type": "application/json",
             Accept: "application/json",
           },
+          body: JSON.stringify({ content }),
           mode: "cors",
         });
 

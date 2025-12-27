@@ -58,9 +58,9 @@ const Index = () => {
     void (async () => {
       try {
         const payload = {
-          revenue: calcData.revenue,
-          marketingSpend: data.marketingSpend ?? data.costs ?? 0,
-          operationsCost: data.operationsCost ?? data.costs ?? 0,
+          revenue: String(calcData.revenue),
+          marketingSpend: String(data.marketingSpend ?? data.costs ?? 0),
+          operationsCost: String(data.operationsCost ?? data.costs ?? 0),
         };
 
         const endpoint = apiUrl("/api/save");
@@ -124,9 +124,9 @@ const Index = () => {
           Accept: "application/json",
         },
         body: JSON.stringify({
-          revenue: calculatorData.revenue,
-          marketingSpend: calculatorData.costs,
-          operationsCost: calculatorData.costs,
+          revenue: String(calculatorData.revenue),
+          marketingSpend: String(calculatorData.costs),
+          operationsCost: String(calculatorData.costs),
         }),
         mode: "cors",
       });
