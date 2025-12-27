@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, Lock, Rocket } from "lucide-react";
+import { X, Sparkles, Lock, Rocket, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePlan } from "@/contexts/PlanContext";
+import { apiUrl } from "@/lib/config";
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -9,11 +10,23 @@ interface UpgradeModalProps {
 }
 
 export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
-  const { upgrade } = usePlan();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleUpgrade = () => {
-    upgrade();
-    onClose();
+  const handleUpgrade = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(apiUrl("/api/create-checkout-session"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -124,9 +137,14 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
                     size="lg"
                     className="w-full shadow-lg shadow-primary/20"
                     onClick={handleUpgrade}
+                    disabled={isLoading}
                   >
-                    <Rocket className="w-4 h-4 mr-2" />
-                    Upgrade Now
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Rocket className="w-4 h-4 mr-2" />
+                    )}
+                    {isLoading ? "Redirecting..." : "Upgrade Now"}
                   </Button>
                 </motion.div>
 
