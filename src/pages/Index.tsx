@@ -21,6 +21,7 @@ const MINIMUM_ANALYZING_TIME = 2000; // 2 seconds minimum for smooth UX
 const Index = () => {
   const [appState, setAppState] = useState<AppState>("landing");
   const [calculatorData, setCalculatorData] = useState<CalculatorData | null>(null);
+  const [costBreakdown, setCostBreakdown] = useState<{ marketingSpend: number; operationsCost: number } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState("");
   const [healthRefreshTrigger, setHealthRefreshTrigger] = useState(0);
@@ -42,29 +43,32 @@ const Index = () => {
 
   const handleCalculatorSubmit = useCallback((data: CalculatorData) => {
     setCalculatorData(data);
+    // For manual entry, treat all costs as operations costs
+    setCostBreakdown({ marketingSpend: 0, operationsCost: data.costs });
     setAppState("analyzing");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const handleFileUploadSuccess = useCallback((data: ParsedFinancialData) => {
-    // Use the actual parsed values from the API
-    const marketingSpend = data.marketingSpend ?? 0;
-    const operationsCost = data.operationsCost ?? 0;
-    const totalCosts = data.costs ?? (marketingSpend + operationsCost);
+    const marketingSpend = Number(data.marketingSpend ?? 0);
+    const operationsCost = Number(data.operationsCost ?? 0);
+    const totalCosts = Number(data.costs ?? (marketingSpend + operationsCost));
+
+    setCostBreakdown({ marketingSpend, operationsCost });
 
     // Convert parsed data to CalculatorData format
     const calcData: CalculatorData = {
-      revenue: data.revenue || 0,
+      revenue: Number(data.revenue ?? 0),
       costs: totalCosts,
-      customers: data.customers || 0,
-      avgOrderValue: data.avgOrderValue || 0,
+      customers: Number(data.customers ?? 0),
+      avgOrderValue: Number(data.avgOrderValue ?? 0),
     };
 
     // Persist to backend immediately when a file is parsed
     void (async () => {
       try {
         const payload = {
-          revenue: String(data.revenue ?? 0),
+          revenue: String(calcData.revenue),
           marketingSpend: String(marketingSpend),
           operationsCost: String(operationsCost),
         };
@@ -89,7 +93,7 @@ const Index = () => {
 
         console.log("Auto-save succeeded");
         // Trigger health score refresh after successful save
-        setHealthRefreshTrigger(prev => prev + 1);
+        setHealthRefreshTrigger((prev) => prev + 1);
       } catch (e) {
         console.error("Auto-save failed:", e);
       }
@@ -124,6 +128,8 @@ const Index = () => {
   const handleSaveReport = useCallback(async () => {
     if (!calculatorData) return;
 
+    const breakdown = costBreakdown ?? { marketingSpend: 0, operationsCost: calculatorData.costs };
+
     try {
       const response = await fetch(apiUrl("/api/save"), {
         method: "POST",
@@ -133,8 +139,8 @@ const Index = () => {
         },
         body: JSON.stringify({
           revenue: String(calculatorData.revenue),
-          marketingSpend: String(calculatorData.costs),
-          operationsCost: String(calculatorData.costs),
+          marketingSpend: String(breakdown.marketingSpend),
+          operationsCost: String(breakdown.operationsCost),
         }),
         mode: "cors",
       });
@@ -148,7 +154,7 @@ const Index = () => {
         description: "Your financial report has been saved successfully.",
       });
       // Trigger health score refresh after manual save
-      setHealthRefreshTrigger(prev => prev + 1);
+      setHealthRefreshTrigger((prev) => prev + 1);
     } catch (error) {
       console.error("Save error:", error);
       toast({
@@ -157,7 +163,7 @@ const Index = () => {
         description: "Could not save the report. Please try again.",
       });
     }
-  }, [calculatorData, userName, toast]);
+  }, [calculatorData, costBreakdown, toast]);
 
   // Dashboard view
   if (appState === "dashboard" && calculatorData) {

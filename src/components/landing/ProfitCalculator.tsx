@@ -16,7 +16,7 @@ const calculatorSchema = z.object({
 
 interface ProfitCalculatorProps {
   onSubmit: (data: CalculatorData) => void;
-  onFileUploadSuccess?: (data: CalculatorData) => void;
+  onFileUploadSuccess?: (data: import("./FinancialFileUpload").ParsedFinancialData) => void;
 }
 
 export interface CalculatorData {
@@ -66,18 +66,13 @@ const ProfitCalculator = ({ onSubmit, onFileUploadSuccess }: ProfitCalculatorPro
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleFileParsed = useCallback((data: Record<string, unknown>) => {
-    // Format data to match CalculatorData type
-    const formattedData: CalculatorData = {
-      revenue: Number(data.revenue) || 0,
-      costs: Number(data.costs) || 0,
-      customers: Number(data.customers) || 0,
-      avgOrderValue: Number(data.avgOrderValue) || 0,
-    };
-
+  const handleFileParsed = useCallback((data: import("./FinancialFileUpload").ParsedFinancialData) => {
     // If onFileUploadSuccess is provided and we have valid data, trigger analysis flow
-    if (onFileUploadSuccess && (formattedData.revenue > 0 || formattedData.costs > 0)) {
-      onFileUploadSuccess(formattedData);
+    const revenue = Number(data.revenue ?? 0);
+    const costs = Number(data.costs ?? 0);
+
+    if (onFileUploadSuccess && (revenue > 0 || costs > 0)) {
+      onFileUploadSuccess(data);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -88,7 +83,7 @@ const ProfitCalculator = ({ onSubmit, onFileUploadSuccess }: ProfitCalculatorPro
     if (data.costs !== undefined) parsedValues.costs = String(data.costs);
     if (data.customers !== undefined) parsedValues.customers = String(data.customers);
     if (data.avgOrderValue !== undefined) parsedValues.avgOrderValue = String(data.avgOrderValue);
-    
+
     setValues((prev) => ({ ...prev, ...parsedValues }));
     setErrors({});
   }, [onFileUploadSuccess]);
