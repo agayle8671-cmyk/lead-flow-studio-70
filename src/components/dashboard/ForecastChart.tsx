@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { format } from "date-fns";
 import {
   AreaChart,
   Area,
@@ -18,6 +19,13 @@ interface CustomTooltipProps {
   label?: string;
 }
 
+const formatDateLabel = (value?: string) => {
+  if (!value) return "";
+  const d = new Date(value);
+  if (!Number.isFinite(d.getTime())) return value;
+  return format(d, "MMM");
+};
+
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!active || !payload || !payload.length) return null;
 
@@ -32,7 +40,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         border: "1px solid hsl(var(--border))",
       }}
     >
-      <p className="font-medium text-foreground mb-2">{label}</p>
+      <p className="font-medium text-foreground mb-2">{formatDateLabel(label)}</p>
       {isForecast && (
         <p className="text-xs text-primary mb-2 flex items-center gap-1">
           <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
@@ -41,12 +49,18 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
       )}
       <div className="space-y-1">
         <p className="text-sm">
-          <span className="inline-block w-3 h-3 rounded-full mr-2" style={{ backgroundColor: "hsl(160, 84%, 45%)" }} />
+          <span
+            className="inline-block w-3 h-3 rounded-full mr-2"
+            style={{ backgroundColor: "hsl(160, 84%, 45%)" }}
+          />
           Revenue: <span className="font-semibold">${payload[0]?.value?.toLocaleString()}</span>
         </p>
         {payload[1] && (
           <p className="text-sm">
-            <span className="inline-block w-3 h-3 rounded-full mr-2" style={{ backgroundColor: "hsl(200, 80%, 50%)" }} />
+            <span
+              className="inline-block w-3 h-3 rounded-full mr-2"
+              style={{ backgroundColor: "hsl(200, 80%, 50%)" }}
+            />
             Profit: <span className="font-semibold">${payload[1]?.value?.toLocaleString()}</span>
           </p>
         )}
@@ -56,19 +70,31 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export default function ForecastChart() {
-  const { combinedData, historicalData, forecastData, isLoading } = useForecast();
+  const { combinedData, forecastData, isLoading } = useForecast();
 
   const formatYAxisTick = (v: any) => {
     const n = Number(v);
     if (!Number.isFinite(n)) return "";
-    if (n >= 10000) return `$${Math.round(n / 1000)}k`;
-    return `$${Math.round(n).toLocaleString()}`;
+
+    const sign = n < 0 ? "-" : "";
+    const abs = Math.abs(n);
+
+    if (abs >= 10000) return `${sign}$${Math.round(abs / 1000)}k`;
+    return `${sign}$${Math.round(abs).toLocaleString()}`;
   };
 
-  // Split data for different line styles - ensure forecast points have both values
+  const lastHistoricalDate = useMemo(() => {
+    let last: string | undefined;
+    for (const p of combinedData) {
+      if (!p.isForecast) last = p.date;
+    }
+    return last;
+  }, [combinedData]);
+
   const chartData = useMemo(() => {
-    return combinedData.map((point, index) => {
-      const isLastHistorical = !point.isForecast && index === historicalData.length - 1;
+    return combinedData.map((point) => {
+      const isBridgePoint =
+        !point.isForecast && !!lastHistoricalDate && point.date === lastHistoricalDate;
 
       return {
         ...point,
@@ -76,20 +102,18 @@ export default function ForecastChart() {
         revenueHistorical: point.isForecast ? null : point.revenue,
         profitHistorical: point.isForecast ? null : point.profit,
         // Forecast values (dashed lines) - bridge from last historical point
-        revenueForecast: point.isForecast || isLastHistorical ? point.revenue : null,
-        profitForecast: point.isForecast || isLastHistorical ? point.profit : null,
+        revenueForecast: point.isForecast || isBridgePoint ? point.revenue : null,
+        profitForecast: point.isForecast || isBridgePoint ? point.profit : null,
       };
     });
-  }, [combinedData, historicalData.length]);
+  }, [combinedData, lastHistoricalDate]);
 
-  // Find where forecast starts for reference line
-  const forecastStartMonth = historicalData[historicalData.length - 1]?.month;
+  const formatXAxisTick = (v: any) => formatDateLabel(String(v));
 
   if (isLoading) {
     return <Skeleton className="w-full h-[280px] rounded-lg" />;
   }
 
-  // Debug: ensure we have forecast data
   if (forecastData.length === 0) {
     console.warn("No forecast data available");
   }
@@ -117,7 +141,12 @@ export default function ForecastChart() {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+          <XAxis
+            dataKey="date"
+            stroke="hsl(var(--muted-foreground))"
+            fontSize={12}
+            tickFormatter={formatXAxisTick}
+          />
           <YAxis
             stroke="hsl(var(--muted-foreground))"
             fontSize={12}
@@ -126,18 +155,20 @@ export default function ForecastChart() {
           <Tooltip content={<CustomTooltip />} />
 
           {/* Reference line showing where forecast begins */}
-          <ReferenceLine
-            x={forecastStartMonth}
-            stroke="hsl(var(--muted-foreground))"
-            strokeDasharray="4 4"
-            strokeOpacity={0.5}
-            label={{
-              value: "Forecast →",
-              position: "top",
-              fill: "hsl(var(--muted-foreground))",
-              fontSize: 10,
-            }}
-          />
+          {lastHistoricalDate && (
+            <ReferenceLine
+              x={lastHistoricalDate}
+              stroke="hsl(var(--muted-foreground))"
+              strokeDasharray="4 4"
+              strokeOpacity={0.5}
+              label={{
+                value: "Forecast →",
+                position: "top",
+                fill: "hsl(var(--muted-foreground))",
+                fontSize: 10,
+              }}
+            />
+          )}
 
           {/* Historical data - solid lines */}
           <Area
