@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { usePlan } from "@/contexts/PlanContext";
 
 interface DashboardSidebarProps {
   userName: string;
@@ -23,6 +24,7 @@ const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState<NavItem>("dashboard");
   const { toast } = useToast();
+  const { isPro, upgrade } = usePlan();
 
   const navItems = [
     { id: "dashboard" as NavItem, icon: LayoutDashboard, label: "Dashboard" },
@@ -41,9 +43,10 @@ const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
   };
 
   const handleUpgrade = () => {
+    upgrade();
     toast({
-      title: "Upgrade to Pro",
-      description: "Premium features coming soon! You'll be the first to know.",
+      title: "Welcome to Pro!",
+      description: "You now have access to all premium features.",
     });
   };
 
@@ -126,8 +129,8 @@ const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
         </ul>
       </nav>
 
-      {/* Upgrade CTA */}
-      {!collapsed && (
+      {/* Upgrade CTA - Only show for free users */}
+      {!collapsed && !isPro && (
         <div className="p-4">
           <motion.div 
             className="relative p-5 rounded-2xl overflow-hidden"
@@ -179,8 +182,8 @@ const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{userName}</p>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                Free Plan
+                <span className={`w-1.5 h-1.5 rounded-full ${isPro ? 'bg-primary' : 'bg-muted-foreground'} animate-pulse`} />
+                {isPro ? 'Pro Plan' : 'Free Plan'}
               </p>
             </div>
           )}
