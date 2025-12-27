@@ -251,12 +251,24 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
     setIsDrawerOpen(true);
   };
 
+  // Generate dynamic recommendations based on live health data with real metrics
+  const recommendations = useMemo(() => 
+    generateRecommendations(healthData, {
+      revenue: data.revenue,
+      costs: data.costs,
+      profitMargin,
+      marketingSpend: (data as any).marketingSpend,
+      operationsCost: (data as any).operationsCost,
+    }), 
+    [healthData, data, profitMargin]
+  );
+
   // Calculate overall progress
   const calculateOverallProgress = useMemo(() => {
     const totalItems = recommendations.reduce((acc, rec) => acc + 5, 0); // Assume 5 items per rec
     const completedCount = Object.values(progressData.completedItems).flat().length;
     return { completed: completedCount, total: totalItems, percentage: totalItems > 0 ? (completedCount / totalItems) * 100 : 0 };
-  }, [progressData.completedItems]);
+  }, [recommendations, progressData.completedItems]);
 
   // Update progress from drawer
   const handleProgressUpdate = (recTitle: string, completedItems: string[]) => {
@@ -271,18 +283,6 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
     setProgressData(newProgress);
     saveProgress(newProgress);
   };
-
-  // Generate dynamic recommendations based on live health data with real metrics
-  const recommendations = useMemo(() => 
-    generateRecommendations(healthData, {
-      revenue: data.revenue,
-      costs: data.costs,
-      profitMargin,
-      marketingSpend: (data as any).marketingSpend,
-      operationsCost: (data as any).operationsCost,
-    }), 
-    [healthData, data, profitMargin]
-  );
 
   // Refresh health score when trigger changes
   useEffect(() => {
