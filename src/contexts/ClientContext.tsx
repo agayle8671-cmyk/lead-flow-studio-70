@@ -75,9 +75,9 @@ export function ClientProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useClient() {
+export function useClient(): ClientContextType {
   const context = useContext(ClientContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useClient must be used within a ClientProvider");
   }
   return context;
