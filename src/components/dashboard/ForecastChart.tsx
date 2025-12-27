@@ -1,0 +1,194 @@
+import { useMemo } from "react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts";
+import { useForecast, ForecastDataPoint } from "@/hooks/use-forecast";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+  if (!active || !payload || !payload.length) return null;
+
+  const dataPoint = payload[0]?.payload as ForecastDataPoint;
+  const isForecast = dataPoint?.isForecast;
+
+  return (
+    <div
+      className="rounded-lg border bg-card p-3 shadow-lg"
+      style={{
+        background: "hsl(var(--card))",
+        border: "1px solid hsl(var(--border))",
+      }}
+    >
+      <p className="font-medium text-foreground mb-2">{label}</p>
+      {isForecast && (
+        <p className="text-xs text-primary mb-2 flex items-center gap-1">
+          <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
+          AI Projection based on current growth trends
+        </p>
+      )}
+      <div className="space-y-1">
+        <p className="text-sm">
+          <span className="inline-block w-3 h-3 rounded-full mr-2" style={{ backgroundColor: "hsl(160, 84%, 45%)" }} />
+          Revenue: <span className="font-semibold">${payload[0]?.value?.toLocaleString()}</span>
+        </p>
+        {payload[1] && (
+          <p className="text-sm">
+            <span className="inline-block w-3 h-3 rounded-full mr-2" style={{ backgroundColor: "hsl(200, 80%, 50%)" }} />
+            Profit: <span className="font-semibold">${payload[1]?.value?.toLocaleString()}</span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default function ForecastChart() {
+  const { combinedData, historicalData, isLoading } = useForecast();
+
+  // Split data for different line styles
+  const chartData = useMemo(() => {
+    return combinedData.map((point) => ({
+      ...point,
+      // Historical values (solid lines)
+      revenueHistorical: point.isForecast ? null : point.revenue,
+      profitHistorical: point.isForecast ? null : point.profit,
+      // Forecast values (dashed lines)
+      revenueForecast: point.isForecast ? point.revenue : null,
+      profitForecast: point.isForecast ? point.profit : null,
+    }));
+  }, [combinedData]);
+
+  // Add bridge point for smooth transition (last historical point also in forecast)
+  const chartDataWithBridge = useMemo(() => {
+    if (chartData.length === 0) return chartData;
+    
+    const lastHistoricalIndex = chartData.findIndex((d) => d.isForecast) - 1;
+    if (lastHistoricalIndex < 0) return chartData;
+
+    return chartData.map((point, index) => {
+      if (index === lastHistoricalIndex) {
+        return {
+          ...point,
+          revenueForecast: point.revenue,
+          profitForecast: point.profit,
+        };
+      }
+      return point;
+    });
+  }, [chartData]);
+
+  // Find where forecast starts for reference line
+  const forecastStartMonth = historicalData[historicalData.length - 1]?.month;
+
+  if (isLoading) {
+    return <Skeleton className="w-full h-[280px] rounded-lg" />;
+  }
+
+  return (
+    <div className="h-[280px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartDataWithBridge}>
+          <defs>
+            <linearGradient id="colorRevenueHistorical" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="colorProfitHistorical" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="colorRevenueForecast" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="colorProfitForecast" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+          <YAxis
+            stroke="hsl(var(--muted-foreground))"
+            fontSize={12}
+            tickFormatter={(v) => `$${v / 1000}k`}
+          />
+          <Tooltip content={<CustomTooltip />} />
+
+          {/* Reference line showing where forecast begins */}
+          <ReferenceLine
+            x={forecastStartMonth}
+            stroke="hsl(var(--muted-foreground))"
+            strokeDasharray="4 4"
+            strokeOpacity={0.5}
+            label={{
+              value: "Forecast →",
+              position: "top",
+              fill: "hsl(var(--muted-foreground))",
+              fontSize: 10,
+            }}
+          />
+
+          {/* Historical data - solid lines */}
+          <Area
+            type="monotone"
+            dataKey="revenueHistorical"
+            stroke="hsl(160, 84%, 45%)"
+            fillOpacity={1}
+            fill="url(#colorRevenueHistorical)"
+            strokeWidth={2}
+            connectNulls={false}
+            name="Revenue"
+          />
+          <Area
+            type="monotone"
+            dataKey="profitHistorical"
+            stroke="hsl(200, 80%, 50%)"
+            fillOpacity={1}
+            fill="url(#colorProfitHistorical)"
+            strokeWidth={2}
+            connectNulls={false}
+            name="Profit"
+          />
+
+          {/* Forecast data - dashed lines */}
+          <Area
+            type="monotone"
+            dataKey="revenueForecast"
+            stroke="hsl(160, 84%, 45%)"
+            fillOpacity={1}
+            fill="url(#colorRevenueForecast)"
+            strokeWidth={2}
+            strokeDasharray="6 4"
+            connectNulls={false}
+            name="Revenue Forecast"
+          />
+          <Area
+            type="monotone"
+            dataKey="profitForecast"
+            stroke="hsl(200, 80%, 50%)"
+            fillOpacity={1}
+            fill="url(#colorProfitForecast)"
+            strokeWidth={2}
+            strokeDasharray="6 4"
+            connectNulls={false}
+            name="Profit Forecast"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}

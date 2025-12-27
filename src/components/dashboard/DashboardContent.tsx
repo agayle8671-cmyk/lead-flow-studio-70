@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import MaestroHealthScore, { MaestroHealthScoreRef, HealthData } from "./MaestroHealthScore";
 import RecommendationDrawer from "./RecommendationDrawer";
+import ForecastChart from "./ForecastChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -433,53 +434,11 @@ const DashboardContent = ({ data, userName, onSaveReport, refreshHealthTrigger }
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="flex items-center justify-between">
                   <span>Revenue vs Profit</span>
-                  <span className="text-sm font-normal text-muted-foreground">Last 6 months</span>
+                  <span className="text-sm font-normal text-muted-foreground">Historical + AI Forecast</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={revenueData}>
-                      <defs>
-                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0}/>
-                        </linearGradient>
-                        <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `$${v/1000}k`} />
-                      <Tooltip 
-                        contentStyle={{ 
-                          background: "hsl(var(--card))", 
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "8px",
-                        }}
-                        labelStyle={{ color: "hsl(var(--foreground))" }}
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="revenue" 
-                        stroke="hsl(160, 84%, 45%)" 
-                        fillOpacity={1} 
-                        fill="url(#colorRevenue)" 
-                        strokeWidth={2}
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="profit" 
-                        stroke="hsl(200, 80%, 50%)" 
-                        fillOpacity={1} 
-                        fill="url(#colorProfit)" 
-                        strokeWidth={2}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
+                <ForecastChart />
               </CardContent>
             </Card>
           </motion.div>
