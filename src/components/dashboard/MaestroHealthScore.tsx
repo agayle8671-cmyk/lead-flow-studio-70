@@ -62,9 +62,9 @@ const MaestroHealthScore = forwardRef<MaestroHealthScoreRef>((_, ref) => {
     fetchHealthData();
   }, []);
 
-  const currentGrade = healthData?.grade || "B";
-  const currentScore = healthData?.score || 0;
-  const colors = gradeColors[currentGrade];
+  const currentGrade = healthData?.grade ?? "F";
+  const currentScore = healthData?.score ?? 0;
+  const colors = gradeColors[currentGrade] || gradeColors.F;
   
   // Calculate the circumference and stroke dashoffset for the progress ring
   const radius = 70;
