@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles, Menu, X } from "lucide-react";
+import { Compass, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -29,15 +29,18 @@ const Header = () => {
               whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Sparkles className="w-4.5 h-4.5 text-primary-foreground" />
+              <Compass className="w-4.5 h-4.5 text-primary-foreground" />
             </motion.div>
-            <span className="text-lg font-bold tracking-tight">ProfitPulse</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold tracking-tight leading-none">M.A.P.</span>
+              <span className="text-[10px] text-muted-foreground tracking-wide">MARGIN AUDIT PRO</span>
+            </div>
           </a>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             {[
-              { label: 'Calculator', id: 'calculator' },
+              { label: 'Audit Tool', id: 'calculator' },
               { label: 'Features', id: 'features' },
               { label: 'Pricing', id: 'pricing' },
             ].map((item) => (
@@ -64,7 +67,7 @@ const Header = () => {
               size="sm"
               className="shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-shadow"
             >
-              Get Started
+              Start Audit
             </Button>
 
             {/* Mobile menu button */}
@@ -84,10 +87,10 @@ const Header = () => {
           className="md:hidden overflow-hidden"
         >
           <div className="py-4 space-y-1">
-            {['Calculator', 'Features', 'Pricing'].map((item) => (
+            {['Audit Tool', 'Features', 'Pricing'].map((item) => (
               <button
                 key={item}
-                onClick={() => scrollToSection(item.toLowerCase())}
+                onClick={() => scrollToSection(item === 'Audit Tool' ? 'calculator' : item.toLowerCase())}
                 className="block w-full text-left px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-all"
               >
                 {item}

@@ -21,13 +21,13 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
 
   return (
     <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden">
-      {/* Animated mesh gradient background */}
+      {/* Animated mesh gradient background - Navigator theme */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(160_84%_45%_/_0.15),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(43_74%_55%_/_0.12),transparent)]" />
         <motion.div 
           className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full"
           style={{
-            background: "radial-gradient(circle, hsl(160 84% 45% / 0.12) 0%, transparent 70%)",
+            background: "radial-gradient(circle, hsl(43 74% 55% / 0.1) 0%, transparent 70%)",
           }}
           animate={{
             x: [0, 50, 0],
@@ -39,7 +39,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
         <motion.div 
           className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full"
           style={{
-            background: "radial-gradient(circle, hsl(200 80% 50% / 0.1) 0%, transparent 70%)",
+            background: "radial-gradient(circle, hsl(220 25% 20% / 0.15) 0%, transparent 70%)",
           }}
           animate={{
             x: [0, -40, 0],
@@ -83,7 +83,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
             </motion.span>
             <span className="text-sm font-medium text-foreground">
-              AI-Powered Financial Intelligence
+              AI-Powered Margin Analysis for Accountants
             </span>
             <Zap className="w-3.5 h-3.5 text-primary" />
           </motion.div>
@@ -95,7 +95,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 leading-[0.95]"
           >
-            <span className="block">Know your</span>
+            <span className="block">The Margin Audit</span>
             <motion.span 
               className="gradient-text inline-block"
               animate={{ 
@@ -106,9 +106,9 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
                 backgroundSize: "200% 200%",
               }}
             >
-              true profit
+              Protocol
             </motion.span>
-            <span className="block text-muted-foreground/60 text-4xl sm:text-5xl md:text-6xl lg:text-7xl mt-2">in 30 seconds</span>
+            <span className="block text-muted-foreground/60 text-3xl sm:text-4xl md:text-5xl lg:text-6xl mt-3">Map Your Client's Path to Profit in 30 Seconds</span>
           </motion.h1>
 
           {/* Subheadline */}
@@ -118,7 +118,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed"
           >
-            Upload your financials. Get instant AI analysis. Discover opportunities to <span className="text-foreground font-medium">increase your margins by 15-30%</span>.
+            Upload client financials. Get instant AI analysis. Deliver actionable insights that <span className="text-foreground font-medium">increase margins by 15-30%</span>.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -135,7 +135,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
               className="group w-full sm:w-auto relative overflow-hidden"
             >
               <span className="relative z-10 flex items-center gap-2">
-                Calculate My Profit
+                Start Client Audit
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </span>
             </Button>
@@ -158,9 +158,9 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
             className="mt-20 grid grid-cols-3 gap-8 max-w-2xl mx-auto"
           >
             {[
-              { value: "2,500+", label: "Businesses Analyzed" },
-              { value: "$12M+", label: "Profit Recovered" },
-              { value: "4.9★", label: "Average Rating" },
+              { value: "2,500+", label: "Client Audits Completed" },
+              { value: "$12M+", label: "Margin Recovered" },
+              { value: "4.9★", label: "Accountant Rating" },
             ].map((stat, i) => (
               <motion.div 
                 key={stat.label}
@@ -183,9 +183,9 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
             className="mt-16 flex flex-wrap justify-center gap-4"
           >
             {[
-              { name: "Sarah K.", role: "E-commerce", quote: "Found $23k in hidden savings" },
-              { name: "Mike R.", role: "SaaS", quote: "Reduced costs by 18%" },
-              { name: "Lisa T.", role: "Agency", quote: "Profit margin up 25%" },
+              { name: "Sarah K., CPA", role: "Tax Practice", quote: "Found $23k in hidden client savings" },
+              { name: "Mike R., CMA", role: "Advisory", quote: "Reduced client costs by 18%" },
+              { name: "Lisa T., CFO", role: "Consulting", quote: "Client margins up 25%" },
             ].map((testimonial, i) => (
               <motion.div
                 key={testimonial.name}
