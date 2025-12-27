@@ -5,7 +5,11 @@ import { usePlan } from "@/contexts/PlanContext";
 import { forwardRef } from "react";
 
 const FirmSettings = forwardRef<HTMLDivElement>((_, ref) => {
-  const { isPro } = usePlan();
+  const { isFirm, plan } = usePlan();
+
+  const getPlanLabel = () => {
+    return plan === "firm" ? "Firm Scale" : "Solo Auditor";
+  };
 
   return (
     <div ref={ref} className="flex-1 overflow-auto">
@@ -42,8 +46,8 @@ const FirmSettings = forwardRef<HTMLDivElement>((_, ref) => {
               </div>
               <div className="flex items-center justify-between py-2 border-b border-border">
                 <span className="text-sm text-muted-foreground">Plan</span>
-                <span className={`text-sm font-medium ${isPro ? 'text-primary' : ''}`}>
-                  {isPro ? 'Professional' : 'Free Trial'}
+                <span className={`text-sm font-medium ${isFirm ? 'text-primary' : ''}`}>
+                  {getPlanLabel()}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
@@ -66,11 +70,11 @@ const FirmSettings = forwardRef<HTMLDivElement>((_, ref) => {
             </div>
             <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
               <div>
-                <p className="text-sm font-medium">Team features available on Pro</p>
+                <p className="text-sm font-medium">Team features available on Firm Scale</p>
                 <p className="text-xs text-muted-foreground">Add staff members and manage permissions</p>
               </div>
-              <Button size="sm" disabled={isPro}>
-                {isPro ? 'Manage Team' : 'Upgrade'}
+              <Button size="sm" disabled={isFirm}>
+                {isFirm ? 'Manage Team' : 'Upgrade'}
               </Button>
             </div>
           </div>

@@ -19,7 +19,7 @@ export default function StrategySimulator({
   currentGrade, 
   currentScore, 
 }: StrategySimulatorProps) {
-  const { isPro } = usePlan();
+  const { isFirm } = usePlan();
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [params, setParams] = useState<SimulationParams>({
     marketingOptimization: 0,
@@ -30,7 +30,7 @@ export default function StrategySimulator({
   const { simulationData, isSimulating, runSimulation, clearSimulation } = useSimulation();
 
   const handleLockedClick = () => {
-    if (!isPro) {
+    if (!isFirm) {
       setIsUpgradeModalOpen(true);
     }
   };
@@ -98,8 +98,8 @@ export default function StrategySimulator({
         </CardHeader>
 
         <CardContent className="p-0 space-y-5">
-          {/* Locked Overlay for Free Users */}
-          {!isPro && (
+          {/* Locked Overlay for Solo Users */}
+          {!isFirm && (
             <div 
               className="absolute inset-0 z-10 cursor-pointer flex items-center justify-center rounded-xl"
               onClick={handleLockedClick}
@@ -110,13 +110,13 @@ export default function StrategySimulator({
                   <Lock className="w-6 h-6 text-primary" />
                 </div>
                 <p className="text-sm font-medium">Click to Unlock</p>
-                <p className="text-xs text-muted-foreground">Pro feature</p>
+                <p className="text-xs text-muted-foreground">Firm Scale feature</p>
               </div>
             </div>
           )}
 
           {/* Sliders Grid */}
-          <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${!isPro ? 'pointer-events-none' : ''}`}>
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${!isFirm ? 'pointer-events-none' : ''}`}>
             {/* Marketing Optimization Slider */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -135,7 +135,7 @@ export default function StrategySimulator({
                 max={50}
                 step={5}
                 className="w-full"
-                disabled={!isPro}
+                disabled={!isFirm}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>-50%</span>
@@ -161,7 +161,7 @@ export default function StrategySimulator({
                 max={100}
                 step={5}
                 className="w-full"
-                disabled={!isPro}
+                disabled={!isFirm}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0%</span>
@@ -187,7 +187,7 @@ export default function StrategySimulator({
                 max={0}
                 step={5}
                 className="w-full"
-                disabled={!isPro}
+                disabled={!isFirm}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>-30%</span>

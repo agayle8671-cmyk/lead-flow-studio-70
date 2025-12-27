@@ -7,16 +7,15 @@ import {
   Compass, 
   LogOut,
   ChevronLeft,
-  Rocket,
-  Sparkles
+  Building2,
+  CreditCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { usePlan } from "@/contexts/PlanContext";
-import { apiUrl } from "@/lib/config";
 
-type NavItem = "portfolio" | "lab" | "archive" | "settings";
+type NavItem = "portfolio" | "lab" | "archive" | "settings" | "licensing";
 
 interface AppSidebarProps {
   activeNav: NavItem;
@@ -25,9 +24,8 @@ interface AppSidebarProps {
 
 const AppSidebar = ({ activeNav, onNavChange }: AppSidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
-  const [isUpgrading, setIsUpgrading] = useState(false);
   const { toast } = useToast();
-  const { isPro } = usePlan();
+  const { isFirm, plan } = usePlan();
 
   const navItems = [
     { id: "portfolio" as NavItem, icon: Briefcase, label: "Client Portfolio" },
@@ -36,30 +34,12 @@ const AppSidebar = ({ activeNav, onNavChange }: AppSidebarProps) => {
     { id: "settings" as NavItem, icon: Settings, label: "Firm Settings" },
   ];
 
-  const handleUpgrade = async () => {
-    setIsUpgrading(true);
-    try {
-      const response = await fetch(apiUrl("/api/create-checkout-session"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      toast({
-        variant: "destructive",
-        title: "Checkout failed",
-        description: "Could not initiate checkout. Please try again.",
-      });
-      setIsUpgrading(false);
-    }
-  };
-
   const handleLogout = () => {
     window.location.reload();
+  };
+
+  const getPlanLabel = () => {
+    return plan === "firm" ? "Firm Scale" : "Solo Auditor";
   };
 
   return (
@@ -121,8 +101,8 @@ const AppSidebar = ({ activeNav, onNavChange }: AppSidebarProps) => {
         ))}
       </nav>
 
-      {/* Upgrade CTA */}
-      {!collapsed && !isPro && (
+      {/* Licensing CTA */}
+      {!collapsed && !isFirm && (
         <div className="p-3">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -137,27 +117,20 @@ const AppSidebar = ({ activeNav, onNavChange }: AppSidebarProps) => {
             <div className="relative">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 rounded-md gradient-gold flex items-center justify-center">
-                  <Sparkles className="w-3.5 h-3.5 text-charcoal" />
+                  <Building2 className="w-3.5 h-3.5 text-charcoal" />
                 </div>
-                <span className="font-semibold text-sm text-foreground">Founder's Deal</span>
+                <span className="font-semibold text-sm text-foreground">Scale Your Practice</span>
               </div>
               <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
-                50% off — Limited early adopter pricing
+                Upgrade to Firm Scale for unlimited Portfolio Management
               </p>
               <Button 
                 size="sm" 
                 className="w-full gradient-gold text-charcoal font-semibold shadow-gold hover:shadow-lg transition-shadow"
-                onClick={handleUpgrade}
-                disabled={isUpgrading}
+                onClick={() => onNavChange("licensing")}
               >
-                {isUpgrading ? (
-                  <span className="animate-pulse">Redirecting...</span>
-                ) : (
-                  <>
-                    <Rocket className="w-4 h-4 mr-2" />
-                    Upgrade Now
-                  </>
-                )}
+                <CreditCard className="w-4 h-4 mr-2" />
+                View Plans
               </Button>
             </div>
           </motion.div>
@@ -174,8 +147,8 @@ const AppSidebar = ({ activeNav, onNavChange }: AppSidebarProps) => {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-foreground truncate">Firm Administrator</p>
               <div className="flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${isPro ? 'bg-primary animate-pulse' : 'bg-muted-foreground'}`} />
-                <span className="text-xs text-muted-foreground">{isPro ? 'Pro Plan' : 'Free Plan'}</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${isFirm ? 'bg-primary animate-pulse' : 'bg-muted-foreground'}`} />
+                <span className="text-xs text-muted-foreground">{getPlanLabel()}</span>
               </div>
             </div>
           )}

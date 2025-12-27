@@ -5,9 +5,10 @@ import AuditLab from "@/components/dashboard/AuditLab";
 import AuditArchive from "@/components/dashboard/AuditArchive";
 import AuditDetail from "@/components/dashboard/AuditDetail";
 import FirmSettings from "@/components/dashboard/FirmSettings";
+import FirmLicensing from "@/components/dashboard/FirmLicensing";
 import { Client } from "@/contexts/ClientContext";
 
-type NavItem = "portfolio" | "lab" | "archive" | "settings";
+type NavItem = "portfolio" | "lab" | "archive" | "settings" | "licensing";
 type ViewMode = "list" | "detail";
 
 const Index = () => {
@@ -61,6 +62,8 @@ const Index = () => {
         return <AuditArchive />;
       case "settings":
         return <FirmSettings />;
+      case "licensing":
+        return <FirmLicensing onBack={() => setActiveNav("portfolio")} />;
       default:
         return <ClientPortfolio onClientSelect={handleClientSelect} />;
     }
