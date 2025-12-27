@@ -8,17 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { useSimulation, SimulationParams, SimulationResult } from "@/hooks/use-simulation";
 import { usePlan } from "@/contexts/PlanContext";
 import UpgradeModal from "./UpgradeModal";
+import SimulationChart from "./SimulationChart";
 
 interface StrategySimulatorProps {
   currentGrade: string | null;
   currentScore: number | null;
-  onSimulationChange: (data: SimulationResult | null) => void;
 }
 
 export default function StrategySimulator({ 
   currentGrade, 
   currentScore, 
-  onSimulationChange 
 }: StrategySimulatorProps) {
   const { isPro } = usePlan();
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -49,11 +48,6 @@ export default function StrategySimulator({
     return () => clearTimeout(timeout);
   }, [params, runSimulation, clearSimulation]);
 
-  // Notify parent of simulation changes
-  useEffect(() => {
-    onSimulationChange(simulationData);
-  }, [simulationData, onSimulationChange]);
-
   const handleReset = useCallback(() => {
     setParams({
       marketingOptimization: 0,
@@ -74,11 +68,11 @@ export default function StrategySimulator({
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card variant="bento" className="p-5 relative overflow-hidden">
+      <Card variant="bento" className="p-6 relative overflow-hidden">
         <CardHeader className="p-0 mb-5">
           <CardTitle className="flex items-center justify-between text-base">
             <div className="flex items-center gap-2">
@@ -86,6 +80,11 @@ export default function StrategySimulator({
                 <Sparkles className="w-4 h-4 text-primary" />
               </div>
               <span>Strategy Simulator</span>
+              {simulationData && isImprovement && (
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
+                  +{improvementDelta} pts → {simulationData.projectedGrade}
+                </Badge>
+              )}
             </div>
             <Button 
               variant="ghost" 
@@ -116,115 +115,118 @@ export default function StrategySimulator({
             </div>
           )}
 
-          {/* Marketing Optimization Slider */}
-          <div className={`space-y-2 ${!isPro ? 'pointer-events-none' : ''}`}>
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="w-3.5 h-3.5 text-muted-foreground" />
-                Marketing Optimization
-              </label>
-              <span className={`text-sm font-mono ${params.marketingOptimization > 0 ? 'text-primary' : params.marketingOptimization < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {params.marketingOptimization > 0 ? '+' : ''}{params.marketingOptimization}%
-              </span>
-            </div>
-            <Slider
-              value={[params.marketingOptimization]}
-              onValueChange={([value]) => setParams(p => ({ ...p, marketingOptimization: value }))}
-              min={-50}
-              max={50}
-              step={5}
-              className="w-full"
-              disabled={!isPro}
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>-50%</span>
-              <span>+50%</span>
-            </div>
-          </div>
-
-          {/* Revenue Growth Slider */}
-          <div className={`space-y-2 ${!isPro ? 'pointer-events-none' : ''}`}>
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
-                Revenue Growth
-              </label>
-              <span className={`text-sm font-mono ${params.revenueGrowth > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
-                +{params.revenueGrowth}%
-              </span>
-            </div>
-            <Slider
-              value={[params.revenueGrowth]}
-              onValueChange={([value]) => setParams(p => ({ ...p, revenueGrowth: value }))}
-              min={0}
-              max={100}
-              step={5}
-              className="w-full"
-              disabled={!isPro}
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>0%</span>
-              <span>+100%</span>
-            </div>
-          </div>
-
-          {/* Operational Lean Slider */}
-          <div className={`space-y-2 ${!isPro ? 'pointer-events-none' : ''}`}>
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <Settings2 className="w-3.5 h-3.5 text-muted-foreground" />
-                Operational Lean
-              </label>
-              <span className={`text-sm font-mono ${params.operationalLean < 0 ? 'text-primary' : 'text-muted-foreground'}`}>
-                {params.operationalLean}%
-              </span>
-            </div>
-            <Slider
-              value={[params.operationalLean]}
-              onValueChange={([value]) => setParams(p => ({ ...p, operationalLean: value }))}
-              min={-30}
-              max={0}
-              step={5}
-              className="w-full"
-              disabled={!isPro}
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>-30%</span>
-              <span>0%</span>
-            </div>
-          </div>
-
-          {/* Simulation Result */}
-          {simulationData && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="pt-4 border-t border-border"
-            >
+          {/* Sliders Grid */}
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${!isPro ? 'pointer-events-none' : ''}`}>
+            {/* Marketing Optimization Slider */}
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Projected Grade</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-2xl font-bold">{simulationData.projectedGrade}</span>
-                    {isImprovement && (
-                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                        +{improvementDelta} pts
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Projected Score</p>
-                  <p className="text-2xl font-bold mt-1">{simulationData.projectedScore}%</p>
-                </div>
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <TrendingUp className="w-3.5 h-3.5 text-muted-foreground" />
+                  Marketing
+                </label>
+                <span className={`text-sm font-mono ${params.marketingOptimization > 0 ? 'text-primary' : params.marketingOptimization < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                  {params.marketingOptimization > 0 ? '+' : ''}{params.marketingOptimization}%
+                </span>
               </div>
-              
+              <Slider
+                value={[params.marketingOptimization]}
+                onValueChange={([value]) => setParams(p => ({ ...p, marketingOptimization: value }))}
+                min={-50}
+                max={50}
+                step={5}
+                className="w-full"
+                disabled={!isPro}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>-50%</span>
+                <span>+50%</span>
+              </div>
+            </div>
+
+            {/* Revenue Growth Slider */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
+                  Revenue
+                </label>
+                <span className={`text-sm font-mono ${params.revenueGrowth > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
+                  +{params.revenueGrowth}%
+                </span>
+              </div>
+              <Slider
+                value={[params.revenueGrowth]}
+                onValueChange={([value]) => setParams(p => ({ ...p, revenueGrowth: value }))}
+                min={0}
+                max={100}
+                step={5}
+                className="w-full"
+                disabled={!isPro}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>0%</span>
+                <span>+100%</span>
+              </div>
+            </div>
+
+            {/* Operational Lean Slider */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Settings2 className="w-3.5 h-3.5 text-muted-foreground" />
+                  Operations
+                </label>
+                <span className={`text-sm font-mono ${params.operationalLean < 0 ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {params.operationalLean}%
+                </span>
+              </div>
+              <Slider
+                value={[params.operationalLean]}
+                onValueChange={([value]) => setParams(p => ({ ...p, operationalLean: value }))}
+                min={-30}
+                max={0}
+                step={5}
+                className="w-full"
+                disabled={!isPro}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>-30%</span>
+                <span>0%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Simulation Chart */}
+          <div className="pt-4 border-t border-border">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium text-muted-foreground">Projected Outcomes</p>
               {isSimulating && (
-                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   Calculating...
                 </div>
               )}
+            </div>
+            <SimulationChart simulationData={simulationData} />
+          </div>
+
+          {/* Simulation Result Summary */}
+          {simulationData && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between pt-4 border-t border-border"
+            >
+              <div>
+                <p className="text-xs text-muted-foreground">Projected Grade</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-2xl font-bold">{simulationData.projectedGrade}</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Projected Score</p>
+                <p className="text-2xl font-bold mt-1">{simulationData.projectedScore}%</p>
+              </div>
             </motion.div>
           )}
         </CardContent>
