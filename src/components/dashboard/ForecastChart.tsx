@@ -70,7 +70,10 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export default function ForecastChart() {
-  const { combinedData, forecastData, isLoading } = useForecast();
+  const { combinedData, forecastData, isLoading, hasNegativeForecast } = useForecast();
+  
+  // Dynamic profit forecast color based on whether it goes negative
+  const profitForecastColor = hasNegativeForecast ? "hsl(0, 84%, 60%)" : "hsl(200, 80%, 50%)";
 
   const formatYAxisTick = (v: any) => {
     const n = Number(v);
@@ -136,8 +139,8 @@ export default function ForecastChart() {
               <stop offset="95%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorProfitForecast" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0.15} />
-              <stop offset="95%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0} />
+              <stop offset="5%" stopColor={profitForecastColor} stopOpacity={0.15} />
+              <stop offset="95%" stopColor={profitForecastColor} stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -209,13 +212,13 @@ export default function ForecastChart() {
           <Area
             type="monotone"
             dataKey="profitForecast"
-            stroke="hsl(200, 80%, 50%)"
+            stroke={profitForecastColor}
             fillOpacity={1}
             fill="url(#colorProfitForecast)"
             strokeWidth={2}
             strokeDasharray="6 4"
             connectNulls={false}
-            dot={{ r: 2, strokeWidth: 2, fill: "hsl(200, 80%, 50%)" }}
+            dot={{ r: 2, strokeWidth: 2, fill: profitForecastColor }}
             activeDot={{ r: 3 }}
             name="Profit Forecast"
           />
