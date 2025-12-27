@@ -90,11 +90,11 @@ export default function SimulationChart({ simulationData }: SimulationChartProps
         <AreaChart data={chartData}>
           <defs>
             <linearGradient id="simColorRevenue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0.3} />
+              <stop offset="5%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0.15} />
               <stop offset="95%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="simColorProfit" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0.3} />
+              <stop offset="5%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0.15} />
               <stop offset="95%" stopColor="hsl(200, 80%, 50%)" stopOpacity={0} />
             </linearGradient>
           </defs>
@@ -111,21 +111,29 @@ export default function SimulationChart({ simulationData }: SimulationChartProps
           />
           <Tooltip content={<CustomTooltip />} />
           <Area
-            type="natural"
+            type="monotone"
             dataKey="revenue"
             stroke="hsl(160, 84%, 45%)"
             fillOpacity={1}
             fill="url(#simColorRevenue)"
             strokeWidth={2}
+            strokeDasharray="6 4"
+            connectNulls={false}
+            dot={{ r: 2, strokeWidth: 2, fill: "hsl(160, 84%, 45%)" }}
+            activeDot={{ r: 3 }}
             name="Revenue"
           />
           <Area
-            type="natural"
+            type="monotone"
             dataKey="profit"
             stroke="hsl(200, 80%, 50%)"
             fillOpacity={1}
             fill="url(#simColorProfit)"
             strokeWidth={2}
+            strokeDasharray="6 4"
+            connectNulls={false}
+            dot={{ r: 2, strokeWidth: 2, fill: "hsl(200, 80%, 50%)" }}
+            activeDot={{ r: 3 }}
             name="Profit"
           />
         </AreaChart>
