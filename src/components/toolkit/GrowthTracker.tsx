@@ -1059,6 +1059,6 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
           </motion.div>
         </div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 }
