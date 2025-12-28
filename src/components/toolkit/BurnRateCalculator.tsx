@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   Calculator, 
   DollarSign, 
@@ -9,12 +9,12 @@ import {
   MoreHorizontal,
   TrendingDown,
   TrendingUp,
-  Flame,
-  Sparkles
+  X
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
 interface BurnRateCalculatorProps {
@@ -26,10 +26,10 @@ interface BurnRateCalculatorProps {
 }
 
 const EXPENSE_COLORS = [
-  "hsl(226, 100%, 59%)",   // Payroll - Blue
-  "hsl(340, 80%, 55%)",    // Marketing - Pink
-  "hsl(152, 100%, 50%)",   // Operations - Green
-  "hsl(45, 90%, 55%)",     // Other - Gold
+  "hsl(211, 100%, 45%)",   // Payroll - Apple Blue
+  "hsl(350, 75%, 50%)",    // Marketing - Red-pink
+  "hsl(142, 69%, 50%)",    // Operations - Apple Green
+  "hsl(35, 100%, 52%)",    // Other - Apple Orange
 ];
 
 export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorProps) => {
@@ -48,9 +48,8 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
   const netBurn = totalExpenses - inputs.revenue;
   const isPositive = netBurn < 0;
 
-  // Animate numbers
   useEffect(() => {
-    const duration = 800;
+    const duration = 600;
     const steps = 30;
     const totalStep = (totalExpenses - animatedTotal) / steps;
     const burnStep = (netBurn - animatedBurn) / steps;
@@ -78,8 +77,8 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
   ].filter(d => d.value > 0);
 
   const barData = [
-    { name: "Revenue", value: inputs.revenue, fill: "hsl(152, 100%, 50%)" },
-    { name: "Expenses", value: totalExpenses, fill: "hsl(0, 70%, 55%)" },
+    { name: "Revenue", value: inputs.revenue, fill: "hsl(142, 69%, 50%)" },
+    { name: "Expenses", value: totalExpenses, fill: "hsl(211, 100%, 45%)" },
   ];
 
   const expenseCategories = [
@@ -90,99 +89,83 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.9, y: 50, opacity: 0 }}
-        animate={{ scale: 1, y: 0, opacity: 1 }}
-        exit={{ scale: 0.9, y: 50, opacity: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ duration: 0.2 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gradient-to-br from-[hsl(240,15%,8%)] via-[hsl(250,20%,10%)] to-[hsl(240,15%,8%)] border border-[hsl(226,100%,59%)/0.2] shadow-2xl shadow-[hsl(226,100%,59%)/0.1]"
+        className="w-full max-w-6xl max-h-[90vh] overflow-y-auto card-surface rounded-2xl"
       >
         {/* Header */}
-        <div className="relative p-8 pb-4 overflow-hidden border-b border-white/5">
-          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(226,100%,59%)/0.1] via-transparent to-[hsl(340,80%,55%)/0.1]" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-[hsl(226,100%,59%)/0.15] blur-[100px] rounded-full" />
-          
-          <motion.div 
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="relative flex items-center gap-4"
-          >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[hsl(226,100%,59%)] to-[hsl(280,80%,55%)] flex items-center justify-center shadow-lg shadow-[hsl(226,100%,59%)/0.3]">
-              <Flame className="w-8 h-8 text-white" />
+        <div className="p-6 pb-4 border-b border-[hsl(0,0%,100%,0.06)] flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-[hsl(211,100%,45%)] flex items-center justify-center">
+              <Calculator className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-white">Burn Rate Calculator</h2>
-              <p className="text-[hsl(220,10%,55%)]">Model your spending and visualize cash flow</p>
+              <h2 className="text-2xl font-semibold text-white">Burn Rate Calculator</h2>
+              <p className="text-sm text-[hsl(0,0%,53%)]">Model your spending and visualize cash flow</p>
             </div>
-          </motion.div>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="w-5 h-5" />
+          </Button>
         </div>
 
-        <div className="p-8 pt-0 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left: Inputs */}
-          <motion.div 
-            initial={{ x: -30, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="space-y-6"
-          >
+          <div className="space-y-6">
             {/* Revenue Input */}
-            <div className="p-5 rounded-2xl bg-[hsl(152,100%,50%)/0.08] border border-[hsl(152,100%,50%)/0.2]">
+            <div className="card-surface p-5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-[hsl(152,100%,50%)/0.2] flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+                <div className="w-10 h-10 rounded-lg bg-[hsl(142,69%,50%,0.15)] flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-[hsl(142,69%,50%)]" />
                 </div>
                 <div>
-                  <Label className="text-[hsl(152,100%,50%)] font-semibold">Monthly Revenue</Label>
-                  <p className="text-xs text-[hsl(220,10%,50%)]">Your incoming cash flow</p>
+                  <Label className="text-white font-medium">Monthly Revenue</Label>
+                  <p className="text-xs text-[hsl(0,0%,53%)]">Your incoming cash flow</p>
                 </div>
               </div>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(152,100%,50%)] font-bold">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(0,0%,53%)] font-medium">$</span>
                 <Input
                   type="number"
                   value={inputs.revenue}
                   onChange={(e) => setInputs(prev => ({ ...prev, revenue: Number(e.target.value) }))}
-                  className="pl-8 h-14 text-2xl font-bold bg-[hsl(240,7%,12%)] border-[hsl(152,100%,50%)/0.3] text-white focus:border-[hsl(152,100%,50%)]"
+                  className="pl-8 h-12 text-xl font-semibold"
                 />
               </div>
             </div>
 
             {/* Expense Sliders */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <Calculator className="w-5 h-5 text-[hsl(226,100%,59%)]" />
+              <h3 className="text-base font-semibold text-white flex items-center gap-2">
+                <Calculator className="w-4 h-4 text-[hsl(211,100%,45%)]" />
                 Monthly Expenses
               </h3>
               
-              {expenseCategories.map((cat, index) => (
-                <motion.div
+              {expenseCategories.map((cat) => (
+                <div
                   key={cat.key}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  className="p-4 rounded-xl bg-[hsl(240,7%,10%)] border border-white/5 hover:border-white/10 transition-colors"
+                  className="card-surface p-4"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div 
                         className="w-8 h-8 rounded-lg flex items-center justify-center"
-                        style={{ background: `${cat.color}20` }}
+                        style={{ background: `${cat.color}15` }}
                       >
                         <cat.icon className="w-4 h-4" style={{ color: cat.color }} />
                       </div>
-                      <span className="text-white font-medium">{cat.label}</span>
+                      <span className="text-white font-medium text-sm">{cat.label}</span>
                     </div>
                     <div className="relative">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[hsl(220,10%,45%)] text-xs">$</span>
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[hsl(0,0%,40%)] text-xs">$</span>
                       <Input
                         type="number"
                         value={inputs[cat.key as keyof typeof inputs]}
@@ -190,7 +173,7 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
                           const val = Math.max(0, Number(e.target.value) || 0);
                           setInputs(prev => ({ ...prev, [cat.key]: val }));
                         }}
-                        className="h-7 w-24 pl-6 pr-2 text-sm bg-[hsl(240,7%,12%)] border-white/10 text-white font-mono focus:border-white/30"
+                        className="h-8 w-24 pl-6 pr-2 text-sm font-mono"
                         min={0}
                         step={500}
                       />
@@ -201,89 +184,65 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
                     onValueChange={([val]) => setInputs(prev => ({ ...prev, [cat.key]: val }))}
                     max={cat.max}
                     step={500}
-                    className="[&>span:first-child]:h-2 [&>span:first-child]:bg-[hsl(240,7%,15%)] [&_[role=slider]]:h-5 [&_[role=slider]]:w-5"
-                    style={{ 
-                      // @ts-ignore
-                      "--slider-track": cat.color 
-                    }}
                   />
                   {(inputs[cat.key as keyof typeof inputs] as number) > cat.max && (
                     <p className="text-xs mt-1 text-right" style={{ color: cat.color }}>
                       Above ${cat.max.toLocaleString()} range
                     </p>
                   )}
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Right: Visualization */}
-          <motion.div 
-            initial={{ x: 30, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="space-y-6"
-          >
+          <div className="space-y-6">
             {/* Main Result Card */}
-            <div className="relative p-6 rounded-2xl overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-[hsl(226,100%,59%)/0.15] to-[hsl(280,80%,55%)/0.15]" />
-              <div className="absolute inset-0 backdrop-blur-xl bg-[hsl(240,7%,8%)/0.7]" />
-              
-              <div className="relative grid grid-cols-2 gap-6">
+            <div className="card-surface p-6">
+              <div className="grid grid-cols-2 gap-6">
                 <div className="text-center">
-                  <p className="text-[hsl(220,10%,55%)] text-sm uppercase tracking-wider mb-2">Total Expenses</p>
-                  <motion.div 
-                    key={totalExpenses}
-                    className="text-4xl font-bold text-white font-mono"
-                  >
+                  <p className="text-[hsl(0,0%,53%)] text-xs uppercase tracking-wider mb-2">Total Expenses</p>
+                  <div className="text-3xl font-semibold text-white font-mono">
                     ${Math.round(animatedTotal).toLocaleString()}
-                  </motion.div>
+                  </div>
                 </div>
                 <div className="text-center">
-                  <p className="text-[hsl(220,10%,55%)] text-sm uppercase tracking-wider mb-2">Net Burn Rate</p>
-                  <motion.div 
-                    key={netBurn}
-                    className={`text-4xl font-bold font-mono flex items-center justify-center gap-2 ${isPositive ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}
-                  >
-                    {isPositive ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
-                    {isPositive ? "+" : "-"}${Math.abs(Math.round(animatedBurn)).toLocaleString()}
-                  </motion.div>
-                  <p className="text-xs text-[hsl(220,10%,50%)] mt-1">per month</p>
+                  <p className="text-[hsl(0,0%,53%)] text-xs uppercase tracking-wider mb-2">Net Burn Rate</p>
+                  <div className={`text-3xl font-semibold font-mono flex items-center justify-center gap-2 ${
+                    isPositive ? "text-[hsl(142,69%,50%)]" : "text-[hsl(0,100%,62%)]"
+                  }`}>
+                    {isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                    {isPositive ? "+" : ""}${Math.abs(Math.round(animatedBurn)).toLocaleString()}
+                  </div>
+                  <p className="text-xs text-[hsl(0,0%,53%)] mt-1">per month</p>
                 </div>
               </div>
 
               {isPositive && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="relative mt-4 p-3 rounded-xl bg-[hsl(152,100%,50%)/0.1] border border-[hsl(152,100%,50%)/0.3] flex items-center gap-2"
-                >
-                  <Sparkles className="w-5 h-5 text-[hsl(152,100%,50%)]" />
-                  <span className="text-[hsl(152,100%,50%)] text-sm font-medium">
-                    You're profitable! Revenue exceeds expenses.
+                <div className="mt-4 p-3 rounded-lg bg-[hsl(142,69%,50%,0.1)] border border-[hsl(142,69%,50%,0.2)] flex items-center gap-2">
+                  <span className="text-sm text-[hsl(142,69%,50%)] font-medium">
+                    Profitable: Revenue exceeds expenses
                   </span>
-                </motion.div>
+                </div>
               )}
             </div>
 
             {/* Charts Row */}
             <div className="grid grid-cols-2 gap-4">
               {/* Pie Chart */}
-              <div className="p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5">
-                <h4 className="text-sm font-medium text-[hsl(220,10%,60%)] mb-2 text-center">Expense Breakdown</h4>
-                <div className="h-[180px]">
+              <div className="card-surface p-4">
+                <h4 className="text-xs font-medium text-[hsl(0,0%,53%)] mb-3 text-center">Expense Breakdown</h4>
+                <div className="h-[160px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={pieData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={45}
-                        outerRadius={70}
-                        paddingAngle={3}
+                        innerRadius={40}
+                        outerRadius={60}
+                        paddingAngle={2}
                         dataKey="value"
-                        animationBegin={0}
-                        animationDuration={800}
                       >
                         {pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />
@@ -291,9 +250,9 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
                       </Pie>
                       <Tooltip
                         contentStyle={{
-                          background: "hsl(240,7%,12%)",
-                          border: "1px solid hsl(226,100%,59%,0.3)",
-                          borderRadius: "12px",
+                          background: "hsl(0,0%,11%)",
+                          border: "1px solid hsl(0,0%,100%,0.08)",
+                          borderRadius: "8px",
                           color: "white"
                         }}
                         formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
@@ -303,32 +262,30 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center mt-2">
                   {pieData.map((item) => (
-                    <div key={item.name} className="flex items-center gap-1 text-xs">
+                    <div key={item.name} className="flex items-center gap-1.5 text-xs">
                       <div className="w-2 h-2 rounded-full" style={{ background: item.color }} />
-                      <span className="text-[hsl(220,10%,55%)]">{item.name}</span>
+                      <span className="text-[hsl(0,0%,53%)]">{item.name}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Bar Chart */}
-              <div className="p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5">
-                <h4 className="text-sm font-medium text-[hsl(220,10%,60%)] mb-2 text-center">Revenue vs Expenses</h4>
-                <div className="h-[180px]">
+              <div className="card-surface p-4">
+                <h4 className="text-xs font-medium text-[hsl(0,0%,53%)] mb-3 text-center">Revenue vs Expenses</h4>
+                <div className="h-[160px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={barData} barGap={20}>
+                    <BarChart data={barData} barGap={16}>
                       <XAxis 
                         dataKey="name" 
                         axisLine={false} 
                         tickLine={false}
-                        tick={{ fill: "hsl(220,10%,55%)", fontSize: 11 }}
+                        tick={{ fill: "hsl(0,0%,53%)", fontSize: 11 }}
                       />
                       <YAxis hide />
                       <Bar 
                         dataKey="value" 
-                        radius={[8, 8, 0, 0]}
-                        animationBegin={0}
-                        animationDuration={800}
+                        radius={[6, 6, 0, 0]}
                       >
                         {barData.map((entry, index) => (
                           <Cell key={`bar-${index}`} fill={entry.fill} />
@@ -336,9 +293,9 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
                       </Bar>
                       <Tooltip
                         contentStyle={{
-                          background: "hsl(240,7%,12%)",
-                          border: "1px solid hsl(226,100%,59%,0.3)",
-                          borderRadius: "12px",
+                          background: "hsl(0,0%,11%)",
+                          border: "1px solid hsl(0,0%,100%,0.08)",
+                          borderRadius: "8px",
                           color: "white"
                         }}
                         formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
@@ -350,24 +307,19 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
             </div>
 
             {/* Insights */}
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="p-4 rounded-xl bg-gradient-to-r from-[hsl(226,100%,59%)/0.1] to-transparent border border-[hsl(226,100%,59%)/0.2]"
-            >
-              <h4 className="text-sm font-medium text-[hsl(226,100%,68%)] mb-2">Quick Insights</h4>
-              <ul className="space-y-1 text-sm text-[hsl(220,10%,60%)]">
+            <div className="card-surface p-4">
+              <h4 className="text-sm font-medium text-white mb-3">Insights</h4>
+              <ul className="space-y-1.5 text-sm text-[hsl(0,0%,53%)]">
                 <li>• Payroll is {((inputs.payroll / totalExpenses) * 100).toFixed(0)}% of total expenses</li>
                 <li>• {isPositive ? "Generating" : "Burning"} ${Math.abs(netBurn).toLocaleString()}/month</li>
                 {inputs.payroll > inputs.revenue && (
-                  <li className="text-[hsl(45,90%,55%)]">• Payroll alone exceeds revenue</li>
+                  <li className="text-[hsl(35,100%,52%)]">• Payroll exceeds revenue</li>
                 )}
               </ul>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 };

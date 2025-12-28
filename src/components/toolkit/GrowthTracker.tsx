@@ -276,77 +276,53 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.95, y: 50, opacity: 0 }}
-        animate={{ scale: 1, y: 0, opacity: 1 }}
-        exit={{ scale: 0.95, y: 50, opacity: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ duration: 0.2 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gradient-to-br from-[hsl(240,15%,8%)] via-[hsl(220,20%,10%)] to-[hsl(240,15%,8%)] border border-[hsl(270,60%,55%)/0.2] shadow-2xl shadow-[hsl(270,60%,55%)/0.1]"
+        className="w-full max-w-6xl max-h-[90vh] overflow-y-auto card-surface rounded-2xl"
       >
-        {/* ═══════════════════════════════════════════════════════════════════
-            CINEMATIC HEADER
-        ═══════════════════════════════════════════════════════════════════ */}
-        <div className="relative p-8 pb-4 overflow-hidden border-b border-white/5">
-          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(270,60%,55%)/0.15] via-transparent to-[hsl(152,100%,50%)/0.1]" />
-          <div className="absolute top-0 left-1/4 w-[600px] h-[200px] bg-[hsl(270,60%,55%)/0.2] blur-[100px] rounded-full" />
-          <div className="absolute top-0 right-1/4 w-[500px] h-[180px] bg-[hsl(152,100%,50%)/0.15] blur-[90px] rounded-full" />
-          
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[hsl(270,60%,55%)] via-[hsl(280,65%,50%)] to-[hsl(290,70%,45%)] flex items-center justify-center shadow-xl shadow-[hsl(270,60%,55%)/0.4]"
-              >
-                <TrendingUp className="w-8 h-8 text-white" />
-              </motion.div>
-              <div>
-                <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-                  Growth Tracker
-                  {netGrowthRate > 10 && (
-                    <motion.span
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="text-2xl"
-                    >
-                      🚀
-                    </motion.span>
-                  )}
-                </h2>
-                <p className="text-[hsl(220,10%,55%)] mt-1">
-                  MRR & ARR projections with growth modeling
-                </p>
-              </div>
+        {/* Header */}
+        <div className="p-6 pb-4 border-b border-[hsl(0,0%,100%,0.06)] flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-[hsl(211,100%,45%)] flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-white" />
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={fetchAIInsights}
-                disabled={isLoadingInsights}
-                className="bg-gradient-to-r from-[hsl(280,70%,50%)] to-[hsl(320,70%,50%)] hover:from-[hsl(280,70%,55%)] hover:to-[hsl(320,70%,55%)] text-white font-semibold shadow-lg shadow-[hsl(280,70%,50%)/0.3]"
-              >
-                {isLoadingInsights ? (
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Brain className="w-4 h-4 mr-2" />
-                )}
-                {isLoadingInsights ? "Analyzing..." : aiInsights ? "Refresh Insights" : "Get AI Insights"}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="rounded-full hover:bg-white/10"
-              >
-                <X className="w-5 h-5 text-white" />
-              </Button>
+            <div>
+              <h2 className="text-2xl font-semibold text-white">
+                Growth Tracker
+              </h2>
+              <p className="text-sm text-[hsl(0,0%,53%)]">
+                MRR & ARR projections with growth modeling
+              </p>
             </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={fetchAIInsights}
+              disabled={isLoadingInsights}
+              variant="secondary"
+            >
+              {isLoadingInsights ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Brain className="w-4 h-4 mr-2" />
+              )}
+              {isLoadingInsights ? "Analyzing..." : aiInsights ? "Refresh" : "AI Insights"}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+            >
+              <X className="w-5 h-5" />
+            </Button>
           </div>
         </div>
 
@@ -363,7 +339,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               className="space-y-4"
             >
               {/* Revenue Metrics Card */}
-              <div className="p-6 rounded-2xl glass-panel border border-white/5">
+              <div className="card-surface p-6">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 rounded-xl bg-[hsl(270,60%,55%)/0.2] flex items-center justify-center">
                     <DollarSign className="w-5 h-5 text-[hsl(270,60%,65%)]" />
@@ -386,7 +362,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                         type="number"
                         value={currentMRR}
                         onChange={(e) => setCurrentMRR(Math.max(0, Number(e.target.value)))}
-                        className="pl-8 h-11 bg-[hsl(240,7%,8%)] border-white/10 text-white font-mono"
+                        className="pl-8 h-11  text-white font-mono"
                       />
                     </div>
                   </div>
@@ -404,7 +380,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                           const val = Math.max(0, Number(e.target.value) || 0);
                           setMonthlyGrowthRate(val);
                         }}
-                        className="h-6 w-16 text-xs bg-[hsl(240,7%,12%)] border-white/10 text-white font-mono text-center focus:border-[hsl(152,100%,50%)]/50"
+                        className="h-6 w-16 text-xs  text-white font-mono text-center focus:border-[hsl(152,100%,50%)]/50"
                         min={0}
                         step={0.5}
                       />
@@ -441,7 +417,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                         type="number"
                         value={avgRevenuePerUser}
                         onChange={(e) => setAvgRevenuePerUser(Math.max(0, Number(e.target.value)))}
-                        className="pl-8 h-11 bg-[hsl(240,7%,8%)] border-white/10 text-white font-mono"
+                        className="pl-8 h-11  text-white font-mono"
                       />
                     </div>
                   </div>
@@ -459,7 +435,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                           const val = Math.max(0, Number(e.target.value) || 0);
                           setChurnRate(val);
                         }}
-                        className="h-6 w-16 text-xs bg-[hsl(240,7%,12%)] border-white/10 text-white font-mono text-center focus:border-[hsl(0,70%,55%)]/50"
+                        className="h-6 w-16 text-xs  text-white font-mono text-center focus:border-[hsl(0,70%,55%)]/50"
                         min={0}
                         step={0.1}
                       />
@@ -487,12 +463,12 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               {/* Growth Quality Indicator */}
               <div className={`p-5 rounded-2xl border ${
                 netGrowthRate >= 15 
-                  ? 'bg-gradient-to-br from-[hsl(152,100%,50%)/0.1] to-transparent border-[hsl(152,100%,50%)/0.3]'
+                  ? 'card-surface border-[hsl(142,69%,50%,0.3)]'
                   : netGrowthRate >= 10
-                    ? 'bg-gradient-to-br from-[hsl(152,70%,45%)/0.1] to-transparent border-[hsl(152,70%,45%)/0.3]'
+                    ? 'card-surface border-[hsl(142,69%,50%,0.2)]'
                     : netGrowthRate >= 5
-                      ? 'bg-gradient-to-br from-[hsl(45,90%,55%)/0.1] to-transparent border-[hsl(45,90%,55%)/0.3]'
-                      : 'bg-gradient-to-br from-[hsl(0,70%,55%)/0.1] to-transparent border-[hsl(0,70%,55%)/0.3]'
+                      ? 'card-surface border-[hsl(35,100%,52%,0.3)]'
+                      : 'card-surface border-[hsl(0,100%,62%,0.3)]'
               }`}>
                 <div className="flex items-center gap-3 mb-3">
                   {netGrowthRate >= 15 ? (
@@ -674,7 +650,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                         type="number"
                         value={customerAcquisitionCost}
                         onChange={(e) => setCustomerAcquisitionCost(Math.max(0, Number(e.target.value) || 0))}
-                        className="pl-8 h-11 bg-[hsl(240,7%,8%)] border-white/10 text-white font-mono"
+                        className="pl-8 h-11  text-white font-mono"
                       />
                     </div>
                   </div>
@@ -744,7 +720,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                       type="number"
                       value={revenueGoal}
                       onChange={(e) => setRevenueGoal(Math.max(0, Number(e.target.value) || 0))}
-                      className="pl-8 h-11 bg-[hsl(240,7%,8%)] border-white/10 text-white font-mono"
+                      className="pl-8 h-11  text-white font-mono"
                     />
                   </div>
                 </div>
