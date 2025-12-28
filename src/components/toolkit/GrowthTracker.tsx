@@ -63,6 +63,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
   const [churnRate, setChurnRate] = useState(3);
   const [animatedMRR, setAnimatedMRR] = useState(currentMRR);
   const [projectionData, setProjectionData] = useState<MonthlyData[]>([]);
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState<number | null>(null);
   
   // New features: LTV:CAC and Revenue Goal
   const [customerAcquisitionCost, setCustomerAcquisitionCost] = useState(150);
@@ -701,7 +702,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                     </div>
                     <div>
                       <h3 className="text-white font-semibold">Customer Growth Timeline</h3>
-                      <p className="text-xs text-[hsl(220,10%,50%)]">Monthly customer progression</p>
+                      <p className="text-xs text-[hsl(220,10%,50%)]">Click a month for details</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm">
@@ -722,30 +723,40 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                     {projectionData.map((data, i) => {
                       const isStart = i === 0;
                       const isEnd = i === projectionData.length - 1;
+                      const isSelected = selectedMonthIndex === i;
                       const growthPercent = i > 0 ? ((data.customers - projectionData[i - 1].customers) / projectionData[i - 1].customers) * 100 : 0;
                       
                       return (
                         <motion.div
                           key={data.month}
                           initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
+                          animate={{ 
+                            opacity: 1, 
+                            y: 0,
+                            scale: isSelected ? 1.05 : 1
+                          }}
                           exit={{ opacity: 0, scale: 0.8 }}
-                          transition={{ delay: i * 0.03 }}
-                          className={`relative p-4 rounded-xl border-2 transition-all ${
-                            isStart 
-                              ? 'bg-gradient-to-br from-[hsl(226,100%,59%)/0.2] to-[hsl(226,100%,59%)/0.1] border-[hsl(226,100%,59%)/0.5]' 
-                              : isEnd 
-                                ? 'bg-gradient-to-br from-[hsl(152,100%,50%)/0.2] to-[hsl(152,100%,50%)/0.1] border-[hsl(152,100%,50%)/0.5]'
-                                : 'bg-[hsl(240,7%,15%)] border-white/10 hover:border-white/20'
+                          whileHover={{ scale: 1.08, y: -4 }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{ delay: i * 0.03, type: "spring", stiffness: 400, damping: 25 }}
+                          onClick={() => setSelectedMonthIndex(isSelected ? null : i)}
+                          className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[hsl(270,60%,55%)/0.3] to-[hsl(290,70%,45%)/0.2] border-[hsl(270,60%,65%)] shadow-lg shadow-[hsl(270,60%,55%)/0.3]'
+                              : isStart 
+                                ? 'bg-gradient-to-br from-[hsl(226,100%,59%)/0.2] to-[hsl(226,100%,59%)/0.1] border-[hsl(226,100%,59%)/0.5] hover:border-[hsl(226,100%,59%)] hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.2]' 
+                                : isEnd 
+                                  ? 'bg-gradient-to-br from-[hsl(152,100%,50%)/0.2] to-[hsl(152,100%,50%)/0.1] border-[hsl(152,100%,50%)/0.5] hover:border-[hsl(152,100%,50%)] hover:shadow-lg hover:shadow-[hsl(152,100%,50%)/0.2]'
+                                  : 'bg-[hsl(240,7%,15%)] border-white/10 hover:border-[hsl(270,60%,55%)/0.5] hover:bg-[hsl(240,7%,18%)] hover:shadow-lg hover:shadow-[hsl(270,60%,55%)/0.1]'
                           }`}
                         >
                           <div className="flex flex-col items-center text-center gap-2">
                             <span className={`text-xs font-semibold uppercase tracking-wider ${
-                              isStart ? 'text-[hsl(226,100%,68%)]' : isEnd ? 'text-[hsl(152,100%,60%)]' : 'text-[hsl(220,10%,60%)]'
+                              isSelected ? 'text-[hsl(270,60%,75%)]' : isStart ? 'text-[hsl(226,100%,68%)]' : isEnd ? 'text-[hsl(152,100%,60%)]' : 'text-[hsl(220,10%,60%)]'
                             }`}>
                               {data.month}
                             </span>
-                            <span className={`text-2xl font-bold ${isStart ? 'text-[hsl(226,100%,68%)]' : isEnd ? 'text-[hsl(152,100%,60%)]' : 'text-white'}`} style={{ fontFamily: 'JetBrains Mono' }}>
+                            <span className={`text-2xl font-bold ${isSelected ? 'text-[hsl(270,60%,75%)]' : isStart ? 'text-[hsl(226,100%,68%)]' : isEnd ? 'text-[hsl(152,100%,60%)]' : 'text-white'}`} style={{ fontFamily: 'JetBrains Mono' }}>
                               {data.customers}
                             </span>
                             {!isStart && growthPercent > 0 && (
@@ -760,6 +771,56 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                     })}
                   </AnimatePresence>
                 </div>
+
+                {/* Selected Month Details */}
+                <AnimatePresence>
+                  {selectedMonthIndex !== null && projectionData[selectedMonthIndex] && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      className="mt-4 overflow-hidden"
+                    >
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-[hsl(270,60%,55%)/0.15] to-[hsl(290,70%,45%)/0.1] border border-[hsl(270,60%,55%)/0.3]">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-sm font-semibold text-[hsl(270,60%,75%)]">
+                            {projectionData[selectedMonthIndex].month} Projection Details
+                          </h4>
+                          <button 
+                            onClick={() => setSelectedMonthIndex(null)}
+                            className="text-[hsl(220,10%,50%)] hover:text-white transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div className="p-3 rounded-lg bg-[hsl(240,7%,12%)] border border-white/5">
+                            <p className="text-[10px] text-[hsl(220,10%,50%)] uppercase tracking-wider mb-1">MRR</p>
+                            <p className="text-lg font-bold text-white font-mono">{formatCurrency(projectionData[selectedMonthIndex].mrr)}</p>
+                          </div>
+                          <div className="p-3 rounded-lg bg-[hsl(240,7%,12%)] border border-white/5">
+                            <p className="text-[10px] text-[hsl(220,10%,50%)] uppercase tracking-wider mb-1">ARR</p>
+                            <p className="text-lg font-bold text-white font-mono">{formatCurrency(projectionData[selectedMonthIndex].arr)}</p>
+                          </div>
+                          <div className="p-3 rounded-lg bg-[hsl(240,7%,12%)] border border-white/5">
+                            <p className="text-[10px] text-[hsl(220,10%,50%)] uppercase tracking-wider mb-1">Customers</p>
+                            <p className="text-lg font-bold text-[hsl(152,100%,60%)] font-mono">{projectionData[selectedMonthIndex].customers}</p>
+                          </div>
+                          <div className="p-3 rounded-lg bg-[hsl(240,7%,12%)] border border-white/5">
+                            <p className="text-[10px] text-[hsl(220,10%,50%)] uppercase tracking-wider mb-1">Growth</p>
+                            <p className="text-lg font-bold text-[hsl(270,60%,65%)] font-mono">
+                              {selectedMonthIndex > 0 
+                                ? `+${(((projectionData[selectedMonthIndex].mrr - projectionData[selectedMonthIndex - 1].mrr) / projectionData[selectedMonthIndex - 1].mrr) * 100).toFixed(1)}%`
+                                : '—'
+                              }
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </div>
