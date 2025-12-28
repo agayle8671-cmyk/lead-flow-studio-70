@@ -35,45 +35,57 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
     setUploadSuccess(false);
 
     try {
-      // Read file content
-      const content = await file.text();
-      
+      // Read file content (only needed for CID extraction on text-based uploads)
+      let content: string | null = null;
+      const isTextLike = file.type.startsWith("text/") || [".csv", ".txt", ".json"].some((ext) => file.name.toLowerCase().endsWith(ext));
+      if (isTextLike) {
+        content = await file.text();
+      }
+
       // Extract CID from file content if present (e.g., "CID: ACME_CORP_2025")
-      const cidMatch = content.match(/^CID:\s*(.+)$/im);
+      const cidMatch = content ? content.match(/^CID:\s*(.+)$/im) : null;
       const extractedCID = cidMatch ? cidMatch[1].trim() : null;
-      
+
       setProcessingStatus("Analyzing with AI...");
-      
-      // Send to live backend at marginauditpro.com
+
+      // Send as multipart/form-data (most backends expect this for file uploads)
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("clientId", selectedClientId);
+      if (extractedCID) formData.append("cid", extractedCID);
+
       const response = await fetch("https://marginauditpro.com/api/parse-finances", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ 
-          content, 
-          clientId: selectedClientId,
-          cid: extractedCID || selectedClientId 
-        }),
+        body: formData,
         mode: "cors",
       });
 
       const responseText = await response.text();
-      
+
+      // Prefer server-provided message when available
+      let apiMessage = responseText;
+      try {
+        const maybeJson = JSON.parse(responseText);
+        if (maybeJson?.message) apiMessage = String(maybeJson.message);
+      } catch {
+        // ignore
+      }
+
       // Check for Missing CID error - show Compass Gold toast
       if (!response.ok) {
-        if (responseText.toLowerCase().includes("missing cid") || 
-            responseText.toLowerCase().includes("missing client") ||
-            responseText.toLowerCase().includes("invalid cid")) {
+        const msg = apiMessage.toLowerCase();
+        if (msg.includes("missing cid") || msg.includes("missing client") || msg.includes("invalid cid")) {
           toast({
             title: "Audit Failed: Missing CID Header",
-            description: "Refer to the Master User Guide.",
-            className: "bg-gradient-to-r from-amber-500 to-yellow-600 text-charcoal border-none shadow-lg",
+            description: `${apiMessage} Refer to the Master User Guide.`,
+            className: "gradient-gold text-charcoal shadow-gold",
           });
           throw new Error("Missing CID");
         }
-        throw new Error(`Parse failed: ${response.status} - ${responseText}`);
+        throw new Error(`Parse failed: ${response.status} - ${apiMessage}`);
       }
 
       // Parse successful response
