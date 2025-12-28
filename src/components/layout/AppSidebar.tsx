@@ -31,15 +31,14 @@ const navigation = [
   },
 ];
 
-// Premium 3D Rotating DNA Helix Component
-const DNAHelix = () => {
-  const numBasePairs = 16;
-  const basePairs = Array.from({ length: numBasePairs }, (_, i) => i);
+// Runway DNA Visualization - Airport runway with DNA-inspired elements
+const RunwayDNA = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const runwayMarkers = Array.from({ length: 8 }, (_, i) => i);
 
   return (
     <div 
-      className="relative w-full h-64 overflow-hidden cursor-pointer"
+      className="relative w-full h-56 overflow-hidden cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -51,226 +50,120 @@ const DNAHelix = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 5, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-2 left-1/2 -translate-x-1/2 z-20"
+            className="absolute top-1 left-1/2 -translate-x-1/2 z-20"
           >
             <div 
-              className="px-4 py-3 rounded-xl backdrop-blur-xl border border-white/10"
+              className="px-3 py-2 rounded-lg backdrop-blur-xl border border-white/10"
               style={{
                 background: "linear-gradient(135deg, hsl(226, 50%, 15%, 0.95) 0%, hsl(260, 40%, 12%, 0.95) 100%)",
-                boxShadow: "0 8px 32px hsl(226, 100%, 30%, 0.3), 0 0 0 1px hsl(226, 100%, 50%, 0.1), inset 0 1px 0 hsl(226, 100%, 70%, 0.1)",
+                boxShadow: "0 8px 32px hsl(226, 100%, 30%, 0.3)",
               }}
             >
-              {/* Scanning indicator */}
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-1.5">
                 <motion.div
-                  className="w-2 h-2 rounded-full bg-[hsl(170,80%,50%)]"
-                  animate={{
-                    scale: [1, 1.3, 1],
-                    opacity: [0.7, 1, 0.7],
-                  }}
-                  transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  style={{
-                    boxShadow: "0 0 8px hsl(170, 80%, 50%)",
-                  }}
+                  className="w-1.5 h-1.5 rounded-full bg-[hsl(170,80%,50%)]"
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  style={{ boxShadow: "0 0 6px hsl(170, 80%, 50%)" }}
                 />
-                <span className="text-xs font-medium text-[hsl(170,80%,60%)]">ACTIVE</span>
+                <span className="text-[10px] font-medium text-[hsl(170,80%,60%)]">SCANNING</span>
               </div>
-              
-              {/* Main text */}
-              <p className="text-[11px] font-medium text-white/90 mb-2 whitespace-nowrap">
-                Analyzing financial patterns...
-              </p>
-              
-              {/* Progress bar */}
-              <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <p className="text-[10px] font-medium text-white/90 mb-1.5">Mapping your runway...</p>
+              <div className="w-32 h-1 rounded-full bg-white/10 overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
-                  style={{
-                    background: "linear-gradient(90deg, hsl(226, 100%, 60%), hsl(170, 80%, 50%), hsl(260, 80%, 60%))",
-                    backgroundSize: "200% 100%",
-                  }}
-                  animate={{
-                    width: ["0%", "100%"],
-                    backgroundPosition: ["0% 0%", "100% 0%"],
-                  }}
-                  transition={{
-                    width: {
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    },
-                    backgroundPosition: {
-                      duration: 1.5,
-                      repeat: Infinity,
-                      ease: "linear",
-                    },
-                  }}
+                  style={{ background: "linear-gradient(90deg, hsl(226, 100%, 60%), hsl(170, 80%, 50%))" }}
+                  animate={{ width: ["0%", "100%"] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 />
               </div>
-              
-              {/* Data points */}
-              <div className="flex justify-between mt-2 text-[9px] text-white/50">
-                <span>Runway</span>
-                <span>Burn Rate</span>
-                <span>Growth</span>
-              </div>
             </div>
-            
-            {/* Tooltip arrow */}
-            <div 
-              className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 rotate-45"
-              style={{
-                background: "linear-gradient(135deg, transparent 50%, hsl(260, 40%, 12%, 0.95) 50%)",
-                borderRight: "1px solid hsl(226, 100%, 50%, 0.1)",
-                borderBottom: "1px solid hsl(226, 100%, 50%, 0.1)",
-              }}
-            />
           </motion.div>
         )}
       </AnimatePresence>
-      {/* Multi-layer ambient glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full"
-          style={{
-            background: "radial-gradient(circle, hsl(226, 100%, 50%, 0.2) 0%, hsl(260, 80%, 50%, 0.1) 40%, transparent 70%)",
-          }}
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
-        <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-36 rounded-full"
-          style={{
-            background: "radial-gradient(circle, hsl(170, 80%, 50%, 0.15) 0%, transparent 60%)",
-          }}
-          animate={{
-            scale: [1.2, 1, 1.2],
-            rotate: [360, 180, 0],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
-      </div>
 
-      {/* 3D DNA Helix using CSS transforms */}
-      <div className="relative w-full h-full" style={{ perspective: "400px" }}>
+      {/* Perspective container */}
+      <div 
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ perspective: "300px" }}
+      >
+        {/* Runway surface with 3D perspective */}
         <motion.div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{ transformStyle: "preserve-3d" }}
-          animate={{ rotateY: [0, 360] }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "linear",
+          className="relative"
+          style={{
+            width: "100%",
+            height: "100%",
+            transformStyle: "preserve-3d",
+            transform: "rotateX(55deg) translateY(20px)",
           }}
         >
-          {basePairs.map((i) => {
-            const yOffset = -112 + i * 14;
-            const rotationZ = i * 22.5; // Twist per base pair
-            const hue1 = 226 + (i * 3) % 40;
-            const hue2 = 260 + (i * 5) % 50;
-            
-            return (
-              <motion.div
-                key={i}
-                className="absolute w-full flex items-center justify-center"
-                style={{
-                  transform: `translateY(${yOffset}px) rotateZ(${rotationZ}deg)`,
-                  transformStyle: "preserve-3d",
-                }}
-              >
-                {/* Left nucleotide */}
+          {/* Runway base */}
+          <div 
+            className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2"
+            style={{
+              width: "70px",
+              height: "200px",
+              background: "linear-gradient(180deg, hsl(220, 20%, 8%) 0%, hsl(220, 25%, 12%) 50%, hsl(220, 20%, 8%) 100%)",
+              borderRadius: "4px",
+              boxShadow: "0 0 40px hsl(226, 100%, 30%, 0.2), inset 0 0 20px hsl(220, 20%, 5%)",
+            }}
+          >
+            {/* Runway edge lights - left */}
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] flex flex-col justify-between py-2">
+              {[...Array(10)].map((_, i) => (
                 <motion.div
-                  className="absolute rounded-full"
+                  key={`left-${i}`}
+                  className="w-[3px] h-[3px] rounded-full"
                   style={{
-                    width: 12,
-                    height: 12,
-                    background: `radial-gradient(circle at 30% 30%, hsl(${hue1}, 100%, 75%), hsl(${hue1}, 100%, 50%))`,
-                    boxShadow: `0 0 12px hsl(${hue1}, 100%, 60%), 0 0 24px hsl(${hue1}, 100%, 50%, 0.5), inset 0 -2px 4px hsl(${hue1}, 100%, 30%)`,
-                    transform: "translateX(-45px) translateZ(20px)",
+                    background: "hsl(45, 100%, 60%)",
+                    boxShadow: "0 0 6px hsl(45, 100%, 50%), 0 0 12px hsl(45, 100%, 40%)",
                   }}
                   animate={{
-                    scale: [1, 1.15, 1],
-                  }}
-                  transition={{
-                    duration: 2,
-                    delay: i * 0.1,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-                
-                {/* Right nucleotide */}
-                <motion.div
-                  className="absolute rounded-full"
-                  style={{
-                    width: 12,
-                    height: 12,
-                    background: `radial-gradient(circle at 30% 30%, hsl(${hue2}, 80%, 75%), hsl(${hue2}, 80%, 50%))`,
-                    boxShadow: `0 0 12px hsl(${hue2}, 80%, 60%), 0 0 24px hsl(${hue2}, 80%, 50%, 0.5), inset 0 -2px 4px hsl(${hue2}, 80%, 30%)`,
-                    transform: "translateX(45px) translateZ(-20px)",
-                  }}
-                  animate={{
-                    scale: [1.15, 1, 1.15],
-                  }}
-                  transition={{
-                    duration: 2,
-                    delay: i * 0.1,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-                
-                {/* Hydrogen bond (connecting bar) */}
-                <motion.div
-                  className="absolute h-[3px] rounded-full"
-                  style={{
-                    width: 78,
-                    background: `linear-gradient(90deg, 
-                      hsl(${hue1}, 100%, 60%) 0%, 
-                      hsl(170, 80%, 55%) 35%,
-                      hsl(170, 80%, 60%) 50%,
-                      hsl(170, 80%, 55%) 65%,
-                      hsl(${hue2}, 80%, 60%) 100%)`,
-                    boxShadow: "0 0 8px hsl(170, 80%, 50%, 0.6)",
-                    transform: "translateZ(0px)",
-                  }}
-                  animate={{
-                    opacity: [0.5, 0.9, 0.5],
+                    opacity: [0.4, 1, 0.4],
+                    scale: [0.8, 1.2, 0.8],
                   }}
                   transition={{
                     duration: 1.5,
-                    delay: i * 0.08,
+                    delay: i * 0.1,
                     repeat: Infinity,
                     ease: "easeInOut",
                   }}
                 />
-                
-                {/* Energy pulse traveling along bond */}
+              ))}
+            </div>
+            
+            {/* Runway edge lights - right */}
+            <div className="absolute right-0 top-0 bottom-0 w-[3px] flex flex-col justify-between py-2">
+              {[...Array(10)].map((_, i) => (
                 <motion.div
-                  className="absolute w-2 h-2 rounded-full"
+                  key={`right-${i}`}
+                  className="w-[3px] h-[3px] rounded-full"
                   style={{
-                    background: "radial-gradient(circle, hsl(170, 100%, 70%), hsl(170, 100%, 50%))",
-                    boxShadow: "0 0 10px hsl(170, 100%, 60%), 0 0 20px hsl(170, 100%, 50%)",
+                    background: "hsl(45, 100%, 60%)",
+                    boxShadow: "0 0 6px hsl(45, 100%, 50%), 0 0 12px hsl(45, 100%, 40%)",
                   }}
                   animate={{
-                    x: [-39, 39, -39],
-                    opacity: [0, 1, 0],
-                    scale: [0.5, 1.2, 0.5],
+                    opacity: [0.4, 1, 0.4],
+                    scale: [0.8, 1.2, 0.8],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    delay: i * 0.1,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Center line - DNA inspired dashes */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-2 bottom-2 flex flex-col justify-between">
+              {runwayMarkers.map((i) => (
+                <motion.div
+                  key={i}
+                  className="relative"
+                  animate={{
+                    opacity: [0.5, 1, 0.5],
                   }}
                   transition={{
                     duration: 2,
@@ -278,163 +171,168 @@ const DNAHelix = () => {
                     repeat: Infinity,
                     ease: "easeInOut",
                   }}
+                >
+                  {/* Main dash */}
+                  <div 
+                    className="w-[4px] h-[12px] rounded-full"
+                    style={{
+                      background: "linear-gradient(180deg, hsl(226, 100%, 70%), hsl(170, 80%, 55%))",
+                      boxShadow: "0 0 8px hsl(226, 100%, 60%), 0 0 16px hsl(170, 80%, 50%, 0.5)",
+                    }}
+                  />
+                  {/* DNA base pair wings */}
+                  <motion.div
+                    className="absolute top-1/2 -translate-y-1/2 left-full ml-1 h-[2px] rounded-full"
+                    style={{
+                      width: "12px",
+                      background: "linear-gradient(90deg, hsl(260, 80%, 60%), transparent)",
+                      boxShadow: "0 0 4px hsl(260, 80%, 55%)",
+                    }}
+                    animate={{
+                      width: ["8px", "14px", "8px"],
+                      opacity: [0.4, 0.8, 0.4],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      delay: i * 0.1,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                  <motion.div
+                    className="absolute top-1/2 -translate-y-1/2 right-full mr-1 h-[2px] rounded-full"
+                    style={{
+                      width: "12px",
+                      background: "linear-gradient(-90deg, hsl(260, 80%, 60%), transparent)",
+                      boxShadow: "0 0 4px hsl(260, 80%, 55%)",
+                    }}
+                    animate={{
+                      width: ["8px", "14px", "8px"],
+                      opacity: [0.4, 0.8, 0.4],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      delay: i * 0.1,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Threshold markers - bottom */}
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="w-[6px] h-[2px] rounded-full"
+                  style={{
+                    background: "hsl(170, 80%, 55%)",
+                    boxShadow: "0 0 4px hsl(170, 80%, 50%)",
+                  }}
+                  animate={{
+                    opacity: [0.5, 1, 0.5],
+                  }}
+                  transition={{
+                    duration: 1,
+                    delay: i * 0.1,
+                    repeat: Infinity,
+                  }}
                 />
-              </motion.div>
-            );
-          })}
+              ))}
+            </div>
+
+            {/* Data stream flying up the runway */}
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 w-[6px] h-[20px] rounded-full"
+              style={{
+                background: "linear-gradient(180deg, hsl(170, 100%, 60%), transparent)",
+                boxShadow: "0 0 12px hsl(170, 100%, 55%), 0 0 24px hsl(170, 100%, 50%)",
+              }}
+              animate={{
+                bottom: ["-10%", "110%"],
+                opacity: [0, 1, 1, 0],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+
+            {/* Secondary data stream */}
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 w-[4px] h-[15px] rounded-full"
+              style={{
+                background: "linear-gradient(180deg, hsl(226, 100%, 65%), transparent)",
+                boxShadow: "0 0 10px hsl(226, 100%, 60%)",
+              }}
+              animate={{
+                bottom: ["-10%", "110%"],
+                opacity: [0, 0.8, 0.8, 0],
+              }}
+              transition={{
+                duration: 2.5,
+                delay: 1,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+          </div>
         </motion.div>
       </div>
 
-      {/* Backbone helix strands */}
-      <svg
-        className="absolute inset-0 w-full h-full pointer-events-none"
-        viewBox="0 0 120 256"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        <defs>
-          <linearGradient id="backbone1" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="hsl(226, 100%, 70%)" stopOpacity="0" />
-            <stop offset="20%" stopColor="hsl(226, 100%, 65%)" stopOpacity="0.8" />
-            <stop offset="50%" stopColor="hsl(226, 100%, 60%)" stopOpacity="1" />
-            <stop offset="80%" stopColor="hsl(226, 100%, 65%)" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="hsl(226, 100%, 70%)" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="backbone2" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="hsl(280, 80%, 70%)" stopOpacity="0" />
-            <stop offset="20%" stopColor="hsl(280, 80%, 65%)" stopOpacity="0.8" />
-            <stop offset="50%" stopColor="hsl(280, 80%, 60%)" stopOpacity="1" />
-            <stop offset="80%" stopColor="hsl(280, 80%, 65%)" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="hsl(280, 80%, 70%)" stopOpacity="0" />
-          </linearGradient>
-          <filter id="backboneGlow" x="-50%" y="-10%" width="200%" height="120%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        
-        {/* Animated sine wave backbones */}
-        <motion.path
-          stroke="url(#backbone1)"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-          filter="url(#backboneGlow)"
-          animate={{
-            d: [
-              "M 25 20 Q 60 48, 25 76 Q 60 104, 25 132 Q 60 160, 25 188 Q 60 216, 25 244",
-              "M 95 20 Q 60 48, 95 76 Q 60 104, 95 132 Q 60 160, 95 188 Q 60 216, 95 244",
-              "M 25 20 Q 60 48, 25 76 Q 60 104, 25 132 Q 60 160, 25 188 Q 60 216, 25 244",
-            ],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.path
-          stroke="url(#backbone2)"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-          filter="url(#backboneGlow)"
-          animate={{
-            d: [
-              "M 95 20 Q 60 48, 95 76 Q 60 104, 95 132 Q 60 160, 95 188 Q 60 216, 95 244",
-              "M 25 20 Q 60 48, 25 76 Q 60 104, 25 132 Q 60 160, 25 188 Q 60 216, 25 244",
-              "M 95 20 Q 60 48, 95 76 Q 60 104, 95 132 Q 60 160, 95 188 Q 60 216, 95 244",
-            ],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      </svg>
+      {/* Horizon glow */}
+      <div 
+        className="absolute top-0 left-0 right-0 h-16 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse 80% 100% at 50% 0%, hsl(226, 100%, 50%, 0.15) 0%, transparent 70%)",
+        }}
+      />
 
-      {/* Orbiting particles */}
-      {[...Array(12)].map((_, i) => {
-        const angle = (i / 12) * Math.PI * 2;
-        const radius = 60 + (i % 3) * 15;
-        const size = 2 + Math.random() * 2;
+      {/* Ambient DNA particles floating */}
+      {[...Array(8)].map((_, i) => {
         const hue = [226, 260, 170][i % 3];
-        
         return (
           <motion.div
             key={i}
-            className="absolute left-1/2 top-1/2 rounded-full"
+            className="absolute rounded-full"
             style={{
-              width: size,
-              height: size,
+              width: 3,
+              height: 3,
+              left: `${15 + (i * 10)}%`,
               background: `hsl(${hue}, 100%, 65%)`,
-              boxShadow: `0 0 ${size * 2}px hsl(${hue}, 100%, 60%)`,
+              boxShadow: `0 0 6px hsl(${hue}, 100%, 60%)`,
             }}
             animate={{
-              x: [
-                Math.cos(angle) * radius - size / 2,
-                Math.cos(angle + Math.PI) * radius - size / 2,
-                Math.cos(angle) * radius - size / 2,
-              ],
-              y: [
-                Math.sin(angle) * radius * 0.5 - size / 2,
-                Math.sin(angle + Math.PI) * radius * 0.5 - size / 2,
-                Math.sin(angle) * radius * 0.5 - size / 2,
-              ],
-              opacity: [0.3, 1, 0.3],
-              scale: [0.8, 1.3, 0.8],
+              y: [180, 20],
+              x: [(Math.random() - 0.5) * 30, (Math.random() - 0.5) * 30],
+              opacity: [0, 0.8, 0],
+              scale: [0.5, 1, 0.5],
             }}
             transition={{
-              duration: 3 + i * 0.2,
-              delay: i * 0.15,
+              duration: 3 + Math.random() * 2,
+              delay: i * 0.4,
               repeat: Infinity,
-              ease: "easeInOut",
+              ease: "easeOut",
             }}
           />
         );
       })}
 
-      {/* Central core glow */}
-      <motion.div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-32 rounded-full"
-        style={{
-          background: "linear-gradient(180deg, transparent 0%, hsl(170, 80%, 50%, 0.3) 50%, transparent 100%)",
-          filter: "blur(8px)",
-        }}
-        animate={{
-          opacity: [0.3, 0.7, 0.3],
-          scaleX: [1, 1.5, 1],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      {/* Data stream effect */}
-      <motion.div
-        className="absolute left-1/2 -translate-x-1/2 w-[2px] rounded-full"
-        style={{
-          height: 30,
-          background: "linear-gradient(180deg, transparent 0%, hsl(170, 100%, 60%) 50%, transparent 100%)",
-          boxShadow: "0 0 15px hsl(170, 100%, 55%), 0 0 30px hsl(170, 100%, 50%)",
-        }}
-        animate={{
-          top: ["-10%", "110%"],
-          opacity: [0, 1, 1, 0],
-        }}
-        transition={{
-          duration: 2.5,
-          repeat: Infinity,
-          ease: "linear",
-          repeatDelay: 1,
-        }}
-      />
+      {/* Bottom status bar */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2">
+        <motion.div
+          className="w-1.5 h-1.5 rounded-full bg-[hsl(170,80%,50%)]"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          style={{ boxShadow: "0 0 4px hsl(170, 80%, 50%)" }}
+        />
+        <span className="text-[8px] uppercase tracking-widest text-[hsl(220,10%,50%)]">
+          Runway Active
+        </span>
+      </div>
     </div>
   );
 };
@@ -563,9 +461,9 @@ const AppSidebar = () => {
           transition={{ delay: 0.8, duration: 0.6 }}
           className="w-full"
         >
-          <DNAHelix />
-          <p className="text-[10px] text-center text-[hsl(220,10%,45%)] mt-2 tracking-wider">
-            FINANCIAL DNA ANALYSIS
+          <RunwayDNA />
+          <p className="text-[10px] text-center text-[hsl(220,10%,45%)] mt-1 tracking-wider uppercase">
+            Runway DNA
           </p>
         </motion.div>
       </div>
