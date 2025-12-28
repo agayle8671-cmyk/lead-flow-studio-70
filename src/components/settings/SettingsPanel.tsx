@@ -544,3 +544,4 @@ export function SettingsPanel({ type, onClose }: SettingsPanelProps) {
 
 export type { SettingsPanelType };
 
+
