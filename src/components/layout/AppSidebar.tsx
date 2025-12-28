@@ -30,6 +30,207 @@ const navigation = [
   },
 ];
 
+// Animated DNA Helix Component
+const DNAHelix = () => {
+  const numPairs = 8;
+  const pairs = Array.from({ length: numPairs }, (_, i) => i);
+
+  return (
+    <div className="relative w-full h-40 overflow-hidden">
+      {/* Glow backdrop */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[hsl(226,100%,59%)/0.05] to-transparent" />
+      
+      {/* DNA Strands Container */}
+      <svg 
+        viewBox="0 0 200 160" 
+        className="w-full h-full"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        {/* Definitions for gradients and filters */}
+        <defs>
+          <linearGradient id="strandGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="hsl(226, 100%, 59%)" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="hsl(260, 80%, 55%)" stopOpacity="1" />
+            <stop offset="100%" stopColor="hsl(226, 100%, 59%)" stopOpacity="0.8" />
+          </linearGradient>
+          <linearGradient id="strandGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="hsl(260, 80%, 55%)" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="hsl(170, 80%, 45%)" stopOpacity="1" />
+            <stop offset="100%" stopColor="hsl(260, 80%, 55%)" stopOpacity="0.8" />
+          </linearGradient>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="strongGlow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* Animated DNA pairs */}
+        {pairs.map((i) => {
+          const yPos = 20 + i * 16;
+          const delay = i * 0.15;
+          
+          return (
+            <g key={i}>
+              {/* Left strand node */}
+              <motion.circle
+                cx="60"
+                cy={yPos}
+                r="4"
+                fill="url(#strandGradient1)"
+                filter="url(#glow)"
+                animate={{
+                  cx: [60, 140, 60],
+                  opacity: [0.6, 1, 0.6],
+                }}
+                transition={{
+                  duration: 3,
+                  delay,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              
+              {/* Right strand node */}
+              <motion.circle
+                cx="140"
+                cy={yPos}
+                r="4"
+                fill="url(#strandGradient2)"
+                filter="url(#glow)"
+                animate={{
+                  cx: [140, 60, 140],
+                  opacity: [0.6, 1, 0.6],
+                }}
+                transition={{
+                  duration: 3,
+                  delay,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              
+              {/* Connecting base pair line */}
+              <motion.line
+                y1={yPos}
+                y2={yPos}
+                stroke="url(#strandGradient1)"
+                strokeWidth="1.5"
+                strokeOpacity="0.4"
+                filter="url(#glow)"
+                animate={{
+                  x1: [60, 140, 60],
+                  x2: [140, 60, 140],
+                }}
+                transition={{
+                  duration: 3,
+                  delay,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              
+              {/* Center glow pulse */}
+              <motion.circle
+                cx="100"
+                cy={yPos}
+                r="2"
+                fill="hsl(170, 80%, 50%)"
+                filter="url(#strongGlow)"
+                animate={{
+                  r: [1.5, 3, 1.5],
+                  opacity: [0.3, 0.8, 0.3],
+                }}
+                transition={{
+                  duration: 2,
+                  delay: delay + 0.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            </g>
+          );
+        })}
+        
+        {/* Vertical backbone strands */}
+        <motion.path
+          d="M 60 20 Q 100 50, 60 80 Q 100 110, 60 140"
+          stroke="url(#strandGradient1)"
+          strokeWidth="2"
+          fill="none"
+          strokeOpacity="0.3"
+          filter="url(#glow)"
+          animate={{
+            d: [
+              "M 60 20 Q 100 50, 60 80 Q 100 110, 60 140",
+              "M 140 20 Q 100 50, 140 80 Q 100 110, 140 140",
+              "M 60 20 Q 100 50, 60 80 Q 100 110, 60 140",
+            ],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.path
+          d="M 140 20 Q 100 50, 140 80 Q 100 110, 140 140"
+          stroke="url(#strandGradient2)"
+          strokeWidth="2"
+          fill="none"
+          strokeOpacity="0.3"
+          filter="url(#glow)"
+          animate={{
+            d: [
+              "M 140 20 Q 100 50, 140 80 Q 100 110, 140 140",
+              "M 60 20 Q 100 50, 60 80 Q 100 110, 60 140",
+              "M 140 20 Q 100 50, 140 80 Q 100 110, 140 140",
+            ],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      </svg>
+      
+      {/* Ambient particles */}
+      {[...Array(6)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 rounded-full bg-[hsl(226,100%,68%)]"
+          style={{
+            left: `${20 + Math.random() * 60}%`,
+            top: `${10 + Math.random() * 80}%`,
+          }}
+          animate={{
+            opacity: [0, 0.8, 0],
+            scale: [0.5, 1.2, 0.5],
+            y: [0, -20, 0],
+          }}
+          transition={{
+            duration: 3 + Math.random() * 2,
+            delay: i * 0.4,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
 const AppSidebar = () => {
   const location = useLocation();
 
@@ -54,7 +255,7 @@ const AppSidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="p-4 space-y-1">
         {navigation.map((item, index) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
@@ -90,6 +291,21 @@ const AppSidebar = () => {
           );
         })}
       </nav>
+
+      {/* Animated DNA Helix Visualization */}
+      <div className="flex-1 flex items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, duration: 0.6 }}
+          className="w-full"
+        >
+          <DNAHelix />
+          <p className="text-[10px] text-center text-[hsl(220,10%,45%)] mt-2 tracking-wider">
+            FINANCIAL DNA ANALYSIS
+          </p>
+        </motion.div>
+      </div>
 
       {/* Pro Badge / CTA */}
       <div className="p-4">
