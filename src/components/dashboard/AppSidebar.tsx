@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { 
   Briefcase, 
-  FlaskConical, 
+  Dna, 
   Archive, 
   Settings, 
   Compass, 
@@ -30,7 +30,7 @@ const AppSidebar = ({ activeNav, onNavChange }: AppSidebarProps) => {
 
   const navItems = [
     { id: "portfolio" as NavItem, icon: Briefcase, label: "Client Portfolio" },
-    { id: "lab" as NavItem, icon: FlaskConical, label: "Audit Lab" },
+    { id: "lab" as NavItem, icon: Dna, label: "Runway DNA" },
     { id: "archive" as NavItem, icon: Archive, label: "Audit Archive" },
     { id: "resources" as NavItem, icon: BookOpen, label: "Resource Centre" },
     { id: "settings" as NavItem, icon: Settings, label: "Firm Settings" },

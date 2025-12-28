@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import AppSidebar from "@/components/dashboard/AppSidebar";
 import ClientPortfolio from "@/components/dashboard/ClientPortfolio";
-import AuditLab from "@/components/dashboard/AuditLab";
+import RunwayDNA from "@/components/dashboard/RunwayDNA";
 import AuditArchive from "@/components/dashboard/AuditArchive";
 import AuditDetail from "@/components/dashboard/AuditDetail";
 import FirmSettings from "@/components/dashboard/FirmSettings";
@@ -58,7 +58,7 @@ const Index = () => {
       case "portfolio":
         return <ClientPortfolio onClientSelect={handleClientSelect} />;
       case "lab":
-        return <AuditLab onAuditComplete={handleAuditComplete} />;
+        return <RunwayDNA onAuditComplete={() => setActiveNav("portfolio")} />;
       case "archive":
         return <AuditArchive />;
       case "settings":
