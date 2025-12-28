@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { usePlan } from "@/contexts/PlanContext";
-import { apiUrl } from "@/lib/config";
+
 
 interface ResourceCentreProps {
   onBack: () => void;
@@ -35,21 +35,21 @@ const protocolResources: ResourceCard[] = [
     icon: BookOpen,
     title: "Master User Guide",
     description: "Learn the M.A.P. Header Protocol and CID Tagging system for seamless audit workflows.",
-    downloadUrl: apiUrl("/assets/master_user_guide.pdf"),
+    downloadUrl: "https://marginauditpro.com/assets/master_user_guide.pdf",
   },
   {
     id: "excel-template",
     icon: FileSpreadsheet,
     title: "M.A.P. Excel Template",
     description: "Pre-formatted sheet with CID headers for 100% upload success rate.",
-    downloadUrl: apiUrl("/assets/map_excel_template.pdf"),
+    downloadUrl: "https://marginauditpro.com/assets/map_excel_template.pdf",
   },
   {
     id: "lab-manual",
     icon: FlaskConical,
     title: "The Audit Lab Manual",
     description: "A 60-second technical breakdown of the M.A.P. engine and audit algorithms.",
-    downloadUrl: apiUrl("/assets/audit_lab_manual.pdf"),
+    downloadUrl: "https://marginauditpro.com/assets/audit_lab_manual.pdf",
   },
 ];
 
@@ -59,7 +59,7 @@ const clientToolkitResources: ResourceCard[] = [
     icon: FileText,
     title: "Health Grade One-Pager",
     description: "Help your clients understand their A-F Grade and what it means for their business.",
-    downloadUrl: apiUrl("/assets/health_grade_one_pager.pdf"),
+    downloadUrl: "https://marginauditpro.com/assets/health_grade_one_pager.pdf",
     proOnly: true,
   },
   {
@@ -67,7 +67,7 @@ const clientToolkitResources: ResourceCard[] = [
     icon: Map,
     title: "Projected Route Explainer",
     description: "A visual guide to the 90-day trajectory map and profit optimization path.",
-    downloadUrl: apiUrl("/assets/projected_route_explainer.pdf"),
+    downloadUrl: "https://marginauditpro.com/assets/projected_route_explainer.pdf",
     proOnly: true,
   },
 ];
