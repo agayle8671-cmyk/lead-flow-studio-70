@@ -13,12 +13,18 @@ import {
   Moon,
   Sun,
   LogOut,
-  Crown
+  Crown,
+  AlertTriangle,
+  Activity,
+  Trash2,
+  TrendingUp,
+  TrendingDown,
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { useApp } from "@/contexts/AppContext";
+import { useApp, DriftAnomaly } from "@/contexts/AppContext";
 
 const settingsSections = [
   {
@@ -55,8 +61,23 @@ const labelToPanelType: Record<string, SettingsPanelType> = {
 };
 
 const ScaleHub = forwardRef<HTMLDivElement>((_, ref) => {
-  const { user, updateSettings, toggleDarkMode, signOut } = useApp();
+  const { user, updateSettings, toggleDarkMode, signOut, weeklyBrief, clearWeeklyBrief } = useApp();
   const [activePanel, setActivePanel] = useState<SettingsPanelType | null>(null);
+
+  const handleClearWeeklyBrief = () => {
+    clearWeeklyBrief();
+    toast({
+      title: "Weekly Brief Cleared",
+      description: "All drift anomalies have been removed.",
+    });
+  };
+
+  const formatDriftValue = (anomaly: DriftAnomaly) => {
+    if (anomaly.type === "burn") {
+      return `$${Math.round(anomaly.actualValue).toLocaleString()}`;
+    }
+    return `${anomaly.actualValue.toFixed(1)} months`;
+  };
 
   const handleSettingClick = (label: string) => {
     const panelType = labelToPanelType[label];
@@ -278,6 +299,105 @@ const ScaleHub = forwardRef<HTMLDivElement>((_, ref) => {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Weekly Brief - DNA Drift Notifications */}
+          <div className="glass-panel p-6 border-[hsl(270,60%,55%)/0.2]">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Activity className="w-5 h-5 text-[hsl(270,60%,65%)]" />
+                <h3 className="text-[hsl(270,60%,65%)] font-semibold">Weekly Brief</h3>
+                {weeklyBrief.anomalies.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-[hsl(270,60%,55%)/0.2] text-[hsl(270,60%,65%)] text-xs font-bold">
+                    {weeklyBrief.anomalies.length}
+                  </span>
+                )}
+              </div>
+              {weeklyBrief.anomalies.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearWeeklyBrief}
+                  className="text-[hsl(220,10%,50%)] hover:text-[hsl(0,70%,55%)] hover:bg-[hsl(0,70%,50%)/0.1]"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+            
+            {weeklyBrief.anomalies.length === 0 ? (
+              <div className="text-center py-6">
+                <div className="w-12 h-12 rounded-xl bg-[hsl(270,60%,55%)/0.1] flex items-center justify-center mx-auto mb-3">
+                  <Bell className="w-6 h-6 text-[hsl(270,60%,55%)]" />
+                </div>
+                <p className="text-[hsl(220,10%,50%)] text-sm">No drift anomalies detected</p>
+                <p className="text-[hsl(220,10%,40%)] text-xs mt-1">Anomalies from DNA Lab will appear here</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {weeklyBrief.anomalies.map((anomaly) => (
+                  <motion.div
+                    key={anomaly.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className={`p-3 rounded-xl border ${
+                      Math.abs(anomaly.driftPercentage) > 10
+                        ? "bg-[hsl(0,70%,50%)/0.1] border-[hsl(0,70%,50%)/0.2]"
+                        : Math.abs(anomaly.driftPercentage) > 5
+                          ? "bg-[hsl(45,90%,55%)/0.1] border-[hsl(45,90%,55%)/0.2]"
+                          : "bg-[hsl(226,100%,59%)/0.1] border-[hsl(226,100%,59%)/0.2]"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                        Math.abs(anomaly.driftPercentage) > 10
+                          ? "bg-[hsl(0,70%,50%)/0.2]"
+                          : Math.abs(anomaly.driftPercentage) > 5
+                            ? "bg-[hsl(45,90%,55%)/0.2]"
+                            : "bg-[hsl(226,100%,59%)/0.2]"
+                      }`}>
+                        {anomaly.driftPercentage > 0 ? (
+                          <TrendingUp className={`w-4 h-4 ${
+                            anomaly.type === "burn" ? "text-[hsl(0,70%,55%)]" : "text-[hsl(152,100%,50%)]"
+                          }`} />
+                        ) : (
+                          <TrendingDown className={`w-4 h-4 ${
+                            anomaly.type === "burn" ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"
+                          }`} />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-sm font-medium truncate">
+                          {anomaly.message}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[hsl(220,10%,50%)] text-xs">
+                            {formatDriftValue(anomaly)}
+                          </span>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            Math.abs(anomaly.driftPercentage) > 10
+                              ? "bg-[hsl(0,70%,50%)/0.2] text-[hsl(0,70%,65%)]"
+                              : "bg-[hsl(45,90%,55%)/0.2] text-[hsl(45,90%,65%)]"
+                          }`}>
+                            {anomaly.driftPercentage > 0 ? "+" : ""}{anomaly.driftPercentage.toFixed(1)}%
+                          </span>
+                          <span className="text-[hsl(220,10%,40%)] text-xs flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(anomaly.date).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+            
+            {weeklyBrief.lastUpdated && weeklyBrief.anomalies.length > 0 && (
+              <p className="text-[hsl(220,10%,40%)] text-xs mt-3 text-center">
+                Last updated: {new Date(weeklyBrief.lastUpdated).toLocaleString()}
+              </p>
+            )}
           </div>
 
           {/* Danger Zone */}

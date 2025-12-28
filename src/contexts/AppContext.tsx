@@ -1,5 +1,16 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+interface DriftAnomaly {
+  id: string;
+  date: string;
+  type: "burn" | "runway" | "revenue";
+  actualValue: number;
+  predictedValue: number;
+  driftPercentage: number;
+  snapshotDate: string;
+  message: string;
+}
+
 interface UserSettings {
   isPro: boolean;
   darkMode: boolean;
@@ -7,11 +18,19 @@ interface UserSettings {
   weeklyReports: boolean;
 }
 
+interface WeeklyBriefState {
+  anomalies: DriftAnomaly[];
+  lastUpdated: string | null;
+}
+
 interface AppContextType {
   user: UserSettings;
   updateSettings: (settings: Partial<UserSettings>) => void;
   toggleDarkMode: () => void;
   signOut: () => void;
+  weeklyBrief: WeeklyBriefState;
+  addDriftAnomaly: (anomaly: DriftAnomaly) => void;
+  clearWeeklyBrief: () => void;
 }
 
 const defaultSettings: UserSettings = {
@@ -35,6 +54,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     return defaultSettings;
   });
+
+  const [weeklyBrief, setWeeklyBrief] = useState<WeeklyBriefState>(() => {
+    const stored = localStorage.getItem("runwayDNA_weeklyBrief");
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return { anomalies: [], lastUpdated: null };
+      }
+    }
+    return { anomalies: [], lastUpdated: null };
+  });
+
+  // Persist weekly brief to localStorage
+  useEffect(() => {
+    localStorage.setItem("runwayDNA_weeklyBrief", JSON.stringify(weeklyBrief));
+  }, [weeklyBrief]);
+
+  const addDriftAnomaly = (anomaly: DriftAnomaly) => {
+    setWeeklyBrief((prev) => ({
+      anomalies: [anomaly, ...prev.anomalies].slice(0, 20), // Keep last 20 anomalies
+      lastUpdated: new Date().toISOString(),
+    }));
+  };
+
+  const clearWeeklyBrief = () => {
+    setWeeklyBrief({ anomalies: [], lastUpdated: null });
+  };
 
   // Persist settings to localStorage
   useEffect(() => {
@@ -72,11 +119,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ user, updateSettings, toggleDarkMode, signOut }}>
+    <AppContext.Provider value={{ user, updateSettings, toggleDarkMode, signOut, weeklyBrief, addDriftAnomaly, clearWeeklyBrief }}>
       {children}
     </AppContext.Provider>
   );
 }
+
+export type { DriftAnomaly };
 
 export function useApp() {
   const context = useContext(AppContext);

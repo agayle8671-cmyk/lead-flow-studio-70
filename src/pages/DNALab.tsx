@@ -22,11 +22,15 @@ import {
   Clock,
   X,
   ArrowRight,
-  ExternalLink
+  AlertTriangle,
+  Activity,
+  Bell,
+  CheckCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { apiUrl } from "@/lib/config";
+import { useApp, DriftAnomaly } from "@/contexts/AppContext";
 import { 
   exportAsPNG, 
   exportAsPDF, 
@@ -231,15 +235,211 @@ interface HistoricalData extends FinancialData {
   historicalDate?: string;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// DNA DRIFT DETECTION TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+interface DriftResult {
+  hasDrift: boolean;
+  driftType: "burn" | "runway" | "revenue";
+  actualValue: number;
+  predictedValue: number;
+  driftPercentage: number;
+  snapshotDate: string;
+  message: string;
+  severity: "low" | "medium" | "high";
+  exceedsThreshold: boolean; // True if drift > 5% (requires API notification)
+}
+
 const DNALab = () => {
   const navigate = useNavigate();
+  const { addDriftAnomaly } = useApp();
   const [isDragging, setIsDragging] = useState(false);
   const [stage, setStage] = useState<ProcessingStage>("idle");
   const [data, setData] = useState<HistoricalData | null>(null);
   const [displayedRunway, setDisplayedRunway] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
   const [isHistoricalView, setIsHistoricalView] = useState(false);
+  const [driftResult, setDriftResult] = useState<DriftResult | null>(null);
+  const [driftSaved, setDriftSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DNA DRIFT DETECTION LOGIC
+  // ═══════════════════════════════════════════════════════════════════════════
+  
+  /**
+   * Detects financial drift by comparing current analysis to the most recent
+   * Strategic Snapshot from the Archive.
+   * 
+   * Client-side first approach: only pings backend if drift > 5%
+   */
+  const detectFinancialDrift = useCallback(async (currentData: FinancialData): Promise<DriftResult | null> => {
+    try {
+      // 1. Get the most recent snapshot from localStorage (client-side first)
+      const storedArchive = localStorage.getItem("runwayDNA_archive");
+      let latestSnapshot: any = null;
+      
+      if (storedArchive) {
+        const archive = JSON.parse(storedArchive);
+        // Find the most recent SIMULATION entry (Strategic Snapshot)
+        latestSnapshot = archive.find((entry: any) => 
+          entry.entryType === "SIMULATION" || entry.entry_type === "SIMULATION"
+        );
+        
+        // If no simulation, use the most recent analysis
+        if (!latestSnapshot && archive.length > 0) {
+          latestSnapshot = archive[0];
+        }
+      }
+      
+      // If no local data, try API
+      if (!latestSnapshot) {
+        try {
+          const response = await fetch(apiUrl("/api/archive?limit=1&type=SIMULATION"));
+          if (response.ok) {
+            const apiData = await response.json();
+            if (apiData.length > 0) {
+              latestSnapshot = apiData[0];
+            }
+          }
+        } catch {
+          // API unavailable, continue without snapshot
+        }
+      }
+      
+      // No snapshot to compare against
+      if (!latestSnapshot) {
+        return null;
+      }
+      
+      // 2. Extract predicted values from snapshot
+      const predictedBurn = latestSnapshot.scenarioB?.monthly_expenses || 
+                            latestSnapshot.monthlyBurn || 
+                            latestSnapshot.monthly_burn || 
+                            0;
+      
+      const predictedRunway = latestSnapshot.scenarioB?.runway_months || 
+                              latestSnapshot.runway ||
+                              latestSnapshot.runway_months ||
+                              0;
+      
+      // 3. Calculate drift (actual vs predicted)
+      const actualBurn = currentData.monthly_burn;
+      const actualRunway = currentData.runway_months;
+      
+      // Calculate burn drift percentage
+      let burnDrift = 0;
+      if (predictedBurn > 0) {
+        burnDrift = ((actualBurn - predictedBurn) / predictedBurn) * 100;
+      }
+      
+      // Calculate runway drift percentage
+      let runwayDrift = 0;
+      if (predictedRunway > 0 && isFinite(actualRunway)) {
+        runwayDrift = ((actualRunway - predictedRunway) / predictedRunway) * 100;
+      }
+      
+      // Determine which drift is more significant
+      const absB = Math.abs(burnDrift);
+      const absR = Math.abs(runwayDrift);
+      
+      // Get snapshot date
+      const snapshotDate = new Date(latestSnapshot.date || latestSnapshot.created_at || Date.now());
+      const snapshotDateStr = snapshotDate.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+      
+      // If burn drift is more significant
+      if (absB >= absR && absB >= 3) { // 3% minimum threshold for display
+        const severity = absB >= 15 ? "high" : absB >= 8 ? "medium" : "low";
+        const direction = burnDrift > 0 ? "higher" : "lower";
+        
+        return {
+          hasDrift: true,
+          driftType: "burn",
+          actualValue: actualBurn,
+          predictedValue: predictedBurn,
+          driftPercentage: burnDrift,
+          snapshotDate: snapshotDateStr,
+          message: `Expenses are ${Math.abs(burnDrift).toFixed(0)}% ${direction} than your ${snapshotDateStr} Simulation`,
+          severity,
+          exceedsThreshold: absB > 5,
+        };
+      }
+      
+      // If runway drift is more significant
+      if (absR >= 3) {
+        const severity = absR >= 20 ? "high" : absR >= 10 ? "medium" : "low";
+        const direction = runwayDrift > 0 ? "longer" : "shorter";
+        
+        return {
+          hasDrift: true,
+          driftType: "runway",
+          actualValue: actualRunway,
+          predictedValue: predictedRunway,
+          driftPercentage: runwayDrift,
+          snapshotDate: snapshotDateStr,
+          message: `Runway is ${Math.abs(runwayDrift).toFixed(0)}% ${direction} than your ${snapshotDateStr} Simulation`,
+          severity,
+          exceedsThreshold: absR > 5,
+        };
+      }
+      
+      // No significant drift
+      return null;
+      
+    } catch (error) {
+      console.error("Failed to detect financial drift:", error);
+      return null;
+    }
+  }, []);
+  
+  // Handle saving drift to weekly brief
+  const handleSaveToWeeklyBrief = useCallback(() => {
+    if (!driftResult) return;
+    
+    const anomaly: DriftAnomaly = {
+      id: `drift-${Date.now()}`,
+      date: new Date().toISOString(),
+      type: driftResult.driftType,
+      actualValue: driftResult.actualValue,
+      predictedValue: driftResult.predictedValue,
+      driftPercentage: driftResult.driftPercentage,
+      snapshotDate: driftResult.snapshotDate,
+      message: driftResult.message,
+    };
+    
+    addDriftAnomaly(anomaly);
+    setDriftSaved(true);
+    
+    toast({
+      title: "Added to Weekly Brief",
+      description: "This anomaly will appear in your Scale Hub notifications.",
+    });
+  }, [driftResult, addDriftAnomaly]);
+  
+  // Detect drift after analysis completes
+  useEffect(() => {
+    if (stage === "complete" && data && !isHistoricalView) {
+      detectFinancialDrift(data).then((result) => {
+        setDriftResult(result);
+        setDriftSaved(false);
+        
+        // If drift exceeds 5% threshold, optionally notify backend
+        if (result?.exceedsThreshold) {
+          // Optional: Send to backend for tracking/AI analysis
+          fetch(apiUrl("/api/drift-alert"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...result,
+              timestamp: new Date().toISOString(),
+            }),
+          }).catch(() => {
+            // Silently fail if API unavailable
+          });
+        }
+      });
+    }
+  }, [stage, data, isHistoricalView, detectFinancialDrift]);
   
   // Navigation handlers for clickable cards
   const handleRunwayClick = () => {
@@ -1016,6 +1216,164 @@ const DNALab = () => {
                 <ArrowRight className="w-3 h-3" />
               </div>
             </motion.div>
+
+            {/* DNA DRIFT DETECTION CARD */}
+            <AnimatePresence>
+              {driftResult && (
+                <motion.div
+                  className={`bento-hero glass-panel p-6 relative overflow-hidden ${
+                    driftResult.severity === "high" 
+                      ? "border-[hsl(0,70%,50%)/0.4]" 
+                      : driftResult.severity === "medium"
+                        ? "border-[hsl(45,90%,55%)/0.4]"
+                        : "border-[hsl(226,100%,59%)/0.4]"
+                  }`}
+                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  transition={{ delay: 0.55, type: "spring", stiffness: 200 }}
+                >
+                  {/* Animated background gradient based on severity */}
+                  <div className={`absolute inset-0 opacity-10 ${
+                    driftResult.severity === "high" 
+                      ? "bg-gradient-to-r from-[hsl(0,70%,50%)] via-transparent to-[hsl(0,70%,50%)]" 
+                      : driftResult.severity === "medium"
+                        ? "bg-gradient-to-r from-[hsl(45,90%,55%)] via-transparent to-[hsl(45,90%,55%)]"
+                        : "bg-gradient-to-r from-[hsl(226,100%,59%)] via-transparent to-[hsl(226,100%,59%)]"
+                  }`} />
+                  
+                  <div className="relative flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4 flex-1">
+                      {/* Animated Icon */}
+                      <motion.div 
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                          driftResult.severity === "high" 
+                            ? "bg-[hsl(0,70%,50%)/0.2]" 
+                            : driftResult.severity === "medium"
+                              ? "bg-[hsl(45,90%,55%)/0.2]"
+                              : "bg-[hsl(226,100%,59%)/0.2]"
+                        }`}
+                        animate={{ 
+                          scale: [1, 1.05, 1],
+                          rotate: driftResult.severity === "high" ? [0, -3, 3, 0] : [0, 0, 0, 0]
+                        }}
+                        transition={{ 
+                          duration: 2, 
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        {driftResult.severity === "high" ? (
+                          <AlertTriangle className="w-7 h-7 text-[hsl(0,70%,55%)]" />
+                        ) : (
+                          <Activity className={`w-7 h-7 ${
+                            driftResult.severity === "medium" 
+                              ? "text-[hsl(45,90%,55%)]" 
+                              : "text-[hsl(226,100%,68%)]"
+                          }`} />
+                        )}
+                      </motion.div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-xs font-bold uppercase tracking-wider ${
+                            driftResult.severity === "high" 
+                              ? "text-[hsl(0,70%,55%)]" 
+                              : driftResult.severity === "medium"
+                                ? "text-[hsl(45,90%,55%)]"
+                                : "text-[hsl(226,100%,68%)]"
+                          }`}>
+                            DNA Drift Detected
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                            driftResult.severity === "high" 
+                              ? "bg-[hsl(0,70%,50%)/0.2] text-[hsl(0,70%,65%)]" 
+                              : driftResult.severity === "medium"
+                                ? "bg-[hsl(45,90%,55%)/0.2] text-[hsl(45,90%,65%)]"
+                                : "bg-[hsl(226,100%,59%)/0.2] text-[hsl(226,100%,70%)]"
+                          }`}>
+                            {driftResult.severity}
+                          </span>
+                        </div>
+                        
+                        <p className="text-white font-semibold text-lg mb-2">
+                          {driftResult.message}
+                        </p>
+                        
+                        <div className="flex items-center gap-4 text-sm">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[hsl(220,10%,50%)]">Predicted:</span>
+                            <span className="font-mono text-[hsl(220,10%,70%)]">
+                              {driftResult.driftType === "burn" 
+                                ? formatCurrency(driftResult.predictedValue) 
+                                : `${driftResult.predictedValue.toFixed(1)} mo`}
+                            </span>
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-[hsl(220,10%,40%)]" />
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[hsl(220,10%,50%)]">Actual:</span>
+                            <span className={`font-mono font-semibold ${
+                              driftResult.driftPercentage > 0 
+                                ? driftResult.driftType === "burn" 
+                                  ? "text-[hsl(0,70%,55%)]" 
+                                  : "text-[hsl(152,100%,50%)]"
+                                : driftResult.driftType === "burn"
+                                  ? "text-[hsl(152,100%,50%)]"
+                                  : "text-[hsl(0,70%,55%)]"
+                            }`}>
+                              {driftResult.driftType === "burn" 
+                                ? formatCurrency(driftResult.actualValue) 
+                                : `${driftResult.actualValue.toFixed(1)} mo`}
+                            </span>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded font-mono text-xs font-bold ${
+                            Math.abs(driftResult.driftPercentage) > 10
+                              ? "bg-[hsl(0,70%,50%)/0.2] text-[hsl(0,70%,65%)]"
+                              : "bg-[hsl(45,90%,55%)/0.2] text-[hsl(45,90%,65%)]"
+                          }`}>
+                            {driftResult.driftPercentage > 0 ? "+" : ""}{driftResult.driftPercentage.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleSaveToWeeklyBrief}
+                        disabled={driftSaved}
+                        className={`border-[hsl(270,60%,55%)/0.3] hover:border-[hsl(270,60%,55%)/0.6] hover:bg-[hsl(270,60%,55%)/0.1] ${
+                          driftSaved ? "opacity-60" : ""
+                        }`}
+                      >
+                        {driftSaved ? (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-1.5 text-[hsl(152,100%,50%)]" />
+                            <span className="text-[hsl(152,100%,50%)]">Saved</span>
+                          </>
+                        ) : (
+                          <>
+                            <Bell className="w-4 h-4 mr-1.5 text-[hsl(270,60%,65%)]" />
+                            <span className="text-[hsl(270,60%,65%)]">Weekly Brief</span>
+                          </>
+                        )}
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        onClick={() => navigate("/toolkit?tool=runway")}
+                        className="bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(270,60%,55%)] text-white hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.2]"
+                      >
+                        <Sparkles className="w-4 h-4 mr-1.5" />
+                        Adjust Simulation
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* SHARE ACTIONS */}
             <motion.div
