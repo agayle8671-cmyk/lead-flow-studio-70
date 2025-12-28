@@ -130,7 +130,6 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
       return 0;
     });
     setAnalyses(sorted);
-    toast({ title: "Sorted", description: `Sorted by ${field}` });
   };
 
   const filteredAnalyses = analyses.filter(a =>
