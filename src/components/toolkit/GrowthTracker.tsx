@@ -261,90 +261,10 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            MAIN CONTENT
+            MAIN CONTENT - Tight 2-column layout
         ═══════════════════════════════════════════════════════════════════ */}
         <div className="p-8 pt-0">
-          {/* ═══ HERO METRICS ═══ */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
-          >
-            {/* Current MRR - Hero Display */}
-            <div className="md:col-span-2 p-6 rounded-2xl bg-gradient-to-br from-[hsl(270,60%,55%)/0.15] via-[hsl(270,60%,55%)/0.08] to-transparent border border-[hsl(270,60%,55%)/0.3] relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(270,60%,55%)/0.2] blur-[60px] rounded-full" />
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="w-4 h-4 text-[hsl(270,60%,65%)]" />
-                  <span className="text-xs uppercase tracking-wider text-[hsl(270,60%,65%)]">Current MRR</span>
-                </div>
-                <motion.p
-                  key={animatedMRR}
-                  initial={{ scale: 1.1, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="text-4xl font-bold text-white mb-1"
-                  style={{ fontFamily: 'JetBrains Mono' }}
-                >
-                  {formatCurrency(animatedMRR)}
-                </motion.p>
-                <p className="text-sm text-[hsl(220,10%,50%)]">
-                  Monthly Recurring Revenue
-                </p>
-              </div>
-            </div>
-
-            {/* Projected ARR */}
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-[hsl(152,100%,50%)/0.15] via-[hsl(152,100%,50%)/0.08] to-transparent border border-[hsl(152,100%,50%)/0.3] relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-[hsl(152,100%,50%)/0.2] blur-[50px] rounded-full" />
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <Rocket className="w-4 h-4 text-[hsl(152,100%,60%)]" />
-                  <span className="text-xs uppercase tracking-wider text-[hsl(152,100%,60%)]">12-Month ARR</span>
-                </div>
-                <p className="text-3xl font-bold text-white mb-1" style={{ fontFamily: 'JetBrains Mono' }}>
-                  {formatCurrency(projectedARR)}
-                </p>
-                <div className={`flex items-center gap-1 text-sm ${arrGrowth >= 0 ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
-                  {arrGrowth >= 0 ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
-                  <span className="font-semibold">{Math.abs(arrGrowth).toFixed(0)}%</span>
-                  <span className="text-[hsl(220,10%,50%)]">YoY</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Net Growth Rate */}
-            <div className={`p-6 rounded-2xl border relative overflow-hidden ${
-              netGrowthRate >= 10 
-                ? 'bg-gradient-to-br from-[hsl(152,100%,50%)/0.15] to-transparent border-[hsl(152,100%,50%)/0.3]'
-                : netGrowthRate >= 0
-                  ? 'bg-gradient-to-br from-[hsl(45,90%,55%)/0.15] to-transparent border-[hsl(45,90%,55%)/0.3]'
-                  : 'bg-gradient-to-br from-[hsl(0,70%,55%)/0.15] to-transparent border-[hsl(0,70%,55%)/0.3]'
-            }`}>
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <Activity className="w-4 h-4" style={{ color: netGrowthRate >= 10 ? "hsl(152,100%,60%)" : netGrowthRate >= 0 ? "hsl(45,90%,55%)" : "hsl(0,70%,55%)" }} />
-                  <span className={`text-xs uppercase tracking-wider ${
-                    netGrowthRate >= 10 ? "text-[hsl(152,100%,60%)]" : netGrowthRate >= 0 ? "text-[hsl(45,90%,55%)]" : "text-[hsl(0,70%,55%)]"
-                  }`}>
-                    Net Growth
-                  </span>
-                </div>
-                <div className={`flex items-center gap-2 ${netGrowthRate >= 10 ? 'text-[hsl(152,100%,50%)]' : netGrowthRate >= 0 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'}`}>
-                  {netGrowthRate > 0 ? <ArrowUp className="w-5 h-5" /> : netGrowthRate < 0 ? <ArrowDown className="w-5 h-5" /> : <Minus className="w-5 h-5" />}
-                  <p className="text-3xl font-bold" style={{ fontFamily: 'JetBrains Mono' }}>
-                    {netGrowthRate.toFixed(1)}%
-                  </p>
-                </div>
-                <p className="text-xs text-[hsl(220,10%,50%)] mt-1">
-                  {monthlyGrowthRate}% growth - {churnRate}% churn
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ═══ MAIN GRID ═══ */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* ═══ LEFT PANEL: CONTROLS ═══ */}
             <motion.div
               initial={{ x: -20, opacity: 0 }}
