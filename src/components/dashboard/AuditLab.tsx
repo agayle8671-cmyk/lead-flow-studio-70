@@ -7,6 +7,7 @@ import { useClient, Client } from "@/contexts/ClientContext";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiUrl } from "@/lib/config";
+import CIDErrorDialog from "./CIDErrorDialog";
 
 interface AuditLabProps {
   onAuditComplete: (client: Client) => void;
@@ -18,8 +19,9 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [processingStatus, setProcessingStatus] = useState<string>("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [showCIDError, setShowCIDError] = useState(false);
   const { toast } = useToast();
-  const { clients, refreshClients } = useClient();
+  const { clients, refreshClients, addUploadedCID } = useClient();
 
   const processFile = useCallback(async (file: File) => {
     if (!selectedClientId) {
@@ -36,50 +38,48 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
     setUploadSuccess(false);
 
     try {
-      const extension = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
-      const isPDF = extension === ".pdf";
+      // Read file content
+      const content = await file.text();
+      
+      setProcessingStatus("Analyzing with AI...");
+      
+      // Send to parse-finances endpoint
+      const response = await fetch(apiUrl("/api/parse-finances"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ content, clientId: selectedClientId }),
+        mode: "cors",
+      });
 
-      if (isPDF) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("clientId", selectedClientId);
-
-        const response = await fetch(apiUrl("/api/upload"), {
-          method: "POST",
-          body: formData,
-          mode: "cors",
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text().catch(() => "Unknown error");
-          throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+      const responseText = await response.text();
+      
+      // Check for Missing CID error
+      if (!response.ok) {
+        if (responseText.toLowerCase().includes("missing cid") || 
+            responseText.toLowerCase().includes("missing client") ||
+            responseText.toLowerCase().includes("invalid cid")) {
+          setShowCIDError(true);
+          throw new Error("Missing CID");
         }
+        throw new Error(`Parse failed: ${response.status} - ${responseText}`);
+      }
 
-        setProcessingStatus("Analyzing with AI...");
-        await response.json();
-      } else {
-        const content = await file.text();
-        
-        const response = await fetch(apiUrl("/api/parse-finances"), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({ content, clientId: selectedClientId }),
-          mode: "cors",
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text().catch(() => "Unknown error");
-          throw new Error(`Parse failed: ${response.status} - ${errorText}`);
-        }
-
-        await response.json();
+      // Parse successful response
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        data = {};
       }
 
       setUploadSuccess(true);
       setProcessingStatus("Audit complete!");
+      
+      // Track the uploaded CID for portfolio filtering
+      addUploadedCID(selectedClientId);
       
       toast({
         title: "Audit Processed",
@@ -87,6 +87,8 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
       });
 
       const selected = clients.find((c) => c.id === parseInt(selectedClientId));
+      
+      // Refresh clients to update dashboard data
       await refreshClients();
 
       if (selected) {
@@ -94,11 +96,16 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast({
-        variant: "destructive",
-        title: "Upload Failed",
-        description: error instanceof Error ? error.message : "Could not process the document.",
-      });
+      const errorMessage = error instanceof Error ? error.message : "Could not process the document.";
+      
+      // Don't show toast for CID errors (dialog handles it)
+      if (!errorMessage.includes("Missing CID")) {
+        toast({
+          variant: "destructive",
+          title: "Upload Failed",
+          description: errorMessage,
+        });
+      }
     } finally {
       setIsUploading(false);
       setTimeout(() => {
@@ -106,7 +113,7 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
         setUploadSuccess(false);
       }, 2000);
     }
-  }, [selectedClientId, clients, toast, refreshClients, onAuditComplete]);
+  }, [selectedClientId, clients, toast, refreshClients, onAuditComplete, addUploadedCID]);
 
   const validateAndProcessFile = useCallback((file: File) => {
     const validTypes = [".csv", ".txt", ".json", ".pdf"];
@@ -300,6 +307,9 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
           </div>
         </motion.div>
       </main>
+
+      {/* CID Error Dialog */}
+      <CIDErrorDialog open={showCIDError} onClose={() => setShowCIDError(false)} />
     </div>
   );
 };

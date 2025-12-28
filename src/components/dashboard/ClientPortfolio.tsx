@@ -1,23 +1,24 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Briefcase, ArrowRight, RefreshCw, Loader2, TrendingUp, Users, Calendar, AlertTriangle } from "lucide-react";
+import { Briefcase, ArrowRight, RefreshCw, Loader2, TrendingUp, Users, Calendar, AlertTriangle, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useClient, Client } from "@/contexts/ClientContext";
 import { usePlan } from "@/contexts/PlanContext";
 import { format } from "date-fns";
 import UpgradeModal from "./UpgradeModal";
+import { cn } from "@/lib/utils";
 
 interface ClientPortfolioProps {
   onClientSelect: (client: Client) => void;
 }
 
 const ClientPortfolio = ({ onClientSelect }: ClientPortfolioProps) => {
-  const { clients, isLoading, error, refreshClients } = useClient();
+  const { clients, filteredClients, isLoading, error, refreshClients, uploadedCIDs, filterByUploadedCIDs, setFilterByUploadedCIDs } = useClient();
   const { clientLimit, isFirm } = usePlan();
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   // Apply tier limit - Solo tier shows max 10 clients
-  const displayedClients = clients.slice(0, clientLimit);
+  const displayedClients = (filterByUploadedCIDs ? filteredClients : clients).slice(0, clientLimit);
   const hasHiddenClients = clients.length > clientLimit;
   const isAtLimit = clients.length >= clientLimit;
 
@@ -60,16 +61,33 @@ const ClientPortfolio = ({ onClientSelect }: ClientPortfolioProps) => {
                 : `Automated Audit Capacity: ${clients.length}/10 clients`}
             </p>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={refreshClients} 
-            disabled={isLoading}
-            className="gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* CID Filter Toggle */}
+            {uploadedCIDs.length > 0 && (
+              <Button
+                variant={filterByUploadedCIDs ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterByUploadedCIDs(!filterByUploadedCIDs)}
+                className={cn(
+                  "gap-2",
+                  filterByUploadedCIDs && "gradient-gold text-charcoal shadow-gold"
+                )}
+              >
+                <Filter className="w-4 h-4" />
+                {filterByUploadedCIDs ? "Showing Uploaded" : "Filter by Uploads"}
+              </Button>
+            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refreshClients} 
+              disabled={isLoading}
+              className="gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
       </header>
 
