@@ -63,7 +63,7 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
 
       // Retry logic for network failures (e.g., backend crash on CSV)
       const maxRetries = 2;
-      const timeoutMs = 30000; // 30 second timeout
+      const timeoutMs = 60000; // 60 second timeout for AI parser
       let response: Response | null = null;
       let lastError: Error | null = null;
 
@@ -78,10 +78,14 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
             headers,
             body: formData,
             mode: "cors",
+            credentials: "include",
             signal: controller.signal,
           });
           
           clearTimeout(timeoutId);
+          
+          // Clear any "Server Busy" messages on success
+          setProcessingStatus("Processing response...");
           break; // Success - exit retry loop
         } catch (networkError) {
           lastError = networkError instanceof Error ? networkError : new Error("Network error");
@@ -134,29 +138,39 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
         throw new Error(`Parse failed: ${response.status} - ${apiMessage}`);
       }
 
-      // Parse successful response
+      // Parse successful response - backend returns grade, margin, insight
       let data;
       try {
         data = JSON.parse(responseText);
+        console.log("Audit response data:", data);
       } catch {
         data = {};
       }
 
+      // Clear all busy states and show success
       setUploadSuccess(true);
       setProcessingStatus("Audit complete!");
       
       // Track the uploaded CID for portfolio filtering (even if unassigned)
       addUploadedCID(selectedClientId);
       
-      // Show success message - works for both assigned and unassigned audits
+      // Check for Grade A celebration trigger
+      const grade = data.maestroGrade || data.grade || data.health?.grade;
+      const isGradeA = grade === "A" || grade === "A+";
+      
+      // Show success message with grade info
+      const gradeInfo = grade ? ` Grade: ${grade}` : "";
+      const marginInfo = data.profitMargin ? ` | Margin: ${data.profitMargin}%` : "";
       const successMessage = extractedCID 
-        ? `Audit linked to CID: ${extractedCID}` 
-        : "Audit saved as Unassigned. You can link it to a client later.";
+        ? `Audit linked to CID: ${extractedCID}${gradeInfo}${marginInfo}` 
+        : `Audit saved successfully!${gradeInfo}${marginInfo}`;
       
       toast({
-        title: "Audit Processed Successfully",
-        description: data.message || successMessage,
-        className: "bg-emerald-500/10 border-emerald-500/30",
+        title: isGradeA ? "🎉 Grade A Achievement!" : "Audit Processed Successfully",
+        description: data.maestroInsight || data.insight || data.health?.insight || successMessage,
+        className: isGradeA 
+          ? "bg-primary/10 border-primary/30" 
+          : "bg-emerald-500/10 border-emerald-500/30",
       });
 
       // Refresh clients to get updated data from backend
