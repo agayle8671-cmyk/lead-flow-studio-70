@@ -38,6 +38,10 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
       // Read file content
       const content = await file.text();
       
+      // Extract CID from file content if present (e.g., "CID: ACME_CORP_2025")
+      const cidMatch = content.match(/^CID:\s*(.+)$/im);
+      const extractedCID = cidMatch ? cidMatch[1].trim() : null;
+      
       setProcessingStatus("Analyzing with AI...");
       
       // Send to live backend at marginauditpro.com
@@ -47,7 +51,11 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ content, clientId: selectedClientId }),
+        body: JSON.stringify({ 
+          content, 
+          clientId: selectedClientId,
+          cid: extractedCID || selectedClientId 
+        }),
         mode: "cors",
       });
 
