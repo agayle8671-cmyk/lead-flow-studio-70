@@ -686,7 +686,7 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
                   </div>
                 </div>
                 
-                <div className="h-[300px]">
+                <div className="h-[380px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={burnProjection} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
@@ -780,7 +780,7 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
                           transition={{ delay: i * 0.03 }}
                           className="flex-1 flex flex-col items-center gap-2"
                         >
-                          <div className="w-full h-32 bg-[hsl(240,7%,18%)] rounded-xl overflow-hidden flex flex-col-reverse border border-white/5">
+                          <div className="w-full h-40 bg-[hsl(240,7%,18%)] rounded-xl overflow-hidden flex flex-col-reverse border border-white/5">
                             <motion.div
                               initial={{ height: 0 }}
                               animate={{ height: `${Math.max(0, Math.min(100, percentage))}%` }}

@@ -512,7 +512,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                   </div>
                 </div>
                 
-                <div className="h-[350px]">
+                <div className="h-[420px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={projectionData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
@@ -617,47 +617,70 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
 
               {/* Customer Timeline */}
               <div className="p-6 rounded-2xl glass-panel border border-white/5">
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-[hsl(152,100%,50%)]" />
-                    <h3 className="text-white font-semibold">Customer Growth Timeline</h3>
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(152,100%,50%)/0.2] flex items-center justify-center">
+                      <Users className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold">Customer Growth Timeline</h3>
+                      <p className="text-xs text-[hsl(220,10%,50%)]">Monthly customer progression</p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(226,100%,59%)/0.1] border border-[hsl(226,100%,59%)/0.3]">
                       <div className="w-3 h-3 rounded-full bg-[hsl(226,100%,59%)]" />
-                      <span className="text-[hsl(220,10%,55%)]">Start</span>
+                      <span className="text-[hsl(226,100%,68%)] font-semibold">Start</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(152,100%,50%)/0.1] border border-[hsl(152,100%,50%)/0.3]">
                       <div className="w-3 h-3 rounded-full bg-[hsl(152,100%,50%)]" />
-                      <span className="text-[hsl(220,10%,55%)]">12mo</span>
+                      <span className="text-[hsl(152,100%,60%)] font-semibold">12mo</span>
                     </div>
                   </div>
                 </div>
                 
-                {/* Animated customer timeline */}
-                <div className="flex gap-2 flex-wrap">
+                {/* Enhanced Animated customer timeline */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                   <AnimatePresence>
-                    {projectionData.map((data, i) => (
-                      <motion.div
-                        key={data.month}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ delay: i * 0.02 }}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                          i === 0 
-                            ? 'bg-[hsl(226,100%,59%)/0.2] border border-[hsl(226,100%,59%)/0.4] text-[hsl(226,100%,68%)]' 
-                            : i === projectionData.length - 1 
-                              ? 'bg-[hsl(152,100%,50%)/0.2] border border-[hsl(152,100%,50%)/0.4] text-[hsl(152,100%,60%)]'
-                              : 'bg-[hsl(240,7%,18%)] border border-white/5 text-[hsl(220,10%,70%)]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold">{data.month}</span>
-                          <span className="text-xs opacity-75">{data.customers}</span>
-                        </div>
-                      </motion.div>
-                    ))}
+                    {projectionData.map((data, i) => {
+                      const isStart = i === 0;
+                      const isEnd = i === projectionData.length - 1;
+                      const growthPercent = i > 0 ? ((data.customers - projectionData[i - 1].customers) / projectionData[i - 1].customers) * 100 : 0;
+                      
+                      return (
+                        <motion.div
+                          key={data.month}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ delay: i * 0.03 }}
+                          className={`relative p-4 rounded-xl border-2 transition-all ${
+                            isStart 
+                              ? 'bg-gradient-to-br from-[hsl(226,100%,59%)/0.2] to-[hsl(226,100%,59%)/0.1] border-[hsl(226,100%,59%)/0.5]' 
+                              : isEnd 
+                                ? 'bg-gradient-to-br from-[hsl(152,100%,50%)/0.2] to-[hsl(152,100%,50%)/0.1] border-[hsl(152,100%,50%)/0.5]'
+                                : 'bg-[hsl(240,7%,15%)] border-white/10 hover:border-white/20'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center text-center gap-2">
+                            <span className={`text-xs font-semibold uppercase tracking-wider ${
+                              isStart ? 'text-[hsl(226,100%,68%)]' : isEnd ? 'text-[hsl(152,100%,60%)]' : 'text-[hsl(220,10%,60%)]'
+                            }`}>
+                              {data.month}
+                            </span>
+                            <span className={`text-2xl font-bold ${isStart ? 'text-[hsl(226,100%,68%)]' : isEnd ? 'text-[hsl(152,100%,60%)]' : 'text-white'}`} style={{ fontFamily: 'JetBrains Mono' }}>
+                              {data.customers}
+                            </span>
+                            {!isStart && growthPercent > 0 && (
+                              <div className="flex items-center gap-1 text-[10px] text-[hsl(152,100%,50%)]">
+                                <ArrowUp className="w-3 h-3" />
+                                <span className="font-semibold">{growthPercent.toFixed(1)}%</span>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                   </AnimatePresence>
                 </div>
               </div>
