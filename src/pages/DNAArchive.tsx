@@ -3,13 +3,6 @@ import { motion } from "framer-motion";
 import { Archive, Calendar, TrendingUp, FileText, Search, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { apiUrl } from "@/lib/config";
 import {
   DropdownMenu,
@@ -264,52 +257,200 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
         </div>
       </motion.div>
 
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="bg-[hsl(270,15%,10%)] border-[hsl(226,100%,59%)/0.2] text-white max-w-xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gradient-cobalt">
-              {selectedAnalysis ? `Analysis — ${selectedAnalysis.date}` : "Analysis"}
-            </DialogTitle>
-            <DialogDescription className="text-[hsl(220,10%,55%)]">
-              Review your runway snapshot.
-            </DialogDescription>
-          </DialogHeader>
+      {/* Stunning Analysis Detail Modal */}
+      {detailOpen && selectedAnalysis && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => setDetailOpen(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 50, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 50, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gradient-to-br from-[hsl(240,15%,8%)] via-[hsl(220,20%,10%)] to-[hsl(240,15%,8%)] border border-[hsl(226,100%,59%)/0.2] shadow-2xl shadow-[hsl(226,100%,59%)/0.1]"
+          >
+            {/* Header with Glow */}
+            <div className="relative p-8 pb-6 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(226,100%,59%)/0.1] via-transparent to-[hsl(152,100%,50%)/0.1]" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[150px] bg-[hsl(226,100%,59%)/0.15] blur-[80px] rounded-full" />
+              
+              <motion.div 
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+                className="relative flex items-center gap-4"
+              >
+                <div className={`w-16 h-16 rounded-2xl ${getGradeClass(selectedAnalysis.grade)} flex items-center justify-center shadow-lg ${selectedAnalysis.grade.toLowerCase() === 'a' ? 'shadow-[hsl(152,100%,50%)/0.3]' : selectedAnalysis.grade.toLowerCase() === 'b' ? 'shadow-[hsl(226,100%,59%)/0.3]' : 'shadow-[hsl(45,90%,55%)/0.3]'}`}>
+                  <span className="text-3xl font-bold">{selectedAnalysis.grade}</span>
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-white">{selectedAnalysis.date}</h2>
+                  <p className="text-[hsl(220,10%,55%)]">Financial DNA Snapshot</p>
+                </div>
+              </motion.div>
+            </div>
 
-          {selectedAnalysis && (
-            <div className="mt-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl bg-[hsl(240,7%,8%)] border border-white/5">
-                  <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)]">Grade</p>
-                  <p className="mt-1 text-2xl font-bold text-white">{selectedAnalysis.grade}</p>
+            {/* Main Runway Display */}
+            <div className="px-8 py-6">
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="relative p-8 rounded-3xl overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(152,100%,50%)/0.08] via-[hsl(180,80%,45%)/0.05] to-[hsl(226,100%,59%)/0.08]" />
+                <div className="absolute inset-0 backdrop-blur-xl bg-[hsl(240,7%,8%)/0.6]" />
+                
+                <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
+                  {/* Runway Display */}
+                  <div className="text-center md:text-left">
+                    <p className="text-[hsl(220,10%,55%)] text-sm uppercase tracking-wider mb-2">Runway at Time</p>
+                    <div className="flex items-baseline gap-2">
+                      <motion.span 
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.3, type: "spring" }}
+                        className="text-7xl font-bold font-mono"
+                        style={{ color: selectedAnalysis.runway >= 12 ? "hsl(152, 100%, 50%)" : selectedAnalysis.runway >= 6 ? "hsl(45, 90%, 55%)" : "hsl(0, 70%, 55%)" }}
+                      >
+                        {selectedAnalysis.runway.toFixed(1)}
+                      </motion.span>
+                      <span className="text-2xl text-[hsl(220,10%,50%)]">months</span>
+                    </div>
+                    <div className={`flex items-center gap-2 mt-3 ${selectedAnalysis.trend === "up" ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
+                      <TrendingUp className={`w-5 h-5 ${selectedAnalysis.trend === "down" ? "rotate-180" : ""}`} />
+                      <span className="font-semibold">{selectedAnalysis.change} from previous</span>
+                    </div>
+                  </div>
+
+                  {/* Grade Badge */}
+                  <motion.div
+                    initial={{ rotate: -10, scale: 0 }}
+                    animate={{ rotate: 0, scale: 1 }}
+                    transition={{ delay: 0.4, type: "spring" }}
+                    className="relative"
+                  >
+                    <div className="absolute inset-0 blur-2xl opacity-40" style={{ background: selectedAnalysis.grade.toLowerCase() === 'a' ? 'hsl(152, 100%, 50%)' : selectedAnalysis.grade.toLowerCase() === 'b' ? 'hsl(226, 100%, 59%)' : 'hsl(45, 90%, 55%)' }} />
+                    <div className={`relative w-24 h-24 rounded-2xl ${getGradeClass(selectedAnalysis.grade)} flex items-center justify-center font-bold text-5xl shadow-xl`}>
+                      {selectedAnalysis.grade}
+                    </div>
+                  </motion.div>
                 </div>
-                <div className="p-4 rounded-xl bg-[hsl(240,7%,8%)] border border-white/5">
-                  <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)]">Runway</p>
-                  <p className="mt-1 text-2xl font-bold text-white">{selectedAnalysis.runway} months</p>
+
+                {/* Runway Progress Bar */}
+                <div className="relative mt-8">
+                  <div className="h-3 rounded-full bg-[hsl(240,7%,15%)] overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min((selectedAnalysis.runway / 24) * 100, 100)}%` }}
+                      transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+                      className="h-full rounded-full"
+                      style={{ 
+                        background: selectedAnalysis.runway >= 12 
+                          ? "linear-gradient(90deg, hsl(152, 100%, 50%), hsl(180, 80%, 45%))" 
+                          : selectedAnalysis.runway >= 6 
+                            ? "linear-gradient(90deg, hsl(45, 90%, 55%), hsl(30, 80%, 50%))"
+                            : "linear-gradient(90deg, hsl(0, 70%, 55%), hsl(15, 80%, 50%))"
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-2 text-xs text-[hsl(220,10%,45%)]">
+                    <span>0</span>
+                    <span>6 mo</span>
+                    <span>12 mo</span>
+                    <span>18 mo</span>
+                    <span>24+ mo</span>
+                  </div>
                 </div>
-                <div className="p-4 rounded-xl bg-[hsl(240,7%,8%)] border border-white/5">
-                  <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)]">Monthly Burn</p>
-                  <p className="mt-1 text-2xl font-bold text-white">
-                    {typeof selectedAnalysis.monthlyBurn === "number" ? `$${selectedAnalysis.monthlyBurn.toLocaleString()}` : "—"}
-                  </p>
+              </motion.div>
+            </div>
+
+            {/* Metrics Grid */}
+            <motion.div 
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="px-8 pb-6 grid grid-cols-2 gap-4"
+            >
+              <div className="p-5 rounded-2xl bg-[hsl(152,100%,50%)/0.08] border border-[hsl(152,100%,50%)/0.2]">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-[hsl(152,100%,50%)/0.2] flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+                  </div>
+                  <span className="text-xs uppercase tracking-wider text-[hsl(152,100%,60%)]">Cash on Hand</span>
                 </div>
-                <div className="p-4 rounded-xl bg-[hsl(240,7%,8%)] border border-white/5">
-                  <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)]">Cash on Hand</p>
-                  <p className="mt-1 text-2xl font-bold text-white">
-                    {typeof selectedAnalysis.cashOnHand === "number" ? `$${selectedAnalysis.cashOnHand.toLocaleString()}` : "—"}
-                  </p>
-                </div>
+                <p className="text-3xl font-bold text-white">
+                  {typeof selectedAnalysis.cashOnHand === "number" ? `$${selectedAnalysis.cashOnHand.toLocaleString()}` : "—"}
+                </p>
               </div>
 
-              {selectedAnalysis.insight && (
-                <div className="p-4 rounded-xl bg-[hsl(226,100%,59%)/0.08] border border-[hsl(226,100%,59%)/0.2]">
-                  <p className="text-xs uppercase tracking-wider text-[hsl(226,100%,68%)] mb-2">Insight</p>
-                  <p className="text-[hsl(220,10%,70%)] leading-relaxed">{selectedAnalysis.insight}</p>
+              <div className="p-5 rounded-2xl bg-[hsl(0,70%,55%)/0.08] border border-[hsl(0,70%,55%)/0.2]">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-[hsl(0,70%,55%)/0.2] flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-[hsl(0,70%,55%)] rotate-180" />
+                  </div>
+                  <span className="text-xs uppercase tracking-wider text-[hsl(0,70%,65%)]">Monthly Burn</span>
+                </div>
+                <p className="text-3xl font-bold text-white">
+                  {typeof selectedAnalysis.monthlyBurn === "number" ? `$${selectedAnalysis.monthlyBurn.toLocaleString()}` : "—"}
+                </p>
+              </div>
+
+              {selectedAnalysis.profitMargin !== undefined && (
+                <div className="col-span-2 p-5 rounded-2xl bg-[hsl(226,100%,59%)/0.08] border border-[hsl(226,100%,59%)/0.2]">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(226,100%,59%)/0.2] flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-[hsl(226,100%,68%)]" />
+                    </div>
+                    <span className="text-xs uppercase tracking-wider text-[hsl(226,100%,68%)]">Profit Margin</span>
+                  </div>
+                  <p className="text-3xl font-bold text-white">{selectedAnalysis.profitMargin}%</p>
                 </div>
               )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            </motion.div>
+
+            {/* Insight Section */}
+            {selectedAnalysis.insight && (
+              <motion.div 
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="px-8 pb-8"
+              >
+                <div className="p-6 rounded-2xl bg-gradient-to-br from-[hsl(270,60%,50%)/0.1] to-[hsl(226,100%,59%)/0.1] border border-[hsl(270,60%,55%)/0.2]">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(270,60%,55%)/0.2] flex items-center justify-center">
+                      <Archive className="w-5 h-5 text-[hsl(270,60%,65%)]" />
+                    </div>
+                    <span className="text-sm font-semibold text-[hsl(270,60%,70%)]">AI Insight</span>
+                  </div>
+                  <p className="text-[hsl(220,10%,75%)] leading-relaxed text-lg">{selectedAnalysis.insight}</p>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Close Button */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="px-8 pb-8 flex justify-center"
+            >
+              <Button 
+                onClick={() => setDetailOpen(false)}
+                className="px-8 py-3 rounded-xl bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(270,60%,55%)] hover:from-[hsl(226,100%,65%)] hover:to-[hsl(270,60%,60%)] text-white font-semibold shadow-lg shadow-[hsl(226,100%,59%)/0.3] transition-all"
+              >
+                Close Analysis
+              </Button>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 });
