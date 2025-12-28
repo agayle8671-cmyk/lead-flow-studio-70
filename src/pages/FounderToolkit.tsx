@@ -103,13 +103,11 @@ const FounderToolkitContent = forwardRef<HTMLDivElement>((_, ref) => {
   const { totalNewHires, hiringImpact, updateRole } = useHiring();
   
   // ═══════════════════════════════════════════════════════════════════════════
-  // REHYDRATION HOOK - Check for simulation snapshot and auto-open simulator
-  // Also handle tool parameter from DNA Lab navigation
+  // Handle tool parameter from DNA Lab navigation
   // ═══════════════════════════════════════════════════════════════════════════
   useEffect(() => {
-    // Check for tool parameter from DNA Lab card clicks
     const toolParam = searchParams.get("tool");
-    if (toolParam && !burnCalcOpen && !runwaySimOpen && !growthTrackerOpen && !hiringPlannerOpen) {
+    if (toolParam) {
       // Load initial data from sessionStorage if available
       const storedData = sessionStorage.getItem("runwayDNA_initialData");
       if (storedData) {
@@ -134,7 +132,12 @@ const FounderToolkitContent = forwardRef<HTMLDivElement>((_, ref) => {
       window.history.replaceState({}, "", "/toolkit");
       sessionStorage.removeItem("runwayDNA_initialData");
     }
-    
+  }, [searchParams]);
+  
+  // ═══════════════════════════════════════════════════════════════════════════
+  // REHYDRATION HOOK - Check for simulation snapshot and auto-open simulator
+  // ═══════════════════════════════════════════════════════════════════════════
+  useEffect(() => {
     const isSimulationRedirect = searchParams.get("simulation") === "true";
     
     if (isSimulationRedirect) {
