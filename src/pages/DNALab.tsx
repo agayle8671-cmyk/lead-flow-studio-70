@@ -110,7 +110,7 @@ const DNALab = () => {
       const result = await response.json();
       setData({
         runway_months: result.runwayMonths || 12,
-        grade: result.grade || "B",
+        grade: (result.grade || "B").toUpperCase(),
         monthly_burn: result.monthlyBurn || 35000,
         cash_on_hand: result.cashOnHand || 420000,
         profit_margin: result.profitMargin || 15,
@@ -439,8 +439,8 @@ const DNALab = () => {
               <p className="text-[hsl(220,10%,55%)] text-sm uppercase tracking-[0.2em] font-medium mb-6">
                 Health Grade
               </p>
-              <div className={`grade-badge text-7xl md:text-8xl w-32 h-32 ${getGradeClass(data.grade)} ${data.grade === "A" ? "grade-halo" : ""}`}>
-                {data.grade}
+              <div className={`grade-badge text-7xl md:text-8xl w-32 h-32 ${getGradeClass(data.grade)} ${data.grade.toUpperCase() === "A" ? "grade-halo" : ""}`}>
+                {data.grade.toUpperCase()}
               </div>
               <p className="text-[hsl(220,10%,55%)] mt-6 text-center text-sm max-w-xs leading-relaxed">
                 {data.insight}
