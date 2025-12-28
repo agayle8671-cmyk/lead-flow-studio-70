@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, 
@@ -19,12 +19,20 @@ import {
   Award,
   Activity,
   TrendingDown,
-  Percent
+  Percent,
+  Brain,
+  AlertTriangle,
+  Lightbulb,
+  RefreshCw,
+  CheckCircle2,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   AreaChart,
   Area,
@@ -41,6 +49,15 @@ import {
   Pie,
   Cell
 } from "recharts";
+
+interface AIInsights {
+  healthScore: number;
+  healthLabel: string;
+  primaryInsight: string;
+  recommendations: string[];
+  risks: string[];
+  opportunities: string[];
+}
 
 interface GrowthTrackerProps {
   onClose: () => void;
@@ -64,6 +81,11 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
   const [animatedMRR, setAnimatedMRR] = useState(currentMRR);
   const [projectionData, setProjectionData] = useState<MonthlyData[]>([]);
   const [selectedMonthIndex, setSelectedMonthIndex] = useState<number | null>(null);
+  
+  // AI Insights state
+  const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
+  const [isLoadingInsights, setIsLoadingInsights] = useState(false);
+  const [insightsError, setInsightsError] = useState<string | null>(null);
   
   // New features: LTV:CAC and Revenue Goal
   const [customerAcquisitionCost, setCustomerAcquisitionCost] = useState(150);
@@ -200,6 +222,53 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
     return milestones;
   }, [projectedARR]);
 
+  // Fetch AI Insights
+  const fetchAIInsights = useCallback(async () => {
+    setIsLoadingInsights(true);
+    setInsightsError(null);
+    
+    try {
+      const response = await supabase.functions.invoke('growth-insights', {
+        body: {
+          currentMRR,
+          monthlyGrowthRate,
+          avgRevenuePerUser,
+          churnRate,
+          customerAcquisitionCost,
+          projectedARR,
+          ltvCacRatio,
+          customers: currentCustomers
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to fetch insights');
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      setAiInsights(response.data as AIInsights);
+      toast.success("AI insights generated!");
+    } catch (error) {
+      console.error("Error fetching AI insights:", error);
+      const message = error instanceof Error ? error.message : 'Failed to generate insights';
+      setInsightsError(message);
+      toast.error(message);
+    } finally {
+      setIsLoadingInsights(false);
+    }
+  }, [currentMRR, monthlyGrowthRate, avgRevenuePerUser, churnRate, customerAcquisitionCost, projectedARR, ltvCacRatio, currentCustomers]);
+
+  // Health score color helper
+  const getHealthColor = (score: number) => {
+    if (score >= 80) return 'hsl(152, 100%, 50%)';
+    if (score >= 60) return 'hsl(50, 100%, 50%)';
+    if (score >= 40) return 'hsl(30, 100%, 50%)';
+    return 'hsl(0, 70%, 55%)';
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -250,14 +319,28 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                 </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="rounded-full hover:bg-white/10"
-            >
-              <X className="w-5 h-5 text-white" />
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={fetchAIInsights}
+                disabled={isLoadingInsights}
+                className="bg-gradient-to-r from-[hsl(280,70%,50%)] to-[hsl(320,70%,50%)] hover:from-[hsl(280,70%,55%)] hover:to-[hsl(320,70%,55%)] text-white font-semibold shadow-lg shadow-[hsl(280,70%,50%)/0.3]"
+              >
+                {isLoadingInsights ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Brain className="w-4 h-4 mr-2" />
+                )}
+                {isLoadingInsights ? "Analyzing..." : aiInsights ? "Refresh Insights" : "Get AI Insights"}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="rounded-full hover:bg-white/10"
+              >
+                <X className="w-5 h-5 text-white" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -824,6 +907,159 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               </div>
             </motion.div>
           </div>
+
+          {/* ═══ AI INSIGHTS PANEL ═══ */}
+          <AnimatePresence>
+            {aiInsights && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mt-6 p-6 rounded-2xl bg-gradient-to-br from-[hsl(280,70%,50%)/0.15] via-[hsl(320,70%,50%)/0.1] to-[hsl(280,70%,50%)/0.05] border border-[hsl(280,70%,50%)/0.3]"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(280,70%,50%)] to-[hsl(320,70%,50%)] flex items-center justify-center">
+                      <Brain className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold">AI-Powered Insights</h3>
+                      <p className="text-xs text-[hsl(220,10%,50%)]">Strategic analysis of your growth metrics</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-[hsl(220,10%,55%)]">Health Score</span>
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+                        style={{ 
+                          backgroundColor: `${getHealthColor(aiInsights.healthScore)}20`,
+                          borderColor: `${getHealthColor(aiInsights.healthScore)}50`
+                        }}
+                      >
+                        <div 
+                          className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+                          style={{ 
+                            backgroundColor: getHealthColor(aiInsights.healthScore),
+                            color: aiInsights.healthScore >= 60 ? 'black' : 'white'
+                          }}
+                        >
+                          {aiInsights.healthScore}
+                        </div>
+                        <span className="font-semibold" style={{ color: getHealthColor(aiInsights.healthScore) }}>
+                          {aiInsights.healthLabel}
+                        </span>
+                      </motion.div>
+                    </div>
+                    <button 
+                      onClick={() => setAiInsights(null)}
+                      className="text-[hsl(220,10%,50%)] hover:text-white transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Primary Insight */}
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-white/10 mb-6"
+                >
+                  <div className="flex items-start gap-3">
+                    <Sparkles className="w-5 h-5 text-[hsl(280,70%,60%)] mt-0.5 flex-shrink-0" />
+                    <p className="text-white font-medium">{aiInsights.primaryInsight}</p>
+                  </div>
+                </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Recommendations */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-[hsl(152,100%,50%)/0.2]"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle2 className="w-4 h-4 text-[hsl(152,100%,50%)]" />
+                      <h4 className="text-sm font-semibold text-[hsl(152,100%,60%)]">Recommendations</h4>
+                    </div>
+                    <ul className="space-y-2">
+                      {aiInsights.recommendations.map((rec, i) => (
+                        <motion.li 
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.3 + i * 0.1 }}
+                          className="flex items-start gap-2 text-sm text-[hsl(220,10%,70%)]"
+                        >
+                          <ArrowUp className="w-3 h-3 text-[hsl(152,100%,50%)] mt-1 flex-shrink-0" />
+                          {rec}
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </motion.div>
+
+                  {/* Risks */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-[hsl(0,70%,55%)/0.2]"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="w-4 h-4 text-[hsl(0,70%,55%)]" />
+                      <h4 className="text-sm font-semibold text-[hsl(0,70%,60%)]">Watch Out</h4>
+                    </div>
+                    <ul className="space-y-2">
+                      {aiInsights.risks.map((risk, i) => (
+                        <motion.li 
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.4 + i * 0.1 }}
+                          className="flex items-start gap-2 text-sm text-[hsl(220,10%,70%)]"
+                        >
+                          <Shield className="w-3 h-3 text-[hsl(0,70%,55%)] mt-1 flex-shrink-0" />
+                          {risk}
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </motion.div>
+
+                  {/* Opportunities */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-[hsl(50,100%,50%)/0.2]"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <Lightbulb className="w-4 h-4 text-[hsl(50,100%,50%)]" />
+                      <h4 className="text-sm font-semibold text-[hsl(50,100%,60%)]">Opportunities</h4>
+                    </div>
+                    <ul className="space-y-2">
+                      {aiInsights.opportunities.map((opp, i) => (
+                        <motion.li 
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.5 + i * 0.1 }}
+                          className="flex items-start gap-2 text-sm text-[hsl(220,10%,70%)]"
+                        >
+                          <Rocket className="w-3 h-3 text-[hsl(50,100%,50%)] mt-1 flex-shrink-0" />
+                          {opp}
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* ═══ FOOTER ACTIONS ═══ */}
           <motion.div
