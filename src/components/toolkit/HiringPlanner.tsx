@@ -313,141 +313,10 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            MAIN CONTENT
+            MAIN CONTENT - Tight 2-column layout
         ═══════════════════════════════════════════════════════════════════ */}
         <div className="p-8 pt-0">
-          {/* ═══ HERO METRICS ═══ */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
-          >
-            {/* Total New Hires */}
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-[hsl(226,100%,59%)/0.15] via-[hsl(226,100%,59%)/0.08] to-transparent border border-[hsl(226,100%,59%)/0.3] relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(226,100%,59%)/0.2] blur-[60px] rounded-full" />
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <UserPlus className="w-4 h-4 text-[hsl(226,100%,68%)]" />
-                  <span className="text-xs uppercase tracking-wider text-[hsl(226,100%,68%)]">New Hires</span>
-                </div>
-                <motion.p
-                  key={totalNewHires}
-                  initial={{ scale: 1.1, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="text-4xl font-bold text-white mb-1"
-                  style={{ fontFamily: 'JetBrains Mono' }}
-                >
-                  {totalNewHires}
-                </motion.p>
-                <p className="text-sm text-[hsl(220,10%,50%)]">
-                  Planned team members
-                </p>
-              </div>
-            </div>
-
-            {/* Additional Burn */}
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-[hsl(0,70%,55%)/0.15] via-[hsl(0,70%,55%)/0.08] to-transparent border border-[hsl(0,70%,55%)/0.3] relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(0,70%,55%)/0.2] blur-[60px] rounded-full" />
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingDown className="w-4 h-4 text-[hsl(0,70%,65%)]" />
-                  <span className="text-xs uppercase tracking-wider text-[hsl(0,70%,65%)]">+Monthly Burn</span>
-                </div>
-                <p className="text-3xl font-bold text-white mb-1" style={{ fontFamily: 'JetBrains Mono' }}>
-                  {formatCurrency(totalAdditionalBurn)}
-                </p>
-                <p className="text-sm text-[hsl(220,10%,50%)]">
-                  Additional payroll cost
-                </p>
-              </div>
-            </div>
-
-            {/* Current Runway */}
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-[hsl(152,100%,50%)/0.15] via-[hsl(152,100%,50%)/0.08] to-transparent border border-[hsl(152,100%,50%)/0.3] relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(152,100%,50%)/0.2] blur-[60px] rounded-full" />
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <Rocket className="w-4 h-4 text-[hsl(152,100%,60%)]" />
-                  <span className="text-xs uppercase tracking-wider text-[hsl(152,100%,60%)]">Current Runway</span>
-                </div>
-                <p className="text-3xl font-bold text-white mb-1" style={{ fontFamily: 'JetBrains Mono' }}>
-                  {currentRunway.toFixed(1)}mo
-                </p>
-                <p className="text-sm text-[hsl(220,10%,50%)]">
-                  Without new hires
-                </p>
-              </div>
-            </div>
-
-            {/* Projected Runway */}
-            <div className={`p-6 rounded-2xl border relative overflow-hidden ${
-              runwayImpact >= -3
-                ? 'bg-gradient-to-br from-[hsl(152,100%,50%)/0.15] to-transparent border-[hsl(152,100%,50%)/0.3]'
-                : runwayImpact >= -6
-                  ? 'bg-gradient-to-br from-[hsl(45,90%,55%)/0.15] to-transparent border-[hsl(45,90%,55%)/0.3]'
-                  : 'bg-gradient-to-br from-[hsl(0,70%,55%)/0.15] to-transparent border-[hsl(0,70%,55%)/0.3]'
-            }`}>
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-4 h-4" style={{ color: runwayImpact >= -3 ? "hsl(152,100%,50%)" : runwayImpact >= -6 ? "hsl(45,90%,55%)" : "hsl(0,70%,55%)" }} />
-                  <span className={`text-xs uppercase tracking-wider ${
-                    runwayImpact >= -3 ? "text-[hsl(152,100%,60%)]" : runwayImpact >= -6 ? "text-[hsl(45,90%,55%)]" : "text-[hsl(0,70%,65%)]"
-                  }`}>
-                    Projected Runway
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <p className={`text-3xl font-bold ${
-                    runwayImpact >= -3 ? "text-[hsl(152,100%,50%)]" : runwayImpact >= -6 ? "text-[hsl(45,90%,55%)]" : "text-[hsl(0,70%,55%)]"
-                  }`} style={{ fontFamily: 'JetBrains Mono' }}>
-                    {projectedRunway.toFixed(1)}mo
-                  </p>
-                  {runwayImpact !== 0 && (
-                    <span className={`text-sm font-semibold ${runwayImpact > 0 ? "text-[hsl(0,70%,55%)]" : "text-[hsl(152,100%,50%)]"}`}>
-                      {runwayImpact > 0 ? "+" : ""}{runwayImpact.toFixed(1)}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-[hsl(220,10%,50%)]">
-                  With planned hires
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ═══ DATA BRIDGE STATUS ═══ */}
-          {totalNewHires > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-5 rounded-2xl bg-gradient-to-r from-[hsl(152,100%,50%)/0.1] via-[hsl(226,100%,59%)/0.05] to-[hsl(45,90%,55%)/0.1] border border-[hsl(152,100%,50%)/0.2]"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-[hsl(152,100%,50%)/0.2] flex items-center justify-center">
-                    <Link2 className="w-6 h-6 text-[hsl(152,100%,50%)]" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-semibold flex items-center gap-2">
-                      Data Bridge Active
-                      <span className="w-2 h-2 rounded-full bg-[hsl(152,100%,50%)] animate-pulse" />
-                    </h4>
-                    <p className="text-sm text-[hsl(220,10%,55%)]">
-                      {totalNewHires} hire{totalNewHires > 1 ? 's' : ''} synced to Runway Simulator • Open Simulator to see impact
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[hsl(152,100%,50%)/0.1] border border-[hsl(152,100%,50%)/0.2]">
-                  <PieChart className="w-4 h-4 text-[hsl(152,100%,50%)]" />
-                  <span className="text-sm font-semibold text-[hsl(152,100%,50%)]">Live Sync</span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-        {/* ═══ MAIN GRID ═══ */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* ═══ LEFT PANEL: CONTROLS ═══ */}
             <motion.div
               initial={{ x: -20, opacity: 0 }}
@@ -1006,7 +875,7 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="mt-8 pt-6 border-t border-white/5 flex justify-end"
+            className="p-8 pt-0 flex justify-end"
           >
             <Button
               onClick={onClose}
