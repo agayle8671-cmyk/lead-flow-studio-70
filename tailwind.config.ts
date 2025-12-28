@@ -30,99 +30,83 @@ export default {
         '6xl': ['3.75rem', { lineHeight: '1.05', letterSpacing: '-0.04em' }],
       },
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        // Superlist Core Obsidian Palette
+        background: "#000000",
+        foreground: "#FFFFFF",
         
-        // Azure Radiance - Primary
+        // Card - Translucent for glassmorphism
+        card: {
+          DEFAULT: "rgba(26, 26, 28, 0.4)",
+          foreground: "#E5E5E5",
+          hover: "rgba(38, 38, 40, 0.6)",
+        },
+        
+        // Superlist Signature Accents
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          hover: "hsl(var(--primary-hover))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        azure: {
-          DEFAULT: "#0099FF",
-          50: "#E6F4FF",
-          100: "#B3DFFF",
-          200: "#80CBFF",
-          300: "#4DB6FF",
-          400: "#1AA2FF",
-          500: "#0099FF",
-          600: "#007ACC",
-          700: "#005C99",
-          800: "#003D66",
-          900: "#001F33",
+          DEFAULT: "#0099FF", // Azure Radiance
+          foreground: "#FFFFFF",
+          hover: "#00AAFF",
         },
         
-        // Alizarin Crimson - Critical
-        crimson: {
-          DEFAULT: "#DC2626",
-          50: "#FEF2F2",
-          100: "#FEE2E2",
-          200: "#FECACA",
-          300: "#FCA5A5",
-          400: "#F87171",
-          500: "#DC2626",
-          600: "#B91C1C",
-          700: "#991B1B",
-          800: "#7F1D1D",
-          900: "#450A0A",
+        destructive: {
+          DEFAULT: "#DC2626", // Alizarin Crimson
+          foreground: "#FFFFFF",
         },
+        
+        accent: {
+          DEFAULT: "#6DBDF2", // Malibu Blue
+          foreground: "#000000",
+        },
+        
+        muted: {
+          DEFAULT: "rgba(255, 255, 255, 0.08)",
+          foreground: "#888888",
+        },
+        
+        // Extended palette
+        border: "rgba(255, 255, 255, 0.05)",
+        input: "rgba(255, 255, 255, 0.08)",
+        ring: "#0099FF",
         
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "rgba(255, 255, 255, 0.08)",
+          foreground: "#FFFFFF",
         },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
+        
         success: {
-          DEFAULT: "hsl(var(--success))",
-          foreground: "hsl(var(--success-foreground))",
+          DEFAULT: "#22C55E",
+          foreground: "#FFFFFF",
         },
+        
         warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
+          DEFAULT: "#F59E0B",
+          foreground: "#000000",
         },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
+        
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "rgba(26, 26, 28, 0.95)",
+          foreground: "#FFFFFF",
         },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-          hover: "hsl(var(--card-hover))",
-        },
+        
         sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+          DEFAULT: "#000000",
+          foreground: "#888888",
+          primary: "#0099FF",
+          "primary-foreground": "#FFFFFF",
+          accent: "rgba(255, 255, 255, 0.08)",
+          "accent-foreground": "#FFFFFF",
+          border: "rgba(255, 255, 255, 0.05)",
+          ring: "#0099FF",
         },
       },
       borderRadius: {
-        'sm': 'var(--radius-sm)',
-        'DEFAULT': 'var(--radius)',
-        'md': 'var(--radius)',
-        'lg': 'var(--radius-lg)',
-        'xl': 'var(--radius-xl)',
-        '2xl': '1.5rem',
-        '3xl': '2rem',
+        'sm': '4px',   // Superlist tight corners
+        'DEFAULT': '8px',
+        'md': '8px',
+        'lg': '12px',  // Superlist "Notebook" feel
+        'xl': '16px',
+        '2xl': '20px',
+        '3xl': '24px',
       },
       boxShadow: {
         'xs': 'var(--shadow-xs)',
@@ -203,6 +187,7 @@ export default {
         "border-trace": "border-trace 2s linear infinite",
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
         "pulse-critical": "pulse-critical 2s ease-in-out infinite",
+        "haptic-pulse": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
       transitionTimingFunction: {
         'spring': 'cubic-bezier(0.22, 1, 0.36, 1)',
