@@ -344,7 +344,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
           </motion.div>
 
           {/* ═══ MAIN GRID ═══ */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* ═══ LEFT PANEL: CONTROLS ═══ */}
             <motion.div
               initial={{ x: -20, opacity: 0 }}
@@ -518,7 +518,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="lg:col-span-2 space-y-6"
+              className="space-y-6"
             >
               {/* MRR Projection Chart */}
               <div className="p-6 rounded-2xl glass-panel border border-white/5">
