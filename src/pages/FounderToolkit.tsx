@@ -104,8 +104,37 @@ const FounderToolkitContent = forwardRef<HTMLDivElement>((_, ref) => {
   
   // ═══════════════════════════════════════════════════════════════════════════
   // REHYDRATION HOOK - Check for simulation snapshot and auto-open simulator
+  // Also handle tool parameter from DNA Lab navigation
   // ═══════════════════════════════════════════════════════════════════════════
   useEffect(() => {
+    // Check for tool parameter from DNA Lab card clicks
+    const toolParam = searchParams.get("tool");
+    if (toolParam && !burnCalcOpen && !runwaySimOpen && !growthTrackerOpen && !hiringPlannerOpen) {
+      // Load initial data from sessionStorage if available
+      const storedData = sessionStorage.getItem("runwayDNA_initialData");
+      if (storedData) {
+        try {
+          const initialData: AnalysisData = JSON.parse(storedData);
+          setAnalysisData(initialData);
+        } catch (e) {
+          console.error("Failed to parse initial data:", e);
+        }
+      }
+      
+      // Open the appropriate tool based on parameter
+      if (toolParam === "runway") {
+        setRunwaySimOpen(true);
+      } else if (toolParam === "burn") {
+        setBurnCalcOpen(true);
+      } else if (toolParam === "growth") {
+        setGrowthTrackerOpen(true);
+      }
+      
+      // Clean up URL
+      window.history.replaceState({}, "", "/toolkit");
+      sessionStorage.removeItem("runwayDNA_initialData");
+    }
+    
     const isSimulationRedirect = searchParams.get("simulation") === "true";
     
     if (isSimulationRedirect) {

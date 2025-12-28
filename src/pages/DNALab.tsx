@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { 
   Upload, 
   Dna, 
@@ -19,7 +20,9 @@ import {
   MessageSquare,
   ClipboardCheck,
   Clock,
-  X
+  X,
+  ArrowRight,
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -229,6 +232,7 @@ interface HistoricalData extends FinancialData {
 }
 
 const DNALab = () => {
+  const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
   const [stage, setStage] = useState<ProcessingStage>("idle");
   const [data, setData] = useState<HistoricalData | null>(null);
@@ -236,6 +240,54 @@ const DNALab = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [isHistoricalView, setIsHistoricalView] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Navigation handlers for clickable cards
+  const handleRunwayClick = () => {
+    if (data) {
+      sessionStorage.setItem("runwayDNA_initialData", JSON.stringify({
+        monthly_burn: data.monthly_burn,
+        cash_on_hand: data.cash_on_hand,
+        runway_months: data.runway_months
+      }));
+      navigate("/toolkit?tool=runway");
+    }
+  };
+  
+  const handleGradeClick = () => {
+    navigate("/archive");
+  };
+  
+  const handleBurnClick = () => {
+    if (data) {
+      sessionStorage.setItem("runwayDNA_initialData", JSON.stringify({
+        monthly_burn: data.monthly_burn,
+        cash_on_hand: data.cash_on_hand
+      }));
+      navigate("/toolkit?tool=burn");
+    }
+  };
+  
+  const handleCashClick = () => {
+    if (data) {
+      sessionStorage.setItem("runwayDNA_initialData", JSON.stringify({
+        monthly_burn: data.monthly_burn,
+        cash_on_hand: data.cash_on_hand,
+        runway_months: data.runway_months
+      }));
+      navigate("/toolkit?tool=runway");
+    }
+  };
+  
+  const handleProfitClick = () => {
+    if (data) {
+      const monthlyRevenue = data.monthly_burn / (1 - data.profit_margin / 100);
+      sessionStorage.setItem("runwayDNA_initialData", JSON.stringify({
+        monthly_burn: data.monthly_burn,
+        cash_on_hand: data.cash_on_hand
+      }));
+      navigate("/toolkit?tool=growth");
+    }
+  };
 
   // Check for historical data from DNA Archive rehydration
   useEffect(() => {
@@ -822,10 +874,11 @@ const DNALab = () => {
             <div className="bento-grid">
             {/* THE PULSE - Runway Counter */}
             <motion.div
-              className="bento-half glass-panel-intense p-8 flex flex-col justify-center items-center relative overflow-hidden"
+              className="bento-half glass-panel-intense p-8 flex flex-col justify-center items-center relative overflow-hidden cursor-pointer group hover:scale-[1.02] transition-transform"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
+              onClick={handleRunwayClick}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[hsl(226,100%,59%)/0.1] to-transparent" />
               <div className="relative z-10 text-center">
@@ -841,15 +894,20 @@ const DNALab = () => {
                 <p className="text-[hsl(220,10%,50%)] font-medium">
                   Runway Remaining
                 </p>
+                <div className="flex items-center gap-2 mt-4 text-[hsl(226,100%,68%)] opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-xs font-medium">View Simulator</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
               </div>
             </motion.div>
 
             {/* HEALTH GRADE */}
             <motion.div
-              className="bento-half glass-panel p-8 flex flex-col justify-center items-center"
+              className="bento-half glass-panel p-8 flex flex-col justify-center items-center cursor-pointer group hover:scale-[1.02] transition-transform"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
+              onClick={handleGradeClick}
             >
               <p className="text-[hsl(220,10%,55%)] text-sm uppercase tracking-[0.2em] font-medium mb-6">
                 Health Grade
@@ -860,14 +918,19 @@ const DNALab = () => {
               <p className="text-[hsl(220,10%,55%)] mt-6 text-center text-sm max-w-xs leading-relaxed">
                 {data.insight}
               </p>
+              <div className="flex items-center gap-2 mt-4 text-[hsl(270,60%,65%)] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-xs font-medium">View Archive</span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
             </motion.div>
 
             {/* MONTHLY BURN */}
             <motion.div
-              className="bento-third glass-panel p-6"
+              className="bento-third glass-panel p-6 cursor-pointer group hover:scale-[1.02] transition-transform"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
+              onClick={handleBurnClick}
             >
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-lg bg-[hsl(0,70%,50%)/0.15] flex items-center justify-center">
@@ -887,14 +950,19 @@ const DNALab = () => {
               <div className="sparkline-container">
                 <Sparkline data={data.expense_trend} color="cobalt" />
               </div>
+              <div className="flex items-center gap-2 mt-3 text-[hsl(0,70%,60%)] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-xs font-medium">Open Calculator</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
             </motion.div>
 
             {/* CASH ON HAND */}
             <motion.div
-              className="bento-third glass-panel p-6"
+              className="bento-third glass-panel p-6 cursor-pointer group hover:scale-[1.02] transition-transform"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
+              onClick={handleCashClick}
             >
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-lg bg-[hsl(152,100%,50%)/0.15] flex items-center justify-center">
@@ -910,14 +978,19 @@ const DNALab = () => {
               <div className="sparkline-container">
                 <Sparkline data={data.revenue_trend} color="emerald" />
               </div>
+              <div className="flex items-center gap-2 mt-3 text-[hsl(152,100%,50%)] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-xs font-medium">View Simulator</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
             </motion.div>
 
             {/* PROFIT MARGIN */}
             <motion.div
-              className="bento-third glass-panel p-6"
+              className="bento-third glass-panel p-6 cursor-pointer group hover:scale-[1.02] transition-transform"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
+              onClick={handleProfitClick}
             >
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-lg bg-[hsl(226,100%,59%)/0.15] flex items-center justify-center">
@@ -937,6 +1010,10 @@ const DNALab = () => {
                   animate={{ width: `${Math.min(data.profit_margin * 2, 100)}%` }}
                   transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
                 />
+              </div>
+              <div className="flex items-center gap-2 mt-3 text-[hsl(226,100%,68%)] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-xs font-medium">Track Growth</span>
+                <ArrowRight className="w-3 h-3" />
               </div>
             </motion.div>
 
