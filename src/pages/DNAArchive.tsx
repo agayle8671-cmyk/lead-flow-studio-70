@@ -294,7 +294,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
             exit={{ scale: 0.9, y: 50, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gradient-to-br from-[hsl(240,15%,8%)] via-[hsl(220,20%,10%)] to-[hsl(240,15%,8%)] border border-[hsl(226,100%,59%)/0.2] shadow-2xl shadow-[hsl(226,100%,59%)/0.1]"
+            className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gradient-to-br from-[hsl(240,15%,8%)] via-[hsl(220,20%,10%)] to-[hsl(240,15%,8%)] border border-[hsl(226,100%,59%)/0.2] shadow-2xl shadow-[hsl(226,100%,59%)/0.1]"
           >
             {/* Header with Glow */}
             <div className="relative p-8 pb-6 overflow-hidden">
@@ -392,12 +392,12 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
               </motion.div>
             </div>
 
-            {/* Metrics Grid */}
+            {/* Metrics Grid - 3 columns for horizontal layout */}
             <motion.div 
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="px-8 pb-6 grid grid-cols-2 gap-4"
+              className="px-8 pb-6 grid grid-cols-3 gap-4"
             >
               <div className="p-5 rounded-2xl bg-[hsl(152,100%,50%)/0.08] border border-[hsl(152,100%,50%)/0.2]">
                 <div className="flex items-center gap-3 mb-3">
@@ -423,17 +423,17 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                 </p>
               </div>
 
-              {selectedAnalysis.profitMargin !== undefined && (
-                <div className="col-span-2 p-5 rounded-2xl bg-[hsl(226,100%,59%)/0.08] border border-[hsl(226,100%,59%)/0.2]">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-[hsl(226,100%,59%)/0.2] flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-[hsl(226,100%,68%)]" />
-                    </div>
-                    <span className="text-xs uppercase tracking-wider text-[hsl(226,100%,68%)]">Profit Margin</span>
+              <div className="p-5 rounded-2xl bg-[hsl(226,100%,59%)/0.08] border border-[hsl(226,100%,59%)/0.2]">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-[hsl(226,100%,59%)/0.2] flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-[hsl(226,100%,68%)]" />
                   </div>
-                  <p className="text-3xl font-bold text-white">{selectedAnalysis.profitMargin}%</p>
+                  <span className="text-xs uppercase tracking-wider text-[hsl(226,100%,68%)]">Profit Margin</span>
                 </div>
-              )}
+                <p className="text-3xl font-bold text-white">
+                  {selectedAnalysis.profitMargin !== undefined ? `${selectedAnalysis.profitMargin}%` : "—"}
+                </p>
+              </div>
             </motion.div>
 
             {/* Comparison Section */}
