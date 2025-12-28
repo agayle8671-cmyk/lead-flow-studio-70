@@ -9,16 +9,16 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = "default", ...props }, ref) => {
     const variants = {
-      default: "bg-card text-card-foreground shadow-card",
-      glass: "backdrop-blur-xl bg-card/60 border-border/50 shadow-soft",
-      bento: "bg-card text-card-foreground border-border/50 shadow-card hover:shadow-soft hover:border-primary/20 transition-all duration-300",
+      default: "bg-[hsl(0,0%,11%)] border-[hsl(0,0%,100%,0.06)]",
+      glass: "bg-[hsl(0,0%,11%)] border-[hsl(0,0%,100%,0.08)]",
+      bento: "bg-[hsl(0,0%,11%)] border-[hsl(0,0%,100%,0.06)] hover:border-[hsl(0,0%,100%,0.12)] transition-colors duration-150",
     };
 
     return (
       <div
         ref={ref}
         className={cn(
-          "rounded-xl border",
+          "rounded-xl border text-[hsl(0,0%,96%)]",
           variants[variant],
           className
         )}
@@ -38,14 +38,14 @@ CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn("text-xl font-semibold leading-none tracking-tight", className)} {...props} />
+    <h3 ref={ref} className={cn("text-lg font-semibold leading-none tracking-tight text-white", className)} {...props} />
   )
 );
 CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+    <p ref={ref} className={cn("text-sm text-[hsl(0,0%,53%)]", className)} {...props} />
   )
 );
 CardDescription.displayName = "CardDescription";

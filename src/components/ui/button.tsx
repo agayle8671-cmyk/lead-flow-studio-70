@@ -5,30 +5,35 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(211,100%,45%)] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:brightness-110 active:scale-[0.98]",
+          "bg-[hsl(211,100%,45%)] text-white hover:bg-[hsl(211,100%,50%)]",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-md hover:brightness-110",
+          "bg-[hsl(0,100%,62%)] text-white hover:bg-[hsl(0,100%,67%)]",
+        success:
+          "bg-[hsl(142,69%,50%)] text-white hover:bg-[hsl(142,69%,55%)]",
+        warning:
+          "bg-[hsl(35,100%,52%)] text-black hover:bg-[hsl(35,100%,57%)]",
         outline:
-          "border border-border bg-transparent text-foreground hover:bg-secondary hover:border-primary/30",
+          "border border-[hsl(0,0%,100%,0.15)] bg-transparent text-[hsl(0,0%,96%)] hover:bg-[hsl(0,0%,100%,0.05)] hover:border-[hsl(0,0%,100%,0.25)]",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-[hsl(0,0%,14%)] text-[hsl(0,0%,96%)] hover:bg-[hsl(0,0%,18%)]",
         ghost: 
-          "hover:bg-secondary hover:text-foreground",
+          "text-[hsl(0,0%,96%)] hover:bg-[hsl(0,0%,100%,0.05)]",
         link: 
-          "text-primary underline-offset-4 hover:underline",
+          "text-[hsl(211,100%,45%)] underline-offset-4 hover:underline",
+        // Legacy variants - now simplified
         hero:
-          "bg-primary text-primary-foreground shadow-glow hover:shadow-[0_0_100px_hsl(160_84%_45%/0.4)] hover:brightness-110 active:scale-[0.98]",
+          "bg-[hsl(211,100%,45%)] text-white hover:bg-[hsl(211,100%,50%)]",
         glass:
-          "backdrop-blur-xl bg-card/80 border border-border/50 text-foreground hover:bg-card/90 hover:border-primary/30",
+          "bg-[hsl(0,0%,14%)] border border-[hsl(0,0%,100%,0.08)] text-[hsl(0,0%,96%)] hover:bg-[hsl(0,0%,18%)] hover:border-[hsl(0,0%,100%,0.15)]",
       },
       size: {
         default: "h-10 px-5 py-2",
-        sm: "h-9 rounded-md px-4 text-xs",
+        sm: "h-9 rounded-lg px-4 text-xs",
         lg: "h-12 rounded-xl px-8 text-base",
         xl: "h-14 rounded-xl px-10 text-lg",
         icon: "h-10 w-10",

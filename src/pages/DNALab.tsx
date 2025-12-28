@@ -63,9 +63,9 @@ type ProcessingStage = "idle" | "decoding" | "mapping" | "simulating" | "complet
 
 const STAGE_MESSAGES: Record<ProcessingStage, string> = {
   idle: "",
-  decoding: "Parsing Financial DNA Strings...",
-  mapping: "Sequencing Revenue Genome...",
-  simulating: "Simulating Survival Horizon...",
+  decoding: "Analyzing financial data...",
+  mapping: "Mapping revenue patterns...",
+  simulating: "Calculating runway...",
   complete: "Analysis Complete"
 };
 
@@ -77,46 +77,32 @@ const DEMO_DATA: FinancialData = {
   profit_margin: 24.7,
   revenue_trend: [45, 52, 48, 61, 58, 72, 78, 85, 92],
   expense_trend: [38, 41, 39, 44, 42, 48, 51, 54, 58],
-  insight: "Elite burn efficiency detected. You're in the top 12% of funded startups. Classification: Blitzscaler."
+  insight: "Strong burn efficiency. Top 12% of funded startups."
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// ERROR BOUNDARIES & EDGE CASE HANDLING
-// ═══════════════════════════════════════════════════════════════════════════
-
-/**
- * Sanitize and validate financial data from the API
- * Handles edge cases: zero burn, zero revenue, negative values, Infinity
- */
 function sanitizeFinancialData(raw: Partial<FinancialData>): FinancialData {
-  // Extract raw values with safe defaults
   const cashOnHand = Math.max(0, Number(raw.cash_on_hand) || 0);
   const monthlyBurn = Math.max(0, Number(raw.monthly_burn) || 0);
   const profitMargin = Number(raw.profit_margin) ?? 0;
   
-  // Calculate runway with edge case handling
   let runwayMonths: number;
   if (raw.runway_months !== undefined && raw.runway_months !== null) {
     runwayMonths = Number(raw.runway_months);
   } else if (monthlyBurn === 0) {
-    // Zero burn = infinite runway (profitable or pre-revenue with no spend)
     runwayMonths = Infinity;
   } else {
     runwayMonths = cashOnHand / monthlyBurn;
   }
   
-  // Handle Infinity and NaN
   if (!isFinite(runwayMonths) || isNaN(runwayMonths)) {
     runwayMonths = monthlyBurn === 0 ? Infinity : 0;
   }
 
-  // Determine grade with edge case handling
   let grade = (raw.grade || "").toUpperCase();
   if (!["A", "B", "C", "D", "F"].includes(grade)) {
     grade = calculateGrade(runwayMonths, profitMargin, monthlyBurn, cashOnHand);
   }
 
-  // Generate appropriate insight for edge cases
   let insight = raw.insight || "";
   if (!insight) {
     insight = generateInsight(runwayMonths, profitMargin, monthlyBurn, grade);
@@ -134,110 +120,51 @@ function sanitizeFinancialData(raw: Partial<FinancialData>): FinancialData {
   };
 }
 
-/**
- * Calculate grade based on financial metrics
- * Handles pre-revenue startups (revenue=0 but high runway)
- */
 function calculateGrade(
   runwayMonths: number, 
   profitMargin: number, 
   monthlyBurn: number,
   cashOnHand: number
 ): string {
-  // Pre-revenue startup with fresh funding (zero/low burn, high cash)
-  if (monthlyBurn === 0 && cashOnHand > 0) {
-    return "A"; // Infinite runway = healthy position
-  }
-  
-  // Infinite runway (profitable company)
-  if (!isFinite(runwayMonths) || runwayMonths > 36) {
-    return profitMargin >= 0 ? "A" : "B";
-  }
-
-  // Standard grading based on runway
-  if (runwayMonths >= 18) {
-    return profitMargin >= 10 ? "A" : "B";
-  }
-  if (runwayMonths >= 12) {
-    return profitMargin >= 0 ? "B" : "C";
-  }
-  if (runwayMonths >= 6) {
-    return "C";
-  }
-  if (runwayMonths >= 3) {
-    return "D";
-  }
+  if (monthlyBurn === 0 && cashOnHand > 0) return "A";
+  if (!isFinite(runwayMonths) || runwayMonths > 36) return profitMargin >= 0 ? "A" : "B";
+  if (runwayMonths >= 18) return profitMargin >= 10 ? "A" : "B";
+  if (runwayMonths >= 12) return profitMargin >= 0 ? "B" : "C";
+  if (runwayMonths >= 6) return "C";
+  if (runwayMonths >= 3) return "D";
   return "F";
 }
 
-/**
- * Generate contextual insight based on edge cases
- */
 function generateInsight(
   runwayMonths: number, 
   profitMargin: number, 
   monthlyBurn: number,
   grade: string
 ): string {
-  // Infinite runway cases
   if (!isFinite(runwayMonths) || runwayMonths > 36) {
     if (monthlyBurn === 0 && profitMargin <= 0) {
-      return "Pre-revenue with zero burn detected. You're in capital preservation mode. Focus on product-market fit.";
+      return "Pre-revenue with zero burn. Focus on product-market fit.";
     }
     if (profitMargin > 0) {
-      return "Profitable operations detected. You've achieved sustainability. Consider growth acceleration.";
+      return "Profitable operations. Consider growth acceleration.";
     }
-    return "Extended runway detected. Strong position for strategic growth or fundraising leverage.";
+    return "Extended runway. Strong position for growth.";
   }
 
-  // Standard insights by grade
   switch (grade) {
-    case "A":
-      return "Elite burn efficiency detected. You're in the top 12% of funded startups. Classification: Blitzscaler.";
-    case "B":
-      return "Strong financial position. Well-managed burn with healthy runway. Continue optimizing unit economics.";
-    case "C":
-      return "Moderate runway detected. Consider cost optimization or revenue acceleration before next raise.";
-    case "D":
-      return "Short runway alert. Prioritize extending runway through cost cuts or bridge financing.";
-    default:
-      return "Critical runway. Take immediate action to reduce burn or secure emergency funding.";
+    case "A": return "Strong burn efficiency. Top 12% of funded startups.";
+    case "B": return "Healthy position. Continue optimizing unit economics.";
+    case "C": return "Moderate runway. Consider cost optimization.";
+    case "D": return "Short runway. Prioritize extending runway.";
+    default: return "Critical runway. Take immediate action.";
   }
 }
 
-/**
- * Format runway for display - handles Infinity
- */
-function formatRunway(months: number): string {
-  if (!isFinite(months)) return "∞";
-  if (isNaN(months)) return "N/A";
-  if (months > 99) return "99+";
-  return months.toFixed(1);
-}
-
-/**
- * Format burn rate for display - handles zero/stagnant
- */
-function formatBurnRate(burn: number): string {
-  if (burn === 0) return "Stagnant";
-  if (burn < 0) return "Profitable";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(burn);
-}
-
-// Extended interface for historical data
 interface HistoricalData extends FinancialData {
   isHistorical?: boolean;
   historicalDate?: string;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// DNA DRIFT DETECTION TYPES
-// ═══════════════════════════════════════════════════════════════════════════
 interface DriftResult {
   hasDrift: boolean;
   driftType: "burn" | "runway" | "revenue";
@@ -247,7 +174,7 @@ interface DriftResult {
   snapshotDate: string;
   message: string;
   severity: "low" | "medium" | "high";
-  exceedsThreshold: boolean; // True if drift > 5% (requires API notification)
+  exceedsThreshold: boolean;
 }
 
 const DNALab = () => {
@@ -263,92 +190,60 @@ const DNALab = () => {
   const [driftSaved, setDriftSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DNA DRIFT DETECTION LOGIC
-  // ═══════════════════════════════════════════════════════════════════════════
-  
-  /**
-   * Detects financial drift by comparing current analysis to the most recent
-   * Strategic Snapshot from the Archive.
-   * 
-   * Client-side first approach: only pings backend if drift > 5%
-   */
   const detectFinancialDrift = useCallback(async (currentData: FinancialData): Promise<DriftResult | null> => {
     try {
-      // 1. Get the most recent snapshot from localStorage (client-side first)
       const storedArchive = localStorage.getItem("runwayDNA_archive");
       let latestSnapshot: any = null;
       
       if (storedArchive) {
         const archive = JSON.parse(storedArchive);
-        // Find the most recent SIMULATION entry (Strategic Snapshot)
         latestSnapshot = archive.find((entry: any) => 
           entry.entryType === "SIMULATION" || entry.entry_type === "SIMULATION"
         );
-        
-        // If no simulation, use the most recent analysis
         if (!latestSnapshot && archive.length > 0) {
           latestSnapshot = archive[0];
         }
       }
       
-      // If no local data, try API
       if (!latestSnapshot) {
         try {
           const response = await fetch(apiUrl("/api/archive?limit=1&type=SIMULATION"));
           if (response.ok) {
             const apiData = await response.json();
-            if (apiData.length > 0) {
-              latestSnapshot = apiData[0];
-            }
+            if (apiData.length > 0) latestSnapshot = apiData[0];
           }
-        } catch {
-          // API unavailable, continue without snapshot
-        }
+        } catch { /* API unavailable */ }
       }
       
-      // No snapshot to compare against
-      if (!latestSnapshot) {
-        return null;
-      }
+      if (!latestSnapshot) return null;
       
-      // 2. Extract predicted values from snapshot
       const predictedBurn = latestSnapshot.scenarioB?.monthly_expenses || 
                             latestSnapshot.monthlyBurn || 
-                            latestSnapshot.monthly_burn || 
-                            0;
+                            latestSnapshot.monthly_burn || 0;
       
       const predictedRunway = latestSnapshot.scenarioB?.runway_months || 
-                              latestSnapshot.runway ||
-                              latestSnapshot.runway_months ||
-                              0;
+                              latestSnapshot.runway || latestSnapshot.runway_months || 0;
       
-      // 3. Calculate drift (actual vs predicted)
       const actualBurn = currentData.monthly_burn;
       const actualRunway = currentData.runway_months;
       
-      // Calculate burn drift percentage
       let burnDrift = 0;
       if (predictedBurn > 0) {
         burnDrift = ((actualBurn - predictedBurn) / predictedBurn) * 100;
       }
       
-      // Calculate runway drift percentage
       let runwayDrift = 0;
       if (predictedRunway > 0 && isFinite(actualRunway)) {
         runwayDrift = ((actualRunway - predictedRunway) / predictedRunway) * 100;
       }
       
-      // Determine which drift is more significant
       const absB = Math.abs(burnDrift);
       const absR = Math.abs(runwayDrift);
       
-      // Get snapshot date
       const snapshotDate = new Date(latestSnapshot.date || latestSnapshot.created_at || Date.now());
       const snapshotDateStr = snapshotDate.toLocaleDateString("en-US", { month: "short", year: "numeric" });
       
-      // If burn drift is more significant
-      if (absB >= absR && absB >= 3) { // 3% minimum threshold for display
+      if (absB >= absR && absB >= 3) {
         const severity = absB >= 15 ? "high" : absB >= 8 ? "medium" : "low";
         const direction = burnDrift > 0 ? "higher" : "lower";
         
@@ -359,13 +254,12 @@ const DNALab = () => {
           predictedValue: predictedBurn,
           driftPercentage: burnDrift,
           snapshotDate: snapshotDateStr,
-          message: `Expenses are ${Math.abs(burnDrift).toFixed(0)}% ${direction} than your ${snapshotDateStr} Simulation`,
+          message: `Expenses are ${Math.abs(burnDrift).toFixed(0)}% ${direction} than your ${snapshotDateStr} simulation`,
           severity,
           exceedsThreshold: absB > 5,
         };
       }
       
-      // If runway drift is more significant
       if (absR >= 3) {
         const severity = absR >= 20 ? "high" : absR >= 10 ? "medium" : "low";
         const direction = runwayDrift > 0 ? "longer" : "shorter";
@@ -377,22 +271,19 @@ const DNALab = () => {
           predictedValue: predictedRunway,
           driftPercentage: runwayDrift,
           snapshotDate: snapshotDateStr,
-          message: `Runway is ${Math.abs(runwayDrift).toFixed(0)}% ${direction} than your ${snapshotDateStr} Simulation`,
+          message: `Runway is ${Math.abs(runwayDrift).toFixed(0)}% ${direction} than your ${snapshotDateStr} simulation`,
           severity,
           exceedsThreshold: absR > 5,
         };
       }
       
-      // No significant drift
       return null;
-      
     } catch (error) {
       console.error("Failed to detect financial drift:", error);
       return null;
     }
   }, []);
   
-  // Handle saving drift to weekly brief
   const handleSaveToWeeklyBrief = useCallback(() => {
     if (!driftResult) return;
     
@@ -416,32 +307,23 @@ const DNALab = () => {
     });
   }, [driftResult, addDriftAnomaly]);
   
-  // Detect drift after analysis completes
   useEffect(() => {
     if (stage === "complete" && data && !isHistoricalView) {
       detectFinancialDrift(data).then((result) => {
         setDriftResult(result);
         setDriftSaved(false);
         
-        // If drift exceeds 5% threshold, optionally notify backend
         if (result?.exceedsThreshold) {
-          // Optional: Send to backend for tracking/AI analysis
           fetch(apiUrl("/api/drift-alert"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...result,
-              timestamp: new Date().toISOString(),
-            }),
-          }).catch(() => {
-            // Silently fail if API unavailable
-          });
+            body: JSON.stringify({ ...result, timestamp: new Date().toISOString() }),
+          }).catch(() => {});
         }
       });
     }
   }, [stage, data, isHistoricalView, detectFinancialDrift]);
   
-  // Navigation handlers for clickable cards
   const handleRunwayClick = () => {
     if (data) {
       sessionStorage.setItem("runwayDNA_initialData", JSON.stringify({
@@ -453,9 +335,7 @@ const DNALab = () => {
     }
   };
   
-  const handleGradeClick = () => {
-    navigate("/archive");
-  };
+  const handleGradeClick = () => navigate("/archive");
   
   const handleBurnClick = () => {
     if (data) {
@@ -480,7 +360,6 @@ const DNALab = () => {
   
   const handleProfitClick = () => {
     if (data) {
-      const monthlyRevenue = data.monthly_burn / (1 - data.profit_margin / 100);
       sessionStorage.setItem("runwayDNA_initialData", JSON.stringify({
         monthly_burn: data.monthly_burn,
         cash_on_hand: data.cash_on_hand
@@ -489,7 +368,6 @@ const DNALab = () => {
     }
   };
 
-  // Check for historical data from DNA Archive rehydration
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("historical") === "true") {
@@ -500,16 +378,12 @@ const DNALab = () => {
           setData(historicalData);
           setIsHistoricalView(true);
           setStage("complete");
-          
-          // Clear the URL param without refreshing
           window.history.replaceState({}, "", "/");
-          
-          // Clear sessionStorage after loading
           sessionStorage.removeItem("runwayDNA_historical");
           
           toast({
-            title: "Time Machine Active",
-            description: `Viewing financial snapshot from ${historicalData.historicalDate}`,
+            title: "Historical View",
+            description: `Viewing snapshot from ${historicalData.historicalDate}`,
           });
         } catch (e) {
           console.error("Failed to parse historical data:", e);
@@ -518,18 +392,16 @@ const DNALab = () => {
     }
   }, []);
 
-  // Animate runway counter (handles Infinity for zero-burn scenarios)
   useEffect(() => {
     if (data && stage === "complete") {
-      // Handle Infinity case - no animation needed
       if (!isFinite(data.runway_months)) {
         setDisplayedRunway(data.runway_months);
         return;
       }
       
       const target = data.runway_months;
-      const duration = 1800;
-      const steps = 80;
+      const duration = 1200;
+      const steps = 60;
       const increment = target / steps;
       let current = 0;
 
@@ -549,11 +421,9 @@ const DNALab = () => {
 
   const processFile = async (file: File) => {
     setStage("decoding");
-    await new Promise(r => setTimeout(r, 1400));
-
+    await new Promise(r => setTimeout(r, 800));
     setStage("mapping");
-    await new Promise(r => setTimeout(r, 1200));
-
+    await new Promise(r => setTimeout(r, 800));
     setStage("simulating");
 
     try {
@@ -572,30 +442,17 @@ const DNALab = () => {
       });
 
       clearTimeout(timeoutId);
-
       if (!response.ok) throw new Error("Analysis failed");
 
       const result = await response.json();
       const dnaData = result.dna || result;
-      
-      // Sanitize data with edge case handling (zero burn, zero revenue, etc.)
-      const sanitizedData = sanitizeFinancialData({
-        runway_months: dnaData.runway_months,
-        grade: dnaData.grade,
-        monthly_burn: dnaData.monthly_burn,
-        cash_on_hand: dnaData.cash_on_hand,
-        profit_margin: dnaData.profit_margin,
-        revenue_trend: dnaData.revenue_trend,
-        expense_trend: dnaData.expense_trend,
-        insight: dnaData.insight,
-      });
-      
+      const sanitizedData = sanitizeFinancialData(dnaData);
       setData(sanitizedData);
     } catch {
       setData(DEMO_DATA);
       toast({
-        title: "Demo Mode Activated",
-        description: "Showing sample analysis for demonstration.",
+        title: "Demo Mode",
+        description: "Showing sample data for demonstration.",
       });
     }
 
@@ -605,14 +462,13 @@ const DNALab = () => {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-
     const file = e.dataTransfer.files[0];
     if (file && (file.name.endsWith(".csv") || file.name.endsWith(".xlsx"))) {
       processFile(file);
     } else {
       toast({
         title: "Invalid Format",
-        description: "Drop a CSV or Excel file.",
+        description: "Please upload a CSV or Excel file.",
         variant: "destructive"
       });
     }
@@ -625,18 +481,19 @@ const DNALab = () => {
 
   const handleDemoMode = () => {
     setStage("decoding");
-    setTimeout(() => setStage("mapping"), 1000);
-    setTimeout(() => setStage("simulating"), 2000);
+    setTimeout(() => setStage("mapping"), 600);
+    setTimeout(() => setStage("simulating"), 1200);
     setTimeout(() => {
       setData(DEMO_DATA);
       setStage("complete");
-    }, 3000);
+    }, 1800);
   };
 
   const resetAnalysis = () => {
     setStage("idle");
     setData(null);
     setDisplayedRunway(0);
+    setDriftResult(null);
   };
 
   const handleExportPNG = async () => {
@@ -644,16 +501,9 @@ const DNALab = () => {
     setIsExporting(true);
     try {
       await exportAsPNG("health-card-export", `runway-dna-${data.grade}-${Date.now()}.png`);
-      toast({
-        title: "Exported Successfully",
-        description: "Your Health Card has been downloaded as PNG.",
-      });
-    } catch (error) {
-      toast({
-        title: "Export Failed",
-        description: "Could not export the Health Card. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Exported", description: "Health Card downloaded as PNG." });
+    } catch {
+      toast({ title: "Export Failed", variant: "destructive" });
     } finally {
       setIsExporting(false);
     }
@@ -664,16 +514,9 @@ const DNALab = () => {
     setIsExporting(true);
     try {
       await exportAsPDF("health-card-export", `runway-dna-${data.grade}-${Date.now()}.pdf`);
-      toast({
-        title: "Exported Successfully",
-        description: "Your Health Card has been downloaded as PDF.",
-      });
-    } catch (error) {
-      toast({
-        title: "Export Failed",
-        description: "Could not export the Health Card. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Exported", description: "Health Card downloaded as PDF." });
+    } catch {
+      toast({ title: "Export Failed", variant: "destructive" });
     } finally {
       setIsExporting(false);
     }
@@ -682,113 +525,42 @@ const DNALab = () => {
   const handleShare = () => {
     if (!data) return;
     shareToTwitter(data);
-    toast({
-      title: "Opening Twitter",
-      description: "Share your financial DNA with the world!",
-    });
   };
 
   const handleDownloadReport = () => {
     if (!data) return;
-    
-    // Generate scenarios based on current data
     const scenarios = {
-      optimistic: { 
-        runway: Math.min(data.runway_months * 1.5, 24), 
-        description: "High revenue growth (50%), controlled expenses (0% growth)" 
-      },
-      current: { 
-        runway: data.runway_months, 
-        description: `Current trajectory based on ${data.grade} grade analysis` 
-      },
-      danger: { 
-        runway: Math.max(data.runway_months * 0.6, 2), 
-        description: "Rising costs (30% growth), stagnant revenue (0% growth)" 
-      },
+      optimistic: { runway: Math.min(data.runway_months * 1.5, 24), description: "High growth scenario" },
+      current: { runway: data.runway_months, description: "Current trajectory" },
+      danger: { runway: Math.max(data.runway_months * 0.6, 2), description: "Conservative scenario" },
     };
-    
     const report = generateInvestorUpdate(data, scenarios);
     downloadAsFile(report, `Runway-DNA-Report-${new Date().toISOString().split('T')[0]}.md`);
-    
-    toast({
-      title: "Report Downloaded",
-      description: "Your Investor DNA Report has been saved as Markdown.",
-    });
+    toast({ title: "Downloaded", description: "Report saved as Markdown." });
   };
 
   const handleCopyInvestorUpdate = async () => {
     if (!data) return;
-    
     const scenarios = {
-      optimistic: { 
-        runway: Math.min(data.runway_months * 1.5, 24), 
-        description: "High revenue growth, controlled expenses" 
-      },
-      current: { 
-        runway: data.runway_months, 
-        description: "Current trajectory" 
-      },
-      danger: { 
-        runway: Math.max(data.runway_months * 0.6, 2), 
-        description: "Rising costs, stagnant revenue" 
-      },
+      optimistic: { runway: Math.min(data.runway_months * 1.5, 24), description: "High growth" },
+      current: { runway: data.runway_months, description: "Current" },
+      danger: { runway: Math.max(data.runway_months * 0.6, 2), description: "Conservative" },
     };
-    
     const report = generateInvestorUpdate(data, scenarios);
     const success = await copyToClipboard(report);
-    
-    if (success) {
-      toast({
-        title: "Investor Update Copied",
-        description: "Ready for distribution. Paste into email or docs.",
-      });
-    } else {
-      toast({
-        title: "Copy Failed",
-        description: "Please try again or download the report instead.",
-        variant: "destructive",
-      });
-    }
+    toast({ title: success ? "Copied" : "Failed", description: success ? "Ready to paste." : "Try again." });
   };
 
   const handleCopyForSlack = async () => {
     if (!data) return;
-    
-    const slackUpdate = generateSlackUpdate(data);
-    const success = await copyToClipboard(slackUpdate);
-    
-    if (success) {
-      toast({
-        title: "Copied for Slack",
-        description: "Emoji-rich update ready to paste!",
-      });
-    } else {
-      toast({
-        title: "Copy Failed",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    }
+    const success = await copyToClipboard(generateSlackUpdate(data));
+    toast({ title: success ? "Copied" : "Failed" });
   };
 
   const handleCopyQuickStatus = async () => {
     if (!data) return;
-    
-    const quickStatus = generateQuickStatus(data);
-    const success = await copyToClipboard(quickStatus);
-    
-    if (success) {
-      toast({
-        title: "Status Copied",
-        description: "One-liner ready to share!",
-      });
-    } else {
-      toast({
-        title: "Copy Failed",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    }
+    const success = await copyToClipboard(generateQuickStatus(data));
+    toast({ title: success ? "Copied" : "Failed" });
   };
 
   const formatCurrency = (value: number) =>
@@ -799,35 +571,31 @@ const DNALab = () => {
       maximumFractionDigits: 0
     }).format(value);
 
-  const Sparkline = ({ data: chartData, color = "cobalt" }: { data: number[]; color?: string }) => {
+  const Sparkline = ({ data: chartData, positive = true }: { data: number[]; positive?: boolean }) => {
     const max = Math.max(...chartData);
     const min = Math.min(...chartData);
     const range = max - min || 1;
-
     const points = chartData.map((value, i) => {
       const x = (i / (chartData.length - 1)) * 100;
       const y = 100 - ((value - min) / range) * 100;
       return `${x},${y}`;
     }).join(" ");
-
-    const gradientId = `spark-${color}-${Math.random()}`;
-    const strokeColor = color === "cobalt" ? "hsl(226 100% 59%)" : "hsl(152 100% 50%)";
-    const fillStart = color === "cobalt" ? "hsl(226 100% 59%)" : "hsl(152 100% 50%)";
+    const color = positive ? "hsl(142, 69%, 50%)" : "hsl(211, 100%, 45%)";
 
     return (
-      <svg className="w-full h-14" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <svg className="w-full h-12" viewBox="0 0 100 100" preserveAspectRatio="none">
         <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={fillStart} stopOpacity="0.3" />
-            <stop offset="100%" stopColor={fillStart} stopOpacity="0" />
+          <linearGradient id={`spark-${positive}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
           </linearGradient>
         </defs>
-        <polygon points={`0,100 ${points} 100,100`} fill={`url(#${gradientId})`} />
+        <polygon points={`0,100 ${points} 100,100`} fill={`url(#spark-${positive})`} />
         <polyline
           points={points}
           fill="none"
-          stroke={strokeColor}
-          strokeWidth="2.5"
+          stroke={color}
+          strokeWidth="2"
           vectorEffect="non-scaling-stroke"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -836,34 +604,30 @@ const DNALab = () => {
     );
   };
 
-  const getGradeClass = (grade: string) => {
+  const getGradeColor = (grade: string) => {
     const g = grade.toLowerCase();
-    if (g === "a") return "grade-a";
-    if (g === "b") return "grade-b";
-    if (g === "c") return "grade-c";
-    return "grade-d";
+    if (g === "a") return "bg-[hsl(142,69%,50%)] text-white";
+    if (g === "b") return "bg-[hsl(211,100%,45%)] text-white";
+    if (g === "c") return "bg-[hsl(35,100%,52%)] text-black";
+    return "bg-[hsl(0,100%,62%)] text-white";
   };
 
   return (
-    <div className="min-h-screen w-full p-8">
+    <div className="min-h-screen w-full p-8 lg:p-12">
       {/* Header */}
       <motion.header
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-8"
+        className="flex items-center justify-between mb-12"
       >
         <div>
-          <h1 className="text-3xl font-bold text-gradient-cobalt mb-1">DNA Lab</h1>
-          <p className="text-[hsl(220,10%,50%)] text-sm">
-            Drop your financials. Get your startup's vital signs.
+          <h1 className="text-3xl font-semibold text-white mb-1">DNA Lab</h1>
+          <p className="text-[hsl(0,0%,53%)]">
+            Analyze your financial health
           </p>
         </div>
         {stage === "complete" && (
-          <Button
-            onClick={resetAnalysis}
-            variant="outline"
-            className="border-[hsl(226,100%,59%)/0.3] hover:border-[hsl(226,100%,59%)/0.6] hover:bg-[hsl(226,100%,59%)/0.1] text-[hsl(220,10%,70%)]"
-          >
+          <Button onClick={resetAnalysis} variant="secondary">
             <Zap className="w-4 h-4 mr-2" />
             New Analysis
           </Button>
@@ -871,17 +635,17 @@ const DNALab = () => {
       </motion.header>
 
       <AnimatePresence mode="wait">
-        {/* IDLE STATE - The Magic Drop Zone */}
+        {/* IDLE STATE */}
         {stage === "idle" && (
           <motion.div
             key="idle"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="max-w-4xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="max-w-3xl mx-auto"
           >
             <div
-              className={`drop-zone p-16 md:p-20 text-center cursor-pointer ${isDragging ? "drop-zone-active" : ""}`}
+              className={`drop-zone p-16 text-center cursor-pointer ${isDragging ? "drop-zone-active" : ""}`}
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
@@ -895,126 +659,79 @@ const DNALab = () => {
                 className="hidden"
               />
 
-              <motion.div
-                animate={{ 
-                  y: isDragging ? -10 : 0,
-                  scale: isDragging ? 1.05 : 1
-                }}
-                className="mb-8"
-              >
-                <div className={`w-24 h-24 mx-auto rounded-2xl flex items-center justify-center mb-6 transition-all duration-300 ${
-                  isDragging 
-                    ? "bg-[hsl(226,100%,59%)] shadow-xl shadow-[hsl(226,100%,59%)/0.4]" 
-                    : "bg-[hsl(226,100%,59%)/0.15]"
-                }`}>
-                  <Upload className={`w-12 h-12 transition-colors ${
-                    isDragging ? "text-white" : "text-[hsl(226,100%,59%)]"
-                  }`} />
-                </div>
-              </motion.div>
+              <div className={`w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-8 transition-all ${
+                isDragging ? "bg-[hsl(211,100%,45%)]" : "bg-[hsl(0,0%,14%)]"
+              }`}>
+                <Upload className={`w-10 h-10 ${isDragging ? "text-white" : "text-[hsl(0,0%,53%)]"}`} />
+              </div>
 
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                <span className="text-gradient-cobalt">Drop Your Financial DNA</span>
+              <h2 className="text-3xl font-semibold text-white mb-3">
+                Upload Financial Data
               </h2>
 
-              <p className="text-[hsl(220,10%,55%)] text-lg mb-10 max-w-md mx-auto">
-                Bank exports, Stripe CSVs, or any spreadsheet with your numbers
+              <p className="text-[hsl(0,0%,53%)] mb-10 max-w-md mx-auto">
+                Drop a CSV or Excel file with your bank exports, Stripe data, or any financial spreadsheet
               </p>
 
               <div className="flex items-center justify-center gap-6">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] text-white font-semibold px-8 hover:shadow-xl hover:shadow-[hsl(226,100%,59%)/0.3] transition-all"
-                >
+                <Button size="lg">
                   <Upload className="w-5 h-5 mr-2" />
                   Choose File
                 </Button>
-                <span className="text-[hsl(220,10%,40%)]">or</span>
+                <span className="text-[hsl(0,0%,40%)]">or</span>
                 <Button
                   size="lg"
                   variant="ghost"
                   onClick={(e) => { e.stopPropagation(); handleDemoMode(); }}
-                  className="text-[hsl(152,100%,50%)] hover:text-[hsl(152,100%,60%)] hover:bg-[hsl(152,100%,50%)/0.1]"
+                  className="text-[hsl(142,69%,50%)]"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  See Demo
+                  View Demo
                 </Button>
               </div>
             </div>
 
-            {/* Trust indicators */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="mt-12 flex items-center justify-center gap-8 text-[hsl(220,10%,45%)] text-sm"
-            >
+            <div className="mt-10 flex items-center justify-center gap-8 text-[hsl(0,0%,40%)] text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[hsl(152,100%,50%)]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[hsl(142,69%,50%)]" />
                 <span>256-bit encrypted</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[hsl(226,100%,59%)]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[hsl(211,100%,45%)]" />
                 <span>Data never stored</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[hsl(270,60%,50%)]" />
-                <span>SOC 2 compliant</span>
-              </div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
 
-        {/* PROCESSING STATE - Cinematic Sequence */}
+        {/* PROCESSING STATE */}
         {(stage === "decoding" || stage === "mapping" || stage === "simulating") && (
           <motion.div
             key="processing"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="max-w-2xl mx-auto text-center py-20"
+            className="max-w-md mx-auto text-center py-24"
           >
-            <motion.div
-              className="w-32 h-32 mx-auto rounded-3xl bg-gradient-to-br from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] flex items-center justify-center mb-10 glow-cobalt-intense"
-              animate={{
-                scale: [1, 1.05, 1],
-                rotate: [0, 5, -5, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              <Dna className="w-16 h-16 text-white animate-spin-slow" />
-            </motion.div>
+            <div className="w-20 h-20 mx-auto rounded-2xl bg-[hsl(211,100%,45%)] flex items-center justify-center mb-8">
+              <Dna className="w-10 h-10 text-white animate-spin" style={{ animationDuration: '3s' }} />
+            </div>
 
-            <motion.h2
-              key={stage}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-3xl md:text-4xl font-bold text-gradient-cobalt mb-6"
-            >
+            <h2 className="text-2xl font-semibold text-white mb-4">
               {STAGE_MESSAGES[stage]}
-            </motion.h2>
+            </h2>
 
-            {/* Progress dots */}
-            <div className="flex justify-center gap-3">
+            <div className="flex justify-center gap-2">
               {["decoding", "mapping", "simulating"].map((s, i) => {
                 const stages = ["decoding", "mapping", "simulating"];
                 const currentIndex = stages.indexOf(stage);
                 const isActive = i <= currentIndex;
-
                 return (
-                  <motion.div
+                  <div
                     key={s}
-                    className={`w-3 h-3 rounded-full transition-all duration-500 ${
-                      isActive
-                        ? "bg-[hsl(226,100%,59%)] shadow-lg shadow-[hsl(226,100%,59%)/0.5]"
-                        : "bg-[hsl(220,10%,20%)]"
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      isActive ? "bg-[hsl(211,100%,45%)]" : "bg-[hsl(0,0%,20%)]"
                     }`}
-                    animate={isActive ? { scale: [1, 1.3, 1] } : {}}
-                    transition={{ duration: 0.5 }}
                   />
                 );
               })}
@@ -1022,7 +739,7 @@ const DNALab = () => {
           </motion.div>
         )}
 
-        {/* COMPLETE STATE - Bento Dashboard */}
+        {/* COMPLETE STATE */}
         {stage === "complete" && data && (
           <motion.div
             key="complete"
@@ -1031,467 +748,267 @@ const DNALab = () => {
             id="health-card-export"
             className="space-y-6"
           >
-            {/* Historical Mode Banner */}
+            {/* Historical Banner */}
             {isHistoricalView && (data as HistoricalData).historicalDate && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative p-4 rounded-2xl overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-[hsl(270,60%,55%)/0.2] via-[hsl(240,15%,12%)] to-[hsl(180,80%,45%)/0.2]" />
-                <div className="absolute inset-0 backdrop-blur-sm" />
-                <div className="relative flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-[hsl(270,60%,55%)/0.3] flex items-center justify-center">
-                      <Clock className="w-6 h-6 text-[hsl(270,60%,65%)]" />
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-[hsl(270,60%,65%)]" />
-                        Time Machine Active
-                      </h3>
-                      <p className="text-[hsl(220,10%,55%)] text-sm">
-                        Viewing historical snapshot from <span className="text-[hsl(270,60%,70%)] font-medium">{(data as HistoricalData).historicalDate}</span>
-                      </p>
-                    </div>
+              <div className="card-surface p-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Clock className="w-5 h-5 text-[hsl(0,0%,53%)]" />
+                  <div>
+                    <p className="text-white font-medium">Historical View</p>
+                    <p className="text-sm text-[hsl(0,0%,53%)]">
+                      Snapshot from {(data as HistoricalData).historicalDate}
+                    </p>
                   </div>
-                  <Button
-                    onClick={() => {
-                      setIsHistoricalView(false);
-                      resetAnalysis();
-                    }}
-                    className="bg-[hsl(270,60%,55%)] hover:bg-[hsl(270,60%,60%)] text-white"
-                    size="sm"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Exit Time Machine
-                  </Button>
                 </div>
-              </motion.div>
+                <Button
+                  onClick={() => { setIsHistoricalView(false); resetAnalysis(); }}
+                  variant="secondary"
+                  size="sm"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Exit
+                </Button>
+              </div>
             )}
 
-            {/* Bento Grid */}
-            <div className="bento-grid">
-            {/* THE PULSE - Runway Counter */}
-            <motion.div
-              className="bento-half glass-panel-intense p-8 flex flex-col justify-center items-center relative overflow-hidden cursor-pointer group hover:scale-[1.02] transition-transform"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              onClick={handleRunwayClick}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-[hsl(226,100%,59%)/0.1] to-transparent" />
-              <div className="relative z-10 text-center">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <Target className="w-5 h-5 text-[hsl(226,100%,68%)]" />
-                  <p className="text-[hsl(220,10%,55%)] text-sm uppercase tracking-[0.2em] font-medium">
-                    Months of Life
+            {/* Main Grid */}
+            <div className="grid grid-cols-12 gap-6">
+              {/* Runway */}
+              <motion.div
+                className="col-span-12 md:col-span-6 card-surface-hover p-8 cursor-pointer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                onClick={handleRunwayClick}
+              >
+                <div className="flex items-center gap-2 mb-6">
+                  <Target className="w-4 h-4 text-[hsl(211,100%,45%)]" />
+                  <p className="text-[hsl(0,0%,53%)] text-sm font-medium uppercase tracking-wider">
+                    Runway
                   </p>
                 </div>
-                <div className="runway-counter text-7xl md:text-8xl lg:text-9xl text-gradient-cobalt mb-4">
+                <div className="text-6xl lg:text-7xl font-semibold text-white mb-2 tabular-nums">
                   {!isFinite(data.runway_months) ? "∞" : displayedRunway.toFixed(1)}
                 </div>
-                <p className="text-[hsl(220,10%,50%)] font-medium">
-                  Runway Remaining
+                <p className="text-[hsl(0,0%,53%)]">months remaining</p>
+              </motion.div>
+
+              {/* Grade */}
+              <motion.div
+                className="col-span-12 md:col-span-6 card-surface-hover p-8 cursor-pointer text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                onClick={handleGradeClick}
+              >
+                <p className="text-[hsl(0,0%,53%)] text-sm font-medium uppercase tracking-wider mb-6">
+                  Health Grade
                 </p>
-                <div className="flex items-center gap-2 mt-4 text-[hsl(226,100%,68%)] opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-xs font-medium">View Simulator</span>
-                  <ArrowRight className="w-4 h-4" />
+                <div className={`inline-flex items-center justify-center w-24 h-24 rounded-2xl text-5xl font-semibold ${getGradeColor(data.grade)}`}>
+                  {data.grade.toUpperCase()}
                 </div>
-              </div>
-            </motion.div>
-
-            {/* HEALTH GRADE */}
-            <motion.div
-              className="bento-half glass-panel p-8 flex flex-col justify-center items-center cursor-pointer group hover:scale-[1.02] transition-transform"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              onClick={handleGradeClick}
-            >
-              <p className="text-[hsl(220,10%,55%)] text-sm uppercase tracking-[0.2em] font-medium mb-6">
-                Health Grade
-              </p>
-              <div className={`grade-badge text-7xl md:text-8xl w-32 h-32 ${getGradeClass(data.grade)} ${data.grade.toUpperCase() === "A" ? "grade-halo" : ""}`}>
-                {data.grade.toUpperCase()}
-              </div>
-              <p className="text-[hsl(220,10%,55%)] mt-6 text-center text-sm max-w-xs leading-relaxed">
-                {data.insight}
-              </p>
-              <div className="flex items-center gap-2 mt-4 text-[hsl(270,60%,65%)] opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-xs font-medium">View Archive</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </motion.div>
-
-            {/* MONTHLY BURN */}
-            <motion.div
-              className="bento-third glass-panel p-6 cursor-pointer group hover:scale-[1.02] transition-transform"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              onClick={handleBurnClick}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-[hsl(0,70%,50%)/0.15] flex items-center justify-center">
-                  <TrendingDown className="w-4 h-4 text-[hsl(0,70%,55%)]" />
-                </div>
-                <p className="text-[hsl(220,10%,55%)] text-xs uppercase tracking-wider font-medium">
-                  Monthly Burn
+                <p className="text-[hsl(0,0%,53%)] mt-6 text-sm max-w-xs mx-auto">
+                  {data.insight}
                 </p>
-              </div>
-              <p className="text-3xl font-bold text-white mb-4">
-                {data.monthly_burn === 0 ? (
-                  <span className="text-[hsl(152,100%,50%)]">Stagnant</span>
-                ) : (
-                  formatCurrency(data.monthly_burn)
-                )}
-              </p>
-              <div className="sparkline-container">
-                <Sparkline data={data.expense_trend} color="cobalt" />
-              </div>
-              <div className="flex items-center gap-2 mt-3 text-[hsl(0,70%,60%)] opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-xs font-medium">Open Calculator</span>
-                <ArrowRight className="w-3 h-3" />
-              </div>
-            </motion.div>
+              </motion.div>
 
-            {/* CASH ON HAND */}
-            <motion.div
-              className="bento-third glass-panel p-6 cursor-pointer group hover:scale-[1.02] transition-transform"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              onClick={handleCashClick}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-[hsl(152,100%,50%)/0.15] flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 text-[hsl(152,100%,50%)]" />
+              {/* Burn */}
+              <motion.div
+                className="col-span-12 md:col-span-4 card-surface-hover p-6 cursor-pointer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                onClick={handleBurnClick}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <TrendingDown className="w-4 h-4 text-[hsl(0,100%,62%)]" />
+                  <p className="text-[hsl(0,0%,53%)] text-xs font-medium uppercase tracking-wider">
+                    Monthly Burn
+                  </p>
                 </div>
-                <p className="text-[hsl(220,10%,55%)] text-xs uppercase tracking-wider font-medium">
-                  Cash on Hand
+                <p className="text-2xl font-semibold text-white mb-4">
+                  {data.monthly_burn === 0 ? "—" : formatCurrency(data.monthly_burn)}
                 </p>
-              </div>
-              <p className="text-3xl font-bold text-gradient-emerald mb-4">
-                {formatCurrency(data.cash_on_hand)}
-              </p>
-              <div className="sparkline-container">
-                <Sparkline data={data.revenue_trend} color="emerald" />
-              </div>
-              <div className="flex items-center gap-2 mt-3 text-[hsl(152,100%,50%)] opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-xs font-medium">View Simulator</span>
-                <ArrowRight className="w-3 h-3" />
-              </div>
-            </motion.div>
+                <Sparkline data={data.expense_trend} positive={false} />
+              </motion.div>
 
-            {/* PROFIT MARGIN */}
-            <motion.div
-              className="bento-third glass-panel p-6 cursor-pointer group hover:scale-[1.02] transition-transform"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              onClick={handleProfitClick}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-[hsl(226,100%,59%)/0.15] flex items-center justify-center">
-                  <Percent className="w-4 h-4 text-[hsl(226,100%,59%)]" />
+              {/* Cash */}
+              <motion.div
+                className="col-span-12 md:col-span-4 card-surface-hover p-6 cursor-pointer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                onClick={handleCashClick}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <DollarSign className="w-4 h-4 text-[hsl(142,69%,50%)]" />
+                  <p className="text-[hsl(0,0%,53%)] text-xs font-medium uppercase tracking-wider">
+                    Cash on Hand
+                  </p>
                 </div>
-                <p className="text-[hsl(220,10%,55%)] text-xs uppercase tracking-wider font-medium">
-                  Profit Margin
+                <p className="text-2xl font-semibold text-[hsl(142,69%,50%)] mb-4">
+                  {formatCurrency(data.cash_on_hand)}
                 </p>
-              </div>
-              <p className="text-3xl font-bold text-white mb-4">
-                {data.profit_margin.toFixed(1)}%
-              </p>
-              <div className="h-3 bg-[hsl(220,10%,12%)] rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(152,100%,50%)] rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(data.profit_margin * 2, 100)}%` }}
-                  transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
-                />
-              </div>
-              <div className="flex items-center gap-2 mt-3 text-[hsl(226,100%,68%)] opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-xs font-medium">Track Growth</span>
-                <ArrowRight className="w-3 h-3" />
-              </div>
-            </motion.div>
+                <Sparkline data={data.revenue_trend} positive={true} />
+              </motion.div>
 
-            {/* DNA DRIFT DETECTION CARD */}
-            <AnimatePresence>
+              {/* Margin */}
+              <motion.div
+                className="col-span-12 md:col-span-4 card-surface-hover p-6 cursor-pointer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                onClick={handleProfitClick}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Percent className="w-4 h-4 text-[hsl(211,100%,45%)]" />
+                  <p className="text-[hsl(0,0%,53%)] text-xs font-medium uppercase tracking-wider">
+                    Profit Margin
+                  </p>
+                </div>
+                <p className="text-2xl font-semibold text-white mb-4">
+                  {data.profit_margin.toFixed(1)}%
+                </p>
+                <div className="h-2 bg-[hsl(0,0%,14%)] rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-[hsl(211,100%,45%)] rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(Math.max(data.profit_margin, 0) * 2, 100)}%` }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                  />
+                </div>
+              </motion.div>
+
+              {/* Drift Alert */}
               {driftResult && (
                 <motion.div
-                  className={`bento-hero glass-panel p-6 relative overflow-hidden ${
-                    driftResult.severity === "high" 
-                      ? "border-[hsl(0,70%,50%)/0.4]" 
-                      : driftResult.severity === "medium"
-                        ? "border-[hsl(45,90%,55%)/0.4]"
-                        : "border-[hsl(226,100%,59%)/0.4]"
+                  className={`col-span-12 card-surface p-6 border-l-4 ${
+                    driftResult.severity === "high" ? "border-l-[hsl(0,100%,62%)]" :
+                    driftResult.severity === "medium" ? "border-l-[hsl(35,100%,52%)]" :
+                    "border-l-[hsl(211,100%,45%)]"
                   }`}
-                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                  transition={{ delay: 0.55, type: "spring", stiffness: 200 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 }}
                 >
-                  {/* Animated background gradient based on severity */}
-                  <div className={`absolute inset-0 opacity-10 ${
-                    driftResult.severity === "high" 
-                      ? "bg-gradient-to-r from-[hsl(0,70%,50%)] via-transparent to-[hsl(0,70%,50%)]" 
-                      : driftResult.severity === "medium"
-                        ? "bg-gradient-to-r from-[hsl(45,90%,55%)] via-transparent to-[hsl(45,90%,55%)]"
-                        : "bg-gradient-to-r from-[hsl(226,100%,59%)] via-transparent to-[hsl(226,100%,59%)]"
-                  }`} />
-                  
-                  <div className="relative flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4 flex-1">
-                      {/* Animated Icon */}
-                      <motion.div 
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
-                          driftResult.severity === "high" 
-                            ? "bg-[hsl(0,70%,50%)/0.2]" 
-                            : driftResult.severity === "medium"
-                              ? "bg-[hsl(45,90%,55%)/0.2]"
-                              : "bg-[hsl(226,100%,59%)/0.2]"
-                        }`}
-                        animate={{ 
-                          scale: [1, 1.05, 1],
-                          rotate: driftResult.severity === "high" ? [0, -3, 3, 0] : [0, 0, 0, 0]
-                        }}
-                        transition={{ 
-                          duration: 2, 
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                      >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        driftResult.severity === "high" ? "bg-[hsl(0,100%,62%,0.15)]" :
+                        driftResult.severity === "medium" ? "bg-[hsl(35,100%,52%,0.15)]" :
+                        "bg-[hsl(211,100%,45%,0.15)]"
+                      }`}>
                         {driftResult.severity === "high" ? (
-                          <AlertTriangle className="w-7 h-7 text-[hsl(0,70%,55%)]" />
+                          <AlertTriangle className="w-5 h-5 text-[hsl(0,100%,62%)]" />
                         ) : (
-                          <Activity className={`w-7 h-7 ${
-                            driftResult.severity === "medium" 
-                              ? "text-[hsl(45,90%,55%)]" 
-                              : "text-[hsl(226,100%,68%)]"
+                          <Activity className={`w-5 h-5 ${
+                            driftResult.severity === "medium" ? "text-[hsl(35,100%,52%)]" : "text-[hsl(211,100%,45%)]"
                           }`} />
                         )}
-                      </motion.div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-xs font-bold uppercase tracking-wider ${
-                            driftResult.severity === "high" 
-                              ? "text-[hsl(0,70%,55%)]" 
-                              : driftResult.severity === "medium"
-                                ? "text-[hsl(45,90%,55%)]"
-                                : "text-[hsl(226,100%,68%)]"
-                          }`}>
-                            DNA Drift Detected
-                          </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                            driftResult.severity === "high" 
-                              ? "bg-[hsl(0,70%,50%)/0.2] text-[hsl(0,70%,65%)]" 
-                              : driftResult.severity === "medium"
-                                ? "bg-[hsl(45,90%,55%)/0.2] text-[hsl(45,90%,65%)]"
-                                : "bg-[hsl(226,100%,59%)/0.2] text-[hsl(226,100%,70%)]"
-                          }`}>
-                            {driftResult.severity}
-                          </span>
-                        </div>
-                        
-                        <p className="text-white font-semibold text-lg mb-2">
-                          {driftResult.message}
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-wider text-[hsl(0,0%,53%)] mb-1">
+                          Drift Detected
                         </p>
-                        
-                        <div className="flex items-center gap-4 text-sm">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[hsl(220,10%,50%)]">Predicted:</span>
-                            <span className="font-mono text-[hsl(220,10%,70%)]">
-                              {driftResult.driftType === "burn" 
-                                ? formatCurrency(driftResult.predictedValue) 
-                                : `${driftResult.predictedValue.toFixed(1)} mo`}
-                            </span>
-                          </div>
-                          <ArrowRight className="w-4 h-4 text-[hsl(220,10%,40%)]" />
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[hsl(220,10%,50%)]">Actual:</span>
-                            <span className={`font-mono font-semibold ${
-                              driftResult.driftPercentage > 0 
-                                ? driftResult.driftType === "burn" 
-                                  ? "text-[hsl(0,70%,55%)]" 
-                                  : "text-[hsl(152,100%,50%)]"
-                                : driftResult.driftType === "burn"
-                                  ? "text-[hsl(152,100%,50%)]"
-                                  : "text-[hsl(0,70%,55%)]"
-                            }`}>
-                              {driftResult.driftType === "burn" 
-                                ? formatCurrency(driftResult.actualValue) 
-                                : `${driftResult.actualValue.toFixed(1)} mo`}
-                            </span>
-                          </div>
-                          <span className={`px-2 py-0.5 rounded font-mono text-xs font-bold ${
-                            Math.abs(driftResult.driftPercentage) > 10
-                              ? "bg-[hsl(0,70%,50%)/0.2] text-[hsl(0,70%,65%)]"
-                              : "bg-[hsl(45,90%,55%)/0.2] text-[hsl(45,90%,65%)]"
-                          }`}>
-                            {driftResult.driftPercentage > 0 ? "+" : ""}{driftResult.driftPercentage.toFixed(1)}%
+                        <p className="text-white font-medium mb-2">{driftResult.message}</p>
+                        <div className="flex items-center gap-4 text-sm text-[hsl(0,0%,53%)]">
+                          <span>Predicted: {driftResult.driftType === "burn" ? formatCurrency(driftResult.predictedValue) : `${driftResult.predictedValue.toFixed(1)} mo`}</span>
+                          <ArrowRight className="w-4 h-4" />
+                          <span className={driftResult.driftPercentage > 0 ? "text-[hsl(0,100%,62%)]" : "text-[hsl(142,69%,50%)]"}>
+                            Actual: {driftResult.driftType === "burn" ? formatCurrency(driftResult.actualValue) : `${driftResult.actualValue.toFixed(1)} mo`}
                           </span>
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex gap-2">
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="secondary"
                         onClick={handleSaveToWeeklyBrief}
                         disabled={driftSaved}
-                        className={`border-[hsl(270,60%,55%)/0.3] hover:border-[hsl(270,60%,55%)/0.6] hover:bg-[hsl(270,60%,55%)/0.1] ${
-                          driftSaved ? "opacity-60" : ""
-                        }`}
                       >
-                        {driftSaved ? (
-                          <>
-                            <CheckCircle className="w-4 h-4 mr-1.5 text-[hsl(152,100%,50%)]" />
-                            <span className="text-[hsl(152,100%,50%)]">Saved</span>
-                          </>
-                        ) : (
-                          <>
-                            <Bell className="w-4 h-4 mr-1.5 text-[hsl(270,60%,65%)]" />
-                            <span className="text-[hsl(270,60%,65%)]">Weekly Brief</span>
-                          </>
-                        )}
+                        {driftSaved ? <CheckCircle className="w-4 h-4 mr-2" /> : <Bell className="w-4 h-4 mr-2" />}
+                        {driftSaved ? "Saved" : "Save to Brief"}
                       </Button>
-                      
-                      <Button
-                        size="sm"
-                        onClick={() => navigate("/toolkit?tool=runway")}
-                        className="bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(270,60%,55%)] text-white hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.2]"
-                      >
-                        <Sparkles className="w-4 h-4 mr-1.5" />
-                        Adjust Simulation
+                      <Button size="sm" onClick={() => navigate("/toolkit?tool=runway")}>
+                        Adjust
                       </Button>
                     </div>
                   </div>
                 </motion.div>
               )}
-            </AnimatePresence>
 
-            {/* SHARE ACTIONS */}
-            <motion.div
-              className="bento-hero glass-panel p-6"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] flex items-center justify-center">
-                    <BarChart3 className="w-6 h-6 text-white" />
+              {/* Actions */}
+              <motion.div
+                className="col-span-12 card-surface p-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(211,100%,45%)] flex items-center justify-center">
+                      <BarChart3 className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-white">Export & Share</p>
+                      <p className="text-sm text-[hsl(0,0%,53%)]">Download or share your analysis</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-white text-lg">Founder Health Card</h3>
-                    <p className="text-[hsl(220,10%,50%)] text-sm">Export your financial DNA as a shareable asset</p>
+                  <div className="flex gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="secondary" disabled={isExporting}>
+                          <Download className="w-4 h-4 mr-2" />
+                          {isExporting ? "Exporting..." : "Download"}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={handleExportPNG}>
+                          <FileImage className="w-4 h-4 mr-2" />
+                          PNG Image
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportPDF}>
+                          <FileText className="w-4 h-4 mr-2" />
+                          PDF Document
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleDownloadReport}>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Investor Report
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="secondary">
+                          <Copy className="w-4 h-4 mr-2" />
+                          Copy
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={handleCopyInvestorUpdate}>
+                          <ClipboardCheck className="w-4 h-4 mr-2" />
+                          Investor Update
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleCopyForSlack}>
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Slack Message
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleCopyQuickStatus}>
+                          <Zap className="w-4 h-4 mr-2" />
+                          Quick Status
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Button onClick={handleShare}>
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Share
+                    </Button>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  {/* Download Dropdown */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        disabled={isExporting}
-                        className="border-[hsl(226,100%,59%)/0.3] hover:border-[hsl(226,100%,59%)/0.6] hover:bg-[hsl(226,100%,59%)/0.1] text-white"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        {isExporting ? "Exporting..." : "Download"}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-[hsl(270,15%,10%)] border-[hsl(226,100%,59%)/0.2]">
-                      <DropdownMenuItem 
-                        onClick={handleExportPNG}
-                        className="text-white hover:bg-[hsl(226,100%,59%)/0.1] cursor-pointer"
-                      >
-                        <FileImage className="w-4 h-4 mr-2" />
-                        Health Card (PNG)
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={handleExportPDF}
-                        className="text-white hover:bg-[hsl(226,100%,59%)/0.1] cursor-pointer"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Health Card (PDF)
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={handleDownloadReport}
-                        className="text-white hover:bg-[hsl(152,100%,50%)/0.1] cursor-pointer"
-                      >
-                        <FileText className="w-4 h-4 mr-2 text-[hsl(152,100%,50%)]" />
-                        Investor Report (.md)
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  {/* Share Dropdown */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="border-[hsl(152,100%,50%)/0.3] hover:border-[hsl(152,100%,50%)/0.6] hover:bg-[hsl(152,100%,50%)/0.1] text-white"
-                      >
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-[hsl(270,15%,10%)] border-[hsl(152,100%,50%)/0.2]">
-                      <DropdownMenuItem 
-                        onClick={handleCopyInvestorUpdate}
-                        className="text-white hover:bg-[hsl(152,100%,50%)/0.1] cursor-pointer"
-                      >
-                        <ClipboardCheck className="w-4 h-4 mr-2 text-[hsl(152,100%,50%)]" />
-                        Full Investor Update
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={handleCopyForSlack}
-                        className="text-white hover:bg-[hsl(270,60%,55%)/0.1] cursor-pointer"
-                      >
-                        <MessageSquare className="w-4 h-4 mr-2 text-[hsl(270,60%,55%)]" />
-                        Copy for Slack
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={handleCopyQuickStatus}
-                        className="text-white hover:bg-[hsl(45,90%,55%)/0.1] cursor-pointer"
-                      >
-                        <Zap className="w-4 h-4 mr-2 text-[hsl(45,90%,55%)]" />
-                        Quick One-Liner
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  <Button 
-                    onClick={handleShare}
-                    className="bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] text-white hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.3]"
-                  >
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share on X
-                  </Button>
-                </div>
-              </div>
-
-              {/* Quick Copy Bar */}
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-[hsl(240,7%,8%)] border border-white/5">
-                <div className="flex-1 font-mono text-sm text-[hsl(220,10%,60%)] truncate">
-                  🧬 Runway DNA: Grade {data.grade.toUpperCase()} | {!isFinite(data.runway_months) ? "∞" : data.runway_months.toFixed(1)} Months Left | {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(data.cash_on_hand)} Cash
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleCopyQuickStatus}
-                  className="shrink-0 text-[hsl(226,100%,68%)] hover:text-white hover:bg-[hsl(226,100%,59%)/0.1]"
-                >
-                  <Copy className="w-4 h-4 mr-1" />
-                  Copy
-                </Button>
-              </div>
-            </motion.div>
+              </motion.div>
             </div>
           </motion.div>
         )}
