@@ -194,7 +194,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
           </div>
           <div className="flex justify-between gap-4">
             <span className="text-[hsl(220,10%,55%)]">ARR:</span>
-            <span className="text-[hsl(152,100%,50%)] font-bold" style={{ fontFamily: 'JetBrains Mono' }}>
+            <span className="text-[hsl(142,69%,50%)] font-bold" style={{ fontFamily: 'JetBrains Mono' }}>
               {formatCurrency(data.arr)}
             </span>
           </div>
@@ -204,7 +204,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
           </div>
           <div className="flex justify-between gap-4 pt-2 border-t border-white/10">
             <span className="text-[hsl(220,10%,55%)]">MoM Growth:</span>
-            <span className={`font-bold ${data.growth >= 0 ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
+            <span className={`font-bold ${data.growth >= 0 ? "text-[hsl(142,69%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
               {data.growth >= 0 ? "+" : ""}{data.growth.toFixed(1)}%
             </span>
           </div>
@@ -341,7 +341,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               {/* Revenue Metrics Card */}
               <div className="card-surface p-6">
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-[hsl(270,60%,55%)/0.2] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-[hsl(211,100%,45%)/0.2] flex items-center justify-center">
                     <DollarSign className="w-5 h-5 text-[hsl(270,60%,65%)]" />
                   </div>
                   <h3 className="text-white font-semibold">Revenue Metrics</h3>
@@ -380,7 +380,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                           const val = Math.max(0, Number(e.target.value) || 0);
                           setMonthlyGrowthRate(val);
                         }}
-                        className="h-6 w-16 text-xs  text-white font-mono text-center focus:border-[hsl(152,100%,50%)]/50"
+                        className="h-6 w-16 text-xs  text-white font-mono text-center focus:border-[hsl(142,69%,50%)]/50"
                         min={0}
                         step={0.5}
                       />
@@ -398,7 +398,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                       <span>25%</span>
                       <span className="flex items-center gap-1">
                         50%
-                        {monthlyGrowthRate > 50 && <span className="text-[hsl(152,100%,50%)]">+</span>}
+                        {monthlyGrowthRate > 50 && <span className="text-[hsl(142,69%,50%)]">+</span>}
                       </span>
                     </div>
                   </div>
@@ -472,7 +472,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               }`}>
                 <div className="flex items-center gap-3 mb-3">
                   {netGrowthRate >= 15 ? (
-                    <Award className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+                    <Award className="w-5 h-5 text-[hsl(142,69%,50%)]" />
                   ) : netGrowthRate >= 10 ? (
                     <Target className="w-5 h-5 text-[hsl(152,70%,45%)]" />
                   ) : netGrowthRate >= 5 ? (
@@ -481,7 +481,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                     <TrendingDown className="w-5 h-5 text-[hsl(0,70%,55%)]" />
                   )}
                   <span className={`text-sm font-semibold ${
-                    netGrowthRate >= 15 ? "text-[hsl(152,100%,50%)]" : netGrowthRate >= 10 ? "text-[hsl(152,70%,45%)]" : netGrowthRate >= 5 ? "text-[hsl(45,90%,55%)]" : "text-[hsl(0,70%,55%)]"
+                    netGrowthRate >= 15 ? "text-[hsl(142,69%,50%)]" : netGrowthRate >= 10 ? "text-[hsl(152,70%,45%)]" : netGrowthRate >= 5 ? "text-[hsl(45,90%,55%)]" : "text-[hsl(0,70%,55%)]"
                   }`}>
                     {netGrowthRate >= 15 ? "Elite Growth" : netGrowthRate >= 10 ? "Strong Growth" : netGrowthRate >= 5 ? "Moderate Growth" : "Low Growth"}
                   </span>
@@ -510,7 +510,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               <div className="p-6 rounded-2xl glass-panel border border-white/5">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[hsl(270,60%,55%)/0.2] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(211,100%,45%)/0.2] flex items-center justify-center">
                       <LineChart className="w-5 h-5 text-[hsl(270,60%,65%)]" />
                     </div>
                     <div>
@@ -518,7 +518,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                       <p className="text-xs text-[hsl(220,10%,50%)]">Compound growth with churn modeling</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(270,60%,55%)/0.1] border border-[hsl(270,60%,55%)/0.3]">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(211,100%,45%)/0.1] border border-[hsl(211,100%,45%)/0.3]">
                     <Sparkles className="w-3 h-3 text-[hsl(270,60%,65%)]" />
                     <span className="text-xs text-[hsl(270,60%,65%)] font-semibold">Interactive</span>
                   </div>
@@ -576,7 +576,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               {/* Secondary Metrics Grid */}
               <div className="grid grid-cols-3 gap-4">
                 {/* Customer Count */}
-                <div className="p-5 rounded-2xl bg-gradient-to-br from-[hsl(226,100%,59%)/0.1] to-transparent border border-[hsl(226,100%,59%)/0.3]">
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-[hsl(211,100%,45%)/0.1] to-transparent border border-[hsl(211,100%,45%)/0.3]">
                   <div className="flex items-center gap-2 mb-3">
                     <Users className="w-4 h-4 text-[hsl(226,100%,68%)]" />
                     <span className="text-xs uppercase tracking-wider text-[hsl(226,100%,68%)]">Customers</span>
@@ -604,20 +604,20 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                 {/* Customer Growth */}
                 <div className={`p-5 rounded-2xl border ${
                   customerGrowth >= 50
-                    ? 'bg-gradient-to-br from-[hsl(152,100%,50%)/0.1] to-transparent border-[hsl(152,100%,50%)/0.3]'
+                    ? 'bg-gradient-to-br from-[hsl(142,69%,50%)/0.1] to-transparent border-[hsl(142,69%,50%)/0.3]'
                     : customerGrowth >= 25
                       ? 'bg-gradient-to-br from-[hsl(45,90%,55%)/0.1] to-transparent border-[hsl(45,90%,55%)/0.3]'
                       : 'bg-gradient-to-br from-[hsl(0,70%,55%)/0.1] to-transparent border-[hsl(0,70%,55%)/0.3]'
                 }`}>
                   <div className="flex items-center gap-2 mb-3">
-                    <TrendingUp className="w-4 h-4" style={{ color: customerGrowth >= 50 ? "hsl(152,100%,50%)" : customerGrowth >= 25 ? "hsl(45,90%,55%)" : "hsl(0,70%,55%)" }} />
+                    <TrendingUp className="w-4 h-4" style={{ color: customerGrowth >= 50 ? "hsl(142,69%,50%)" : customerGrowth >= 25 ? "hsl(45,90%,55%)" : "hsl(0,70%,55%)" }} />
                     <span className={`text-xs uppercase tracking-wider ${
-                      customerGrowth >= 50 ? "text-[hsl(152,100%,50%)]" : customerGrowth >= 25 ? "text-[hsl(45,90%,55%)]" : "text-[hsl(0,70%,55%)]"
+                      customerGrowth >= 50 ? "text-[hsl(142,69%,50%)]" : customerGrowth >= 25 ? "text-[hsl(45,90%,55%)]" : "text-[hsl(0,70%,55%)]"
                     }`}>
                       Growth
                     </span>
                   </div>
-                  <div className={`flex items-center gap-1 ${customerGrowth >= 50 ? 'text-[hsl(152,100%,50%)]' : customerGrowth >= 25 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'}`}>
+                  <div className={`flex items-center gap-1 ${customerGrowth >= 50 ? 'text-[hsl(142,69%,50%)]' : customerGrowth >= 25 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'}`}>
                     {customerGrowth >= 0 ? <ArrowUp className="w-5 h-5" /> : <ArrowDown className="w-5 h-5" />}
                     <p className="text-2xl font-bold" style={{ fontFamily: 'JetBrains Mono' }}>
                       {Math.abs(customerGrowth).toFixed(0)}%
@@ -631,7 +631,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               <div className="p-6 rounded-2xl glass-panel border border-white/5 mb-6">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[hsl(226,100%,59%)/0.2] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(211,100%,45%)/0.2] flex items-center justify-center">
                       <Gauge className="w-5 h-5 text-[hsl(226,100%,68%)]" />
                     </div>
                     <div>
@@ -666,7 +666,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                 
                 <div className={`p-5 rounded-xl border-2 ${
                   ltvCacRatio >= 3
-                    ? 'bg-gradient-to-br from-[hsl(152,100%,50%)/0.15] to-transparent border-[hsl(152,100%,50%)/0.4]'
+                    ? 'bg-gradient-to-br from-[hsl(142,69%,50%)/0.15] to-transparent border-[hsl(142,69%,50%)/0.4]'
                     : ltvCacRatio >= 2
                       ? 'bg-gradient-to-br from-[hsl(45,90%,55%)/0.15] to-transparent border-[hsl(45,90%,55%)/0.4]'
                       : 'bg-gradient-to-br from-[hsl(0,70%,55%)/0.15] to-transparent border-[hsl(0,70%,55%)/0.4]'
@@ -674,11 +674,11 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Target className={`w-6 h-6 ${
-                        ltvCacRatio >= 3 ? 'text-[hsl(152,100%,50%)]' : ltvCacRatio >= 2 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'
+                        ltvCacRatio >= 3 ? 'text-[hsl(142,69%,50%)]' : ltvCacRatio >= 2 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'
                       }`} />
                       <div>
                         <p className={`text-sm font-semibold ${
-                          ltvCacRatio >= 3 ? 'text-[hsl(152,100%,50%)]' : ltvCacRatio >= 2 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'
+                          ltvCacRatio >= 3 ? 'text-[hsl(142,69%,50%)]' : ltvCacRatio >= 2 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'
                         }`}>
                           {ltvCacRatio >= 3 ? 'Healthy Ratio' : ltvCacRatio >= 2 ? 'Moderate Ratio' : 'Poor Ratio'}
                         </p>
@@ -689,7 +689,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                     </div>
                     <div className="text-right">
                       <p className={`text-3xl font-bold font-mono ${
-                        ltvCacRatio >= 3 ? 'text-[hsl(152,100%,50%)]' : ltvCacRatio >= 2 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'
+                        ltvCacRatio >= 3 ? 'text-[hsl(142,69%,50%)]' : ltvCacRatio >= 2 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'
                       }`}>
                         {ltvCacRatio.toFixed(1)}:1
                       </p>
@@ -702,7 +702,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               <div className="p-6 rounded-2xl glass-panel border border-white/5 mb-6">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[hsl(270,60%,55%)/0.2] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(211,100%,45%)/0.2] flex items-center justify-center">
                       <Target className="w-5 h-5 text-[hsl(270,60%,65%)]" />
                     </div>
                     <div>
@@ -737,8 +737,8 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                       transition={{ duration: 0.8 }}
                       className={`h-full rounded-full ${
                         (currentMRR / revenueGoal) >= 1
-                          ? 'bg-gradient-to-r from-[hsl(152,100%,50%)] to-[hsl(152,100%,60%)]'
-                          : 'bg-gradient-to-r from-[hsl(270,60%,55%)] to-[hsl(290,70%,45%)]'
+                          ? 'bg-gradient-to-r from-[hsl(142,69%,50%)] to-[hsl(152,100%,60%)]'
+                          : 'bg-gradient-to-r from-[hsl(211,100%,45%)] to-[hsl(290,70%,45%)]'
                       }`}
                     />
                   </div>
@@ -762,8 +762,8 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
               <div className="p-6 rounded-2xl glass-panel border border-white/5">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[hsl(152,100%,50%)/0.2] flex items-center justify-center">
-                      <Users className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(142,69%,50%)/0.2] flex items-center justify-center">
+                      <Users className="w-5 h-5 text-[hsl(142,69%,50%)]" />
                     </div>
                     <div>
                       <h3 className="text-white font-semibold">Customer Growth Timeline</h3>
@@ -771,12 +771,12 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(226,100%,59%)/0.1] border border-[hsl(226,100%,59%)/0.3]">
-                      <div className="w-3 h-3 rounded-full bg-[hsl(226,100%,59%)]" />
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(211,100%,45%)/0.1] border border-[hsl(211,100%,45%)/0.3]">
+                      <div className="w-3 h-3 rounded-full bg-[hsl(211,100%,45%)]" />
                       <span className="text-[hsl(226,100%,68%)] font-semibold">Start</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(152,100%,50%)/0.1] border border-[hsl(152,100%,50%)/0.3]">
-                      <div className="w-3 h-3 rounded-full bg-[hsl(152,100%,50%)]" />
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[hsl(142,69%,50%)/0.1] border border-[hsl(142,69%,50%)/0.3]">
+                      <div className="w-3 h-3 rounded-full bg-[hsl(142,69%,50%)]" />
                       <span className="text-[hsl(152,100%,60%)] font-semibold">12mo</span>
                     </div>
                   </div>
@@ -807,12 +807,12 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                           onClick={() => setSelectedMonthIndex(isSelected ? null : i)}
                           className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
                             isSelected
-                              ? 'bg-gradient-to-br from-[hsl(270,60%,55%)/0.3] to-[hsl(290,70%,45%)/0.2] border-[hsl(270,60%,65%)] shadow-lg shadow-[hsl(270,60%,55%)/0.3]'
+                              ? 'bg-gradient-to-br from-[hsl(211,100%,45%)/0.3] to-[hsl(290,70%,45%)/0.2] border-[hsl(270,60%,65%)] shadow-lg shadow-[hsl(211,100%,45%)/0.3]'
                               : isStart 
-                                ? 'bg-gradient-to-br from-[hsl(226,100%,59%)/0.2] to-[hsl(226,100%,59%)/0.1] border-[hsl(226,100%,59%)/0.5] hover:border-[hsl(226,100%,59%)] hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.2]' 
+                                ? 'bg-gradient-to-br from-[hsl(211,100%,45%)/0.2] to-[hsl(211,100%,45%)/0.1] border-[hsl(211,100%,45%)/0.5] hover:border-[hsl(211,100%,45%)] hover:shadow-lg hover:shadow-[hsl(211,100%,45%)/0.2]' 
                                 : isEnd 
-                                  ? 'bg-gradient-to-br from-[hsl(152,100%,50%)/0.2] to-[hsl(152,100%,50%)/0.1] border-[hsl(152,100%,50%)/0.5] hover:border-[hsl(152,100%,50%)] hover:shadow-lg hover:shadow-[hsl(152,100%,50%)/0.2]'
-                                  : 'bg-[hsl(240,7%,15%)] border-white/10 hover:border-[hsl(270,60%,55%)/0.5] hover:bg-[hsl(240,7%,18%)] hover:shadow-lg hover:shadow-[hsl(270,60%,55%)/0.1]'
+                                  ? 'bg-gradient-to-br from-[hsl(142,69%,50%)/0.2] to-[hsl(142,69%,50%)/0.1] border-[hsl(142,69%,50%)/0.5] hover:border-[hsl(142,69%,50%)] hover:shadow-lg hover:shadow-[hsl(142,69%,50%)/0.2]'
+                                  : 'bg-[hsl(240,7%,15%)] border-white/10 hover:border-[hsl(211,100%,45%)/0.5] hover:bg-[hsl(240,7%,18%)] hover:shadow-lg hover:shadow-[hsl(211,100%,45%)/0.1]'
                           }`}
                         >
                           <div className="flex flex-col items-center text-center gap-2">
@@ -825,7 +825,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                               {data.customers}
                             </span>
                             {!isStart && growthPercent > 0 && (
-                              <div className="flex items-center gap-1 text-[10px] text-[hsl(152,100%,50%)]">
+                              <div className="flex items-center gap-1 text-[10px] text-[hsl(142,69%,50%)]">
                                 <ArrowUp className="w-3 h-3" />
                                 <span className="font-semibold">{growthPercent.toFixed(1)}%</span>
                               </div>
@@ -847,7 +847,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       className="mt-4 overflow-hidden"
                     >
-                      <div className="p-4 rounded-xl bg-gradient-to-br from-[hsl(270,60%,55%)/0.15] to-[hsl(290,70%,45%)/0.1] border border-[hsl(270,60%,55%)/0.3]">
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-[hsl(211,100%,45%)/0.15] to-[hsl(290,70%,45%)/0.1] border border-[hsl(211,100%,45%)/0.3]">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="text-sm font-semibold text-[hsl(270,60%,75%)]">
                             {projectionData[selectedMonthIndex].month} Projection Details
@@ -963,10 +963,10 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-[hsl(152,100%,50%)/0.2]"
+                    className="p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-[hsl(142,69%,50%)/0.2]"
                   >
                     <div className="flex items-center gap-2 mb-3">
-                      <CheckCircle2 className="w-4 h-4 text-[hsl(152,100%,50%)]" />
+                      <CheckCircle2 className="w-4 h-4 text-[hsl(142,69%,50%)]" />
                       <h4 className="text-sm font-semibold text-[hsl(152,100%,60%)]">Recommendations</h4>
                     </div>
                     <ul className="space-y-2">
@@ -978,7 +978,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                           transition={{ delay: 0.3 + i * 0.1 }}
                           className="flex items-start gap-2 text-sm text-[hsl(220,10%,70%)]"
                         >
-                          <ArrowUp className="w-3 h-3 text-[hsl(152,100%,50%)] mt-1 flex-shrink-0" />
+                          <ArrowUp className="w-3 h-3 text-[hsl(142,69%,50%)] mt-1 flex-shrink-0" />
                           {rec}
                         </motion.li>
                       ))}
@@ -1052,7 +1052,7 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
           >
             <Button
               onClick={onClose}
-              className="px-8 bg-gradient-to-r from-[hsl(270,60%,55%)] to-[hsl(290,70%,45%)] hover:from-[hsl(270,60%,60%)] hover:to-[hsl(290,70%,50%)] text-white font-semibold shadow-lg shadow-[hsl(270,60%,55%)/0.3]"
+              className="px-8 bg-gradient-to-r from-[hsl(211,100%,45%)] to-[hsl(290,70%,45%)] hover:from-[hsl(270,60%,60%)] hover:to-[hsl(290,70%,50%)] text-white font-semibold shadow-lg shadow-[hsl(211,100%,45%)/0.3]"
             >
               Done
             </Button>
