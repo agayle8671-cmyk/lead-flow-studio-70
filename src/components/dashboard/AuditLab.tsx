@@ -61,12 +61,42 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
         headers["X-CID"] = extractedCID;
       }
 
-      const response = await fetch("https://marginauditpro.com/api/parse-finances", {
-        method: "POST",
-        headers,
-        body: formData,
-        mode: "cors",
-      });
+      // Retry logic for network failures (e.g., backend crash on CSV)
+      const maxRetries = 2;
+      let response: Response | null = null;
+      let lastError: Error | null = null;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          response = await fetch("https://marginauditpro.com/api/parse-finances", {
+            method: "POST",
+            headers,
+            body: formData,
+            mode: "cors",
+          });
+          break; // Success - exit retry loop
+        } catch (networkError) {
+          lastError = networkError instanceof Error ? networkError : new Error("Network error");
+          console.warn(`Upload attempt ${attempt + 1} failed:`, networkError);
+          
+          if (attempt < maxRetries) {
+            // Wait 2 seconds before retry, show "Server Busy" message
+            setProcessingStatus("Server busy, retrying...");
+            toast({
+              title: "Server Busy",
+              description: "The server is processing. Retrying in 2 seconds...",
+              className: "bg-amber-500/10 border-amber-500/30",
+            });
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            setProcessingStatus("Analyzing with AI...");
+          }
+        }
+      }
+
+      // If all retries failed, throw the network error
+      if (!response) {
+        throw new Error(lastError?.message || "Failed to connect to server after multiple attempts");
+      }
 
       const responseText = await response.text();
 
