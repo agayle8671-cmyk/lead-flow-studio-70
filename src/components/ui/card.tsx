@@ -3,22 +3,25 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "glass" | "bento";
+  variant?: "default" | "glass" | "bento" | "task";
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = "default", ...props }, ref) => {
     const variants = {
-      default: "bg-[hsl(0,0%,11%)] border-[hsl(0,0%,100%,0.06)]",
-      glass: "bg-[hsl(0,0%,11%)] border-[hsl(0,0%,100%,0.08)]",
-      bento: "bg-[hsl(0,0%,11%)] border-[hsl(0,0%,100%,0.06)] hover:border-[hsl(0,0%,100%,0.12)] transition-colors duration-150",
+      // Glassmorphism cards with ultra-thin borders
+      default: "bg-[rgba(20,20,20,0.6)] backdrop-blur-[40px] border-[rgba(255,255,255,0.08)]",
+      glass: "bg-[rgba(20,20,20,0.6)] backdrop-blur-[40px] border-[rgba(255,255,255,0.08)] shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_32px_rgba(0,0,0,0.5)]",
+      bento: "bg-[rgba(20,20,20,0.6)] backdrop-blur-[40px] border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.15)] hover:bg-[rgba(30,30,30,0.8)] transition-all duration-200 hover:-translate-y-0.5",
+      // Task-style card for archive
+      task: "bg-[rgba(20,20,20,0.6)] backdrop-blur-[40px] border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.15)] hover:bg-[rgba(30,30,30,0.8)] transition-all duration-200 cursor-pointer",
     };
 
     return (
       <div
         ref={ref}
         className={cn(
-          "rounded-xl border text-[hsl(0,0%,96%)]",
+          "rounded-xl border text-white",
           variants[variant],
           className
         )}
@@ -31,33 +34,33 @@ Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
+    <div ref={ref} className={cn("flex flex-col space-y-1.5 p-5", className)} {...props} />
   )
 );
 CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn("text-lg font-semibold leading-none tracking-tight text-white", className)} {...props} />
+    <h3 ref={ref} className={cn("text-base font-semibold leading-none tracking-tight text-white", className)} {...props} />
   )
 );
 CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-[hsl(0,0%,53%)]", className)} {...props} />
+    <p ref={ref} className={cn("text-sm text-white/50", className)} {...props} />
   )
 );
 CardDescription.displayName = "CardDescription";
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+  ({ className, ...props }, ref) => <div ref={ref} className={cn("p-5 pt-0", className)} {...props} />
 );
 CardContent.displayName = "CardContent";
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex items-center p-6 pt-0", className)} {...props} />
+    <div ref={ref} className={cn("flex items-center p-5 pt-0", className)} {...props} />
   )
 );
 CardFooter.displayName = "CardFooter";

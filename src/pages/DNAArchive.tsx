@@ -339,7 +339,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
 
   const getGradeClass = (grade: string) => {
     const g = grade.toLowerCase();
-    if (g === "a") return "bg-[hsl(152,100%,50%)] text-[hsl(152,100%,5%)]";
+    if (g === "a") return "bg-[#22C55E] text-[hsl(152,100%,5%)]";
     if (g === "b") return "bg-[hsl(226,100%,59%)] text-white";
     return "bg-[hsl(45,90%,55%)] text-[hsl(45,100%,10%)]";
   };
@@ -563,7 +563,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Grade Filter */}
                   <div>
-                    <label className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)] mb-2 block">
+                    <label className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.5)] mb-2 block">
                       Filter by Grade
                     </label>
                     <div className="flex gap-1">
@@ -576,14 +576,14 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                           className={`flex-1 ${
                             gradeFilter === grade
                               ? grade === "A" 
-                                ? "bg-[hsl(152,100%,50%)] hover:bg-[hsl(152,100%,55%)] text-black"
+                                ? "bg-[#22C55E] hover:bg-[hsl(152,100%,55%)] text-black"
                                 : grade === "B"
                                 ? "bg-[hsl(226,100%,59%)] hover:bg-[hsl(226,100%,65%)] text-white"
                                 : grade === "C"
                                 ? "bg-[hsl(45,90%,55%)] hover:bg-[hsl(45,90%,60%)] text-black"
                                 : grade === "All"
                                 ? "bg-[hsl(270,60%,55%)] hover:bg-[hsl(270,60%,60%)] text-white"
-                                : "bg-[hsl(0,70%,55%)] hover:bg-[hsl(0,70%,60%)] text-white"
+                                : "bg-[#DC2626] hover:bg-[hsl(0,70%,60%)] text-white"
                               : "border-white/10 hover:border-white/20 text-[hsl(220,10%,60%)]"
                           }`}
                         >
@@ -595,7 +595,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
 
                   {/* Month Filter */}
                   <div>
-                    <label className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)] mb-2 block">
+                    <label className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.5)] mb-2 block">
                       Filter by Month
                     </label>
                     <Select value={monthFilter} onValueChange={setMonthFilter}>
@@ -626,7 +626,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       <Button
                         onClick={clearFilters}
                         variant="ghost"
-                        className="text-[hsl(0,70%,60%)] hover:text-[hsl(0,70%,70%)] hover:bg-[hsl(0,70%,55%)/0.1]"
+                        className="text-[hsl(0,70%,60%)] hover:text-[hsl(0,70%,70%)] hover:bg-[#DC2626/0.1]"
                       >
                         <X className="w-4 h-4 mr-2" />
                         Clear Filters
@@ -637,7 +637,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
 
                 {/* Filter Results Summary */}
                 <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-                  <p className="text-sm text-[hsl(220,10%,55%)]">
+                  <p className="text-sm text-[rgba(255,255,255,0.5)]">
                     Showing <span className="text-white font-semibold">{sortedAnalyses.length}</span> of{" "}
                     <span className="text-white">{analyses.length}</span> analyses
                     {sortField !== "date" && (
@@ -703,9 +703,9 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                     <p className="text-xs text-[hsl(220,10%,50%)]">{option.description}</p>
                   </div>
                   {sortField === option.value && (
-                    <Check className="w-4 h-4 text-[hsl(152,100%,50%)]" />
+                    <Check className="w-4 h-4 text-[#22C55E]" />
                   )}
-                </DropdownMenuItem>
+              </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -730,7 +730,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
             <div className="w-10 h-10 rounded-xl bg-[hsl(226,100%,59%)/0.15] flex items-center justify-center group-hover:scale-110 transition-transform">
               <Archive className="w-5 h-5 text-[hsl(226,100%,59%)]" />
             </div>
-            <span className="text-[hsl(220,10%,55%)] text-sm">Total Analyses</span>
+            <span className="text-[rgba(255,255,255,0.5)] text-sm">Total Analyses</span>
           </div>
           <p className="relative text-4xl font-bold text-white">{stats.total}</p>
         </motion.div>
@@ -740,19 +740,19 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
           onClick={() => setStatsModalOpen("average")}
           whileHover={{ scale: 1.02, y: -4 }}
           whileTap={{ scale: 0.98 }}
-          className="glass-panel p-6 cursor-pointer group relative overflow-hidden transition-all hover:border-[hsl(152,100%,50%)/0.4] hover:shadow-xl hover:shadow-[hsl(152,100%,50%)/0.15]"
+          className="glass-panel p-6 cursor-pointer group relative overflow-hidden transition-all hover:border-[#22C55E/0.4] hover:shadow-xl hover:shadow-[#22C55E/0.15]"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(152,100%,50%)/0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#22C55E/0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="px-2 py-1 rounded-full bg-[hsl(152,100%,50%)/0.2] text-[10px] text-[hsl(152,100%,60%)] uppercase tracking-wider">
+            <div className="px-2 py-1 rounded-full bg-[#22C55E/0.2] text-[10px] text-[hsl(152,100%,60%)] uppercase tracking-wider">
               Click for details
-            </div>
+        </div>
           </div>
           <div className="relative flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-[hsl(152,100%,50%)/0.15] flex items-center justify-center group-hover:scale-110 transition-transform">
-              <TrendingUp className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+            <div className="w-10 h-10 rounded-xl bg-[#22C55E/0.15] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <TrendingUp className="w-5 h-5 text-[#22C55E]" />
             </div>
-            <span className="text-[hsl(220,10%,55%)] text-sm">Average Runway</span>
+            <span className="text-[rgba(255,255,255,0.5)] text-sm">Average Runway</span>
           </div>
           <p className="relative text-4xl font-bold text-gradient-emerald">{stats.avgRunway}</p>
         </motion.div>
@@ -768,13 +768,13 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <div className="px-2 py-1 rounded-full bg-[hsl(270,60%,55%)/0.2] text-[10px] text-[hsl(270,60%,70%)] uppercase tracking-wider">
               Click for details
-            </div>
+        </div>
           </div>
           <div className="relative flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-[hsl(270,60%,50%)/0.15] flex items-center justify-center group-hover:scale-110 transition-transform">
               <Calendar className="w-5 h-5 text-[hsl(270,60%,55%)]" />
             </div>
-            <span className="text-[hsl(220,10%,55%)] text-sm">Last Analysis</span>
+            <span className="text-[rgba(255,255,255,0.5)] text-sm">Last Analysis</span>
           </div>
           <p className="relative text-4xl font-bold text-white">{stats.lastAnalysis}</p>
         </motion.div>
@@ -911,7 +911,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-[hsl(220,10%,55%)] text-center max-w-lg mb-2"
+              className="text-[rgba(255,255,255,0.5)] text-center max-w-lg mb-2"
             >
               {searchQuery && gradeFilter !== "All" ? (
                 <>Your search for "<span className="text-white font-medium">{searchQuery}</span>" with Grade <span className="text-[hsl(226,100%,68%)] font-medium">{gradeFilter}</span> returned no results.</>
@@ -932,7 +932,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 }}
-              className="text-[hsl(220,10%,45%)] text-sm text-center max-w-md mb-8"
+              className="text-[rgba(255,255,255,0.4)] text-sm text-center max-w-md mb-8"
             >
               Try adjusting your search terms, changing the grade filter, or selecting a different month.
             </motion.p>
@@ -971,7 +971,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                 transition={{ delay: 0.5 }}
                 className="mt-6 flex items-center gap-2"
               >
-                <span className="text-xs text-[hsl(220,10%,45%)]">Active filters:</span>
+                <span className="text-xs text-[rgba(255,255,255,0.4)]">Active filters:</span>
                 {searchQuery && (
                   <span className="px-2 py-1 rounded-lg bg-white/5 text-xs text-white border border-white/10">
                     "{searchQuery}"
@@ -1009,8 +1009,8 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
           >
             <AnimatePresence mode="popLayout">
               {sortedAnalyses.map((analysis) => (
-                <motion.div
-                  key={analysis.id}
+            <motion.div
+              key={analysis.id}
                   layout
                   variants={{
                     hidden: { opacity: 0, x: -30, scale: 0.95 },
@@ -1025,16 +1025,16 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                     damping: 25,
                     layout: { duration: 0.3 }
                   }}
-                  onClick={() => handleViewAnalysis(analysis)}
-                  className="p-4 hover:bg-white/[0.02] transition-colors cursor-pointer group"
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") handleViewAnalysis(analysis);
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+              onClick={() => handleViewAnalysis(analysis)}
+              className="p-4 hover:bg-white/[0.02] transition-colors cursor-pointer group"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") handleViewAnalysis(analysis);
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
                       <motion.div
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
@@ -1046,10 +1046,10 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                             ? '0 4px 15px hsl(226, 100%, 59%, 0.3)'
                             : '0 4px 15px hsl(45, 90%, 55%, 0.3)'
                         }}
-                      >
-                        {analysis.grade}
+                  >
+                    {analysis.grade}
                       </motion.div>
-                      <div>
+                  <div>
                         <div className="flex items-center gap-2">
                           <p className="text-white font-medium group-hover:text-[hsl(226,100%,68%)] transition-colors">{analysis.date}</p>
                           {/* SIMULATION Badge */}
@@ -1060,23 +1060,23 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                             </span>
                           )}
                         </div>
-                        <p className="text-[hsl(220,10%,50%)] text-sm">
+                    <p className="text-[hsl(220,10%,50%)] text-sm">
                           {analysis.runway.toFixed(1)} months runway
                           {analysis.entryType === "SIMULATION" && analysis.totalNewHires && analysis.totalNewHires > 0 && (
                             <span className="text-[hsl(45,90%,55%)] ml-2">• {analysis.totalNewHires} planned hire{analysis.totalNewHires > 1 ? 's' : ''}</span>
                           )}
                           {analysis.entryType === "SIMULATION" && analysis.runwayDelta !== undefined && (
-                            <span className={`ml-2 ${analysis.runwayDelta >= 0 ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
+                            <span className={`ml-2 ${analysis.runwayDelta >= 0 ? "text-[#22C55E]" : "text-[#DC2626]"}`}>
                               • Δ {analysis.runwayDelta >= 0 ? "+" : ""}{analysis.runwayDelta.toFixed(1)}mo
                             </span>
                           )}
                           {analysis.entryType !== "SIMULATION" && analysis.insight && (
                             <span className="text-[hsl(270,60%,60%)] ml-2">• Has insight</span>
                           )}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-6">
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
                       {/* Burn Efficiency Indicator */}
                       {analysis.monthlyBurn && analysis.monthlyBurn > 0 && (
                         <div className="hidden sm:flex items-center gap-1 text-xs text-[hsl(220,10%,50%)]">
@@ -1085,16 +1085,16 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         </div>
                       )}
                       <div
-                        className={`flex items-center gap-1 text-sm font-medium ${analysis.trend === "up" ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}
-                      >
-                        <TrendingUp className={`w-4 h-4 ${analysis.trend === "down" ? "rotate-180" : ""}`} />
-                        {analysis.change} months
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-[hsl(220,10%,30%)] group-hover:text-[hsl(226,100%,59%)] group-hover:translate-x-1 transition-all" />
-                    </div>
+                        className={`flex items-center gap-1 text-sm font-medium ${analysis.trend === "up" ? "text-[#22C55E]" : "text-[#DC2626]"}`}
+                  >
+                    <TrendingUp className={`w-4 h-4 ${analysis.trend === "down" ? "rotate-180" : ""}`} />
+                    {analysis.change} months
                   </div>
-                </motion.div>
-              ))}
+                      <ArrowRight className="w-4 h-4 text-[hsl(220,10%,30%)] group-hover:text-[hsl(226,100%,59%)] group-hover:translate-x-1 transition-all" />
+                </div>
+              </div>
+            </motion.div>
+          ))}
             </AnimatePresence>
           </motion.div>
         )}
@@ -1119,7 +1119,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
           >
             {/* Header with Glow */}
             <div className="relative p-8 pb-6 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(226,100%,59%)/0.1] via-transparent to-[hsl(152,100%,50%)/0.1]" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(226,100%,59%)/0.1] via-transparent to-[#22C55E/0.1]" />
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[150px] bg-[hsl(226,100%,59%)/0.15] blur-[80px] rounded-full" />
               
               <motion.div 
@@ -1128,12 +1128,12 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                 transition={{ delay: 0.1 }}
                 className="relative flex items-center gap-4"
               >
-                <div className={`w-16 h-16 rounded-2xl ${getGradeClass(selectedAnalysis.grade)} flex items-center justify-center shadow-lg ${selectedAnalysis.grade.toLowerCase() === 'a' ? 'shadow-[hsl(152,100%,50%)/0.3]' : selectedAnalysis.grade.toLowerCase() === 'b' ? 'shadow-[hsl(226,100%,59%)/0.3]' : 'shadow-[hsl(45,90%,55%)/0.3]'}`}>
+                <div className={`w-16 h-16 rounded-2xl ${getGradeClass(selectedAnalysis.grade)} flex items-center justify-center shadow-lg ${selectedAnalysis.grade.toLowerCase() === 'a' ? 'shadow-[#22C55E/0.3]' : selectedAnalysis.grade.toLowerCase() === 'b' ? 'shadow-[hsl(226,100%,59%)/0.3]' : 'shadow-[hsl(45,90%,55%)/0.3]'}`}>
                   <span className="text-3xl font-bold">{selectedAnalysis.grade}</span>
                 </div>
                 <div>
                   <h2 className="text-3xl font-bold text-white">{selectedAnalysis.date}</h2>
-                  <p className="text-[hsl(220,10%,55%)]">Financial DNA Snapshot</p>
+                  <p className="text-[rgba(255,255,255,0.5)]">Financial DNA Snapshot</p>
                 </div>
               </motion.div>
             </div>
@@ -1146,13 +1146,13 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                 transition={{ delay: 0.2 }}
                 className="relative p-8 rounded-3xl overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(152,100%,50%)/0.08] via-[hsl(180,80%,45%)/0.05] to-[hsl(226,100%,59%)/0.08]" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#22C55E/0.08] via-[hsl(180,80%,45%)/0.05] to-[hsl(226,100%,59%)/0.08]" />
                 <div className="absolute inset-0 backdrop-blur-xl bg-[hsl(240,7%,8%)/0.6]" />
                 
                 <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
                   {/* Runway Display */}
                   <div className="text-center md:text-left">
-                    <p className="text-[hsl(220,10%,55%)] text-sm uppercase tracking-wider mb-2">Runway at Time</p>
+                    <p className="text-[rgba(255,255,255,0.5)] text-sm uppercase tracking-wider mb-2">Runway at Time</p>
                     <div className="flex items-baseline gap-2">
                       <motion.span 
                         initial={{ scale: 0.5, opacity: 0 }}
@@ -1165,7 +1165,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       </motion.span>
                       <span className="text-2xl text-[hsl(220,10%,50%)]">months</span>
                     </div>
-                    <div className={`flex items-center gap-2 mt-3 ${selectedAnalysis.trend === "up" ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
+                    <div className={`flex items-center gap-2 mt-3 ${selectedAnalysis.trend === "up" ? "text-[#22C55E]" : "text-[#DC2626]"}`}>
                       <TrendingUp className={`w-5 h-5 ${selectedAnalysis.trend === "down" ? "rotate-180" : ""}`} />
                       <span className="font-semibold">{selectedAnalysis.change} from previous</span>
                     </div>
@@ -1202,7 +1202,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       }}
                     />
                   </div>
-                  <div className="flex justify-between mt-2 text-xs text-[hsl(220,10%,45%)]">
+                  <div className="flex justify-between mt-2 text-xs text-[rgba(255,255,255,0.4)]">
                     <span>0</span>
                     <span>6 mo</span>
                     <span>12 mo</span>
@@ -1225,15 +1225,15 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                 onClick={() => setMetricModalOpen("cash")}
                 whileHover={{ scale: 1.03, y: -3 }}
                 whileTap={{ scale: 0.97 }}
-                className="p-5 rounded-2xl bg-[hsl(152,100%,50%)/0.08] border border-[hsl(152,100%,50%)/0.2] cursor-pointer group relative overflow-hidden transition-all hover:border-[hsl(152,100%,50%)/0.5] hover:shadow-lg hover:shadow-[hsl(152,100%,50%)/0.2]"
+                className="p-5 rounded-2xl bg-[#22C55E/0.08] border border-[#22C55E/0.2] cursor-pointer group relative overflow-hidden transition-all hover:border-[#22C55E/0.5] hover:shadow-lg hover:shadow-[#22C55E/0.2]"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(152,100%,50%)/0.1] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#22C55E/0.1] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Zap className="w-4 h-4 text-[hsl(152,100%,60%)]" />
                 </div>
                 <div className="relative flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-[hsl(152,100%,50%)/0.2] flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <TrendingUp className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+                  <div className="w-10 h-10 rounded-xl bg-[#22C55E/0.2] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <TrendingUp className="w-5 h-5 text-[#22C55E]" />
                   </div>
                   <span className="text-xs uppercase tracking-wider text-[hsl(152,100%,60%)]">Cash on Hand</span>
                 </div>
@@ -1247,15 +1247,15 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                 onClick={() => setMetricModalOpen("burn")}
                 whileHover={{ scale: 1.03, y: -3 }}
                 whileTap={{ scale: 0.97 }}
-                className="p-5 rounded-2xl bg-[hsl(0,70%,55%)/0.08] border border-[hsl(0,70%,55%)/0.2] cursor-pointer group relative overflow-hidden transition-all hover:border-[hsl(0,70%,55%)/0.5] hover:shadow-lg hover:shadow-[hsl(0,70%,55%)/0.2]"
+                className="p-5 rounded-2xl bg-[#DC2626/0.08] border border-[#DC2626/0.2] cursor-pointer group relative overflow-hidden transition-all hover:border-[#DC2626/0.5] hover:shadow-lg hover:shadow-[#DC2626/0.2]"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(0,70%,55%)/0.1] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#DC2626/0.1] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Flame className="w-4 h-4 text-[hsl(0,70%,65%)]" />
                 </div>
                 <div className="relative flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-[hsl(0,70%,55%)/0.2] flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <TrendingUp className="w-5 h-5 text-[hsl(0,70%,55%)] rotate-180" />
+                  <div className="w-10 h-10 rounded-xl bg-[#DC2626/0.2] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <TrendingUp className="w-5 h-5 text-[#DC2626] rotate-180" />
                   </div>
                   <span className="text-xs uppercase tracking-wider text-[hsl(0,70%,65%)]">Monthly Burn</span>
                 </div>
@@ -1316,7 +1316,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         </div>
                         <div>
                           <h3 className="text-xl font-bold text-white">Comparison with Previous</h3>
-                          <p className="text-[hsl(220,10%,55%)] text-sm">{previousAnalysis.date}</p>
+                          <p className="text-[rgba(255,255,255,0.5)] text-sm">{previousAnalysis.date}</p>
                         </div>
                       </div>
 
@@ -1327,30 +1327,30 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                           initial={{ scale: 0.9, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{ delay: 0.5 }}
-                          className="p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5"
+                          className="p-4 rounded-2xl bg-[rgba(20,20,20,0.6)] border border-white/5"
                         >
-                          <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)] mb-2">Runway</p>
+                          <p className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.5)] mb-2">Runway</p>
                           <div className="flex items-center justify-between mb-3">
                             <div className="text-center">
-                              <p className="text-xs text-[hsl(220,10%,45%)]">Previous</p>
+                              <p className="text-xs text-[rgba(255,255,255,0.4)]">Previous</p>
                               <p className="text-lg font-bold text-[hsl(220,10%,65%)]">{previousAnalysis.runway.toFixed(1)}</p>
                             </div>
                             <ArrowRight className="w-4 h-4 text-[hsl(180,80%,50%)]" />
                             <div className="text-center">
-                              <p className="text-xs text-[hsl(220,10%,45%)]">Current</p>
+                              <p className="text-xs text-[rgba(255,255,255,0.4)]">Current</p>
                               <p className="text-lg font-bold text-white">{selectedAnalysis.runway.toFixed(1)}</p>
                             </div>
                           </div>
                           {runwayDiff && (
-                            <div className={`flex items-center justify-center gap-1 py-2 rounded-xl ${runwayDiff.trend === "up" ? "bg-[hsl(152,100%,50%)/0.15]" : runwayDiff.trend === "down" ? "bg-[hsl(0,70%,55%)/0.15]" : "bg-[hsl(220,10%,20%)]"}`}>
+                            <div className={`flex items-center justify-center gap-1 py-2 rounded-xl ${runwayDiff.trend === "up" ? "bg-[#22C55E/0.15]" : runwayDiff.trend === "down" ? "bg-[#DC2626/0.15]" : "bg-[hsl(220,10%,20%)]"}`}>
                               {runwayDiff.trend === "up" ? (
-                                <ChevronUp className="w-4 h-4 text-[hsl(152,100%,50%)]" />
+                                <ChevronUp className="w-4 h-4 text-[#22C55E]" />
                               ) : runwayDiff.trend === "down" ? (
-                                <ChevronDown className="w-4 h-4 text-[hsl(0,70%,55%)]" />
+                                <ChevronDown className="w-4 h-4 text-[#DC2626]" />
                               ) : (
-                                <Minus className="w-4 h-4 text-[hsl(220,10%,55%)]" />
+                                <Minus className="w-4 h-4 text-[rgba(255,255,255,0.5)]" />
                               )}
-                              <span className={`text-sm font-semibold ${runwayDiff.trend === "up" ? "text-[hsl(152,100%,50%)]" : runwayDiff.trend === "down" ? "text-[hsl(0,70%,55%)]" : "text-[hsl(220,10%,55%)]"}`}>
+                              <span className={`text-sm font-semibold ${runwayDiff.trend === "up" ? "text-[#22C55E]" : runwayDiff.trend === "down" ? "text-[#DC2626]" : "text-[rgba(255,255,255,0.5)]"}`}>
                                 {runwayDiff.value > 0 ? "+" : ""}{runwayDiff.value.toFixed(1)} mo
                               </span>
                             </div>
@@ -1362,34 +1362,34 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                           initial={{ scale: 0.9, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{ delay: 0.55 }}
-                          className="p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5"
+                          className="p-4 rounded-2xl bg-[rgba(20,20,20,0.6)] border border-white/5"
                         >
-                          <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)] mb-2">Cash</p>
+                          <p className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.5)] mb-2">Cash</p>
                           <div className="flex items-center justify-between mb-3">
                             <div className="text-center">
-                              <p className="text-xs text-[hsl(220,10%,45%)]">Previous</p>
+                              <p className="text-xs text-[rgba(255,255,255,0.4)]">Previous</p>
                               <p className="text-lg font-bold text-[hsl(220,10%,65%)]">
                                 {previousAnalysis.cashOnHand ? `$${(previousAnalysis.cashOnHand / 1000).toFixed(0)}k` : "—"}
                               </p>
                             </div>
                             <ArrowRight className="w-4 h-4 text-[hsl(180,80%,50%)]" />
                             <div className="text-center">
-                              <p className="text-xs text-[hsl(220,10%,45%)]">Current</p>
+                              <p className="text-xs text-[rgba(255,255,255,0.4)]">Current</p>
                               <p className="text-lg font-bold text-white">
                                 {selectedAnalysis.cashOnHand ? `$${(selectedAnalysis.cashOnHand / 1000).toFixed(0)}k` : "—"}
                               </p>
                             </div>
                           </div>
                           {cashDiff && (
-                            <div className={`flex items-center justify-center gap-1 py-2 rounded-xl ${cashDiff.trend === "up" ? "bg-[hsl(152,100%,50%)/0.15]" : cashDiff.trend === "down" ? "bg-[hsl(0,70%,55%)/0.15]" : "bg-[hsl(220,10%,20%)]"}`}>
+                            <div className={`flex items-center justify-center gap-1 py-2 rounded-xl ${cashDiff.trend === "up" ? "bg-[#22C55E/0.15]" : cashDiff.trend === "down" ? "bg-[#DC2626/0.15]" : "bg-[hsl(220,10%,20%)]"}`}>
                               {cashDiff.trend === "up" ? (
-                                <ChevronUp className="w-4 h-4 text-[hsl(152,100%,50%)]" />
+                                <ChevronUp className="w-4 h-4 text-[#22C55E]" />
                               ) : cashDiff.trend === "down" ? (
-                                <ChevronDown className="w-4 h-4 text-[hsl(0,70%,55%)]" />
+                                <ChevronDown className="w-4 h-4 text-[#DC2626]" />
                               ) : (
-                                <Minus className="w-4 h-4 text-[hsl(220,10%,55%)]" />
+                                <Minus className="w-4 h-4 text-[rgba(255,255,255,0.5)]" />
                               )}
-                              <span className={`text-sm font-semibold ${cashDiff.trend === "up" ? "text-[hsl(152,100%,50%)]" : cashDiff.trend === "down" ? "text-[hsl(0,70%,55%)]" : "text-[hsl(220,10%,55%)]"}`}>
+                              <span className={`text-sm font-semibold ${cashDiff.trend === "up" ? "text-[#22C55E]" : cashDiff.trend === "down" ? "text-[#DC2626]" : "text-[rgba(255,255,255,0.5)]"}`}>
                                 {cashDiff.percent > 0 ? "+" : ""}{cashDiff.percent.toFixed(1)}%
                               </span>
                             </div>
@@ -1401,34 +1401,34 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                           initial={{ scale: 0.9, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{ delay: 0.6 }}
-                          className="p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5"
+                          className="p-4 rounded-2xl bg-[rgba(20,20,20,0.6)] border border-white/5"
                         >
-                          <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)] mb-2">Burn Rate</p>
+                          <p className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.5)] mb-2">Burn Rate</p>
                           <div className="flex items-center justify-between mb-3">
                             <div className="text-center">
-                              <p className="text-xs text-[hsl(220,10%,45%)]">Previous</p>
+                              <p className="text-xs text-[rgba(255,255,255,0.4)]">Previous</p>
                               <p className="text-lg font-bold text-[hsl(220,10%,65%)]">
                                 {previousAnalysis.monthlyBurn ? `$${(previousAnalysis.monthlyBurn / 1000).toFixed(0)}k` : "—"}
                               </p>
                             </div>
                             <ArrowRight className="w-4 h-4 text-[hsl(180,80%,50%)]" />
                             <div className="text-center">
-                              <p className="text-xs text-[hsl(220,10%,45%)]">Current</p>
+                              <p className="text-xs text-[rgba(255,255,255,0.4)]">Current</p>
                               <p className="text-lg font-bold text-white">
                                 {selectedAnalysis.monthlyBurn ? `$${(selectedAnalysis.monthlyBurn / 1000).toFixed(0)}k` : "—"}
                               </p>
                             </div>
                           </div>
                           {burnDiff && (
-                            <div className={`flex items-center justify-center gap-1 py-2 rounded-xl ${burnDiff.trend === "down" ? "bg-[hsl(152,100%,50%)/0.15]" : burnDiff.trend === "up" ? "bg-[hsl(0,70%,55%)/0.15]" : "bg-[hsl(220,10%,20%)]"}`}>
+                            <div className={`flex items-center justify-center gap-1 py-2 rounded-xl ${burnDiff.trend === "down" ? "bg-[#22C55E/0.15]" : burnDiff.trend === "up" ? "bg-[#DC2626/0.15]" : "bg-[hsl(220,10%,20%)]"}`}>
                               {burnDiff.trend === "down" ? (
-                                <ChevronDown className="w-4 h-4 text-[hsl(152,100%,50%)]" />
+                                <ChevronDown className="w-4 h-4 text-[#22C55E]" />
                               ) : burnDiff.trend === "up" ? (
-                                <ChevronUp className="w-4 h-4 text-[hsl(0,70%,55%)]" />
+                                <ChevronUp className="w-4 h-4 text-[#DC2626]" />
                               ) : (
-                                <Minus className="w-4 h-4 text-[hsl(220,10%,55%)]" />
+                                <Minus className="w-4 h-4 text-[rgba(255,255,255,0.5)]" />
                               )}
-                              <span className={`text-sm font-semibold ${burnDiff.trend === "down" ? "text-[hsl(152,100%,50%)]" : burnDiff.trend === "up" ? "text-[hsl(0,70%,55%)]" : "text-[hsl(220,10%,55%)]"}`}>
+                              <span className={`text-sm font-semibold ${burnDiff.trend === "down" ? "text-[#22C55E]" : burnDiff.trend === "up" ? "text-[#DC2626]" : "text-[rgba(255,255,255,0.5)]"}`}>
                                 {burnDiff.percent > 0 ? "+" : ""}{burnDiff.percent.toFixed(1)}%
                               </span>
                             </div>
@@ -1441,12 +1441,12 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.65 }}
-                        className="mt-4 p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5"
+                        className="mt-4 p-4 rounded-2xl bg-[rgba(20,20,20,0.6)] border border-white/5"
                       >
-                        <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)] mb-3">Grade Evolution</p>
+                        <p className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.5)] mb-3">Grade Evolution</p>
                         <div className="flex items-center justify-center gap-6">
                           <div className="text-center">
-                            <p className="text-xs text-[hsl(220,10%,45%)] mb-2">Previous</p>
+                            <p className="text-xs text-[rgba(255,255,255,0.4)] mb-2">Previous</p>
                             <div className={`w-14 h-14 rounded-xl ${getGradeClass(previousAnalysis.grade)} flex items-center justify-center font-bold text-2xl opacity-60`}>
                               {previousAnalysis.grade}
                             </div>
@@ -1454,18 +1454,18 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                           <div className="flex flex-col items-center">
                             <ArrowRight className="w-8 h-8 text-[hsl(180,80%,50%)]" />
                             {previousAnalysis.grade !== selectedAnalysis.grade && (
-                              <span className={`text-xs font-semibold mt-1 ${selectedAnalysis.grade < previousAnalysis.grade ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
+                              <span className={`text-xs font-semibold mt-1 ${selectedAnalysis.grade < previousAnalysis.grade ? "text-[#22C55E]" : "text-[#DC2626]"}`}>
                                 {selectedAnalysis.grade < previousAnalysis.grade ? "Improved!" : "Declined"}
                               </span>
                             )}
                             {previousAnalysis.grade === selectedAnalysis.grade && (
-                              <span className="text-xs font-semibold mt-1 text-[hsl(220,10%,55%)]">
+                              <span className="text-xs font-semibold mt-1 text-[rgba(255,255,255,0.5)]">
                                 Maintained
                               </span>
                             )}
                           </div>
                           <div className="text-center">
-                            <p className="text-xs text-[hsl(220,10%,45%)] mb-2">Current</p>
+                            <p className="text-xs text-[rgba(255,255,255,0.4)] mb-2">Current</p>
                             <motion.div 
                               initial={{ scale: 0.8 }}
                               animate={{ scale: 1 }}
@@ -1483,10 +1483,10 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.7 }}
-                        className="mt-4 p-5 rounded-2xl bg-gradient-to-br from-[hsl(152,100%,50%)/0.05] via-[hsl(180,80%,45%)/0.03] to-[hsl(226,100%,59%)/0.05] border border-[hsl(152,100%,50%)/0.15]"
+                        className="mt-4 p-5 rounded-2xl bg-gradient-to-br from-[#22C55E/0.05] via-[hsl(180,80%,45%)/0.03] to-[hsl(226,100%,59%)/0.05] border border-[#22C55E/0.15]"
                       >
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(152,100%,50%)/0.3] to-[hsl(180,80%,45%)/0.3] flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#22C55E/0.3] to-[hsl(180,80%,45%)/0.3] flex items-center justify-center">
                             <Activity className="w-5 h-5 text-[hsl(152,100%,60%)]" />
                           </div>
                           <div>
@@ -1515,7 +1515,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                           return (
                             <div className="relative">
                               {/* Glow effect behind chart */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-[hsl(152,100%,50%)/0.1] to-transparent blur-xl" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-[#22C55E/0.1] to-transparent blur-xl" />
                               
                               <div className="relative h-[140px]">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -1605,19 +1605,19 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                               {/* Stats Row */}
                               <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
                                 <div className="text-center">
-                                  <p className="text-xs text-[hsl(220,10%,45%)]">Min</p>
+                                  <p className="text-xs text-[rgba(255,255,255,0.4)]">Min</p>
                                   <p className="text-sm font-bold text-[hsl(0,70%,60%)]">{minRunway.toFixed(1)}</p>
                                 </div>
                                 <div className="text-center">
-                                  <p className="text-xs text-[hsl(220,10%,45%)]">Average</p>
+                                  <p className="text-xs text-[rgba(255,255,255,0.4)]">Average</p>
                                   <p className="text-sm font-bold text-[hsl(180,80%,55%)]">{avgRunway.toFixed(1)}</p>
                                 </div>
                                 <div className="text-center">
-                                  <p className="text-xs text-[hsl(220,10%,45%)]">Max</p>
+                                  <p className="text-xs text-[rgba(255,255,255,0.4)]">Max</p>
                                   <p className="text-sm font-bold text-[hsl(152,100%,55%)]">{maxRunway.toFixed(1)}</p>
                                 </div>
                                 <div className="text-center">
-                                  <p className="text-xs text-[hsl(220,10%,45%)]">Trend</p>
+                                  <p className="text-xs text-[rgba(255,255,255,0.4)]">Trend</p>
                                   <div className={`flex items-center gap-1 ${sparklineData[sparklineData.length - 1]?.runway > sparklineData[0]?.runway ? "text-[hsl(152,100%,55%)]" : "text-[hsl(0,70%,60%)]"}`}>
                                     {sparklineData[sparklineData.length - 1]?.runway > sparklineData[0]?.runway ? (
                                       <TrendingUp className="w-3 h-3" />
@@ -1682,7 +1682,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
               ) : (
                 <Button 
                   onClick={() => rehydrateDNALab(selectedAnalysis)}
-                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-[hsl(152,100%,50%)] to-[hsl(180,80%,45%)] hover:from-[hsl(152,100%,55%)] hover:to-[hsl(180,80%,50%)] text-black font-semibold shadow-lg shadow-[hsl(152,100%,50%)/0.3] transition-all"
+                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#22C55E] to-[hsl(180,80%,45%)] hover:from-[hsl(152,100%,55%)] hover:to-[hsl(180,80%,50%)] text-black font-semibold shadow-lg shadow-[#22C55E/0.3] transition-all"
                 >
                   <FlaskConical className="w-4 h-4 mr-2" />
                   View in DNA Lab
@@ -1741,10 +1741,10 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                     >
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[hsl(226,100%,59%)] to-[hsl(180,80%,45%)] flex items-center justify-center shadow-lg shadow-[hsl(226,100%,59%)/0.4]">
                         <Archive className="w-8 h-8 text-white" />
-                      </div>
+    </div>
                       <div>
                         <h2 className="text-3xl font-bold text-white">Analysis History</h2>
-                        <p className="text-[hsl(220,10%,55%)]">Your complete DNA analysis journey</p>
+                        <p className="text-[rgba(255,255,255,0.5)]">Your complete DNA analysis journey</p>
                       </div>
                     </motion.div>
                   </div>
@@ -1765,7 +1765,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       >
                         {stats.total}
                       </motion.span>
-                      <p className="text-xl text-[hsl(220,10%,55%)] mt-2">Total Analyses Performed</p>
+                      <p className="text-xl text-[rgba(255,255,255,0.5)] mt-2">Total Analyses Performed</p>
                     </motion.div>
 
                     {/* Grade Distribution */}
@@ -1773,7 +1773,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.2 }}
-                      className="p-6 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5 mb-6"
+                      className="p-6 rounded-2xl bg-[rgba(20,20,20,0.6)] border border-white/5 mb-6"
                     >
                       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                         <Award className="w-5 h-5 text-[hsl(45,90%,55%)]" />
@@ -1784,11 +1784,11 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                           const count = analyses.filter(a => a.grade.toUpperCase() === grade).length;
                           const percentage = analyses.length > 0 ? (count / analyses.length) * 100 : 0;
                           const colors = {
-                            A: "hsl(152,100%,50%)",
+                            A: "#22C55E",
                             B: "hsl(226,100%,59%)",
                             C: "hsl(45,90%,55%)",
                             D: "hsl(30,80%,50%)",
-                            F: "hsl(0,70%,55%)"
+                            F: "#DC2626"
                           };
                           return (
                             <motion.div 
@@ -1818,7 +1818,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                                   />
                                 </div>
                               </div>
-                              <span className="text-sm font-mono text-[hsl(220,10%,55%)] w-16 text-right">
+                              <span className="text-sm font-mono text-[rgba(255,255,255,0.5)] w-16 text-right">
                                 {count} ({percentage.toFixed(0)}%)
                               </span>
                             </motion.div>
@@ -1832,7 +1832,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.3 }}
-                      className="p-6 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5"
+                      className="p-6 rounded-2xl bg-[rgba(20,20,20,0.6)] border border-white/5"
                     >
                       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                         <Calendar className="w-5 h-5 text-[hsl(270,60%,55%)]" />
@@ -1849,7 +1849,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                             });
                             return Object.entries(monthlyData).slice(-6).map(([month, count]) => ({ month, count }));
                           })()}>
-                            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "hsl(220,10%,45%)", fontSize: 11 }} />
+                            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }} />
                             <Bar dataKey="count" fill="hsl(226,100%,59%)" radius={[4, 4, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
@@ -1872,20 +1872,20 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
               {statsModalOpen === "average" && (
                 <>
                   <div className="relative p-8 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-[hsl(152,100%,50%)/0.15] via-transparent to-[hsl(180,80%,45%)/0.1]" />
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-[hsl(152,100%,50%)/0.2] blur-[100px] rounded-full" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#22C55E/0.15] via-transparent to-[hsl(180,80%,45%)/0.1]" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-[#22C55E/0.2] blur-[100px] rounded-full" />
                     
                     <motion.div 
                       initial={{ y: -20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       className="relative flex items-center gap-4"
                     >
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[hsl(152,100%,50%)] to-[hsl(180,80%,45%)] flex items-center justify-center shadow-lg shadow-[hsl(152,100%,50%)/0.4]">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#22C55E] to-[hsl(180,80%,45%)] flex items-center justify-center shadow-lg shadow-[#22C55E/0.4]">
                         <TrendingUp className="w-8 h-8 text-white" />
                       </div>
                       <div>
                         <h2 className="text-3xl font-bold text-white">Runway Analytics</h2>
-                        <p className="text-[hsl(220,10%,55%)]">Your runway performance over time</p>
+                        <p className="text-[rgba(255,255,255,0.5)]">Your runway performance over time</p>
                       </div>
                     </motion.div>
                   </div>
@@ -1926,7 +1926,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         </svg>
                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
                           <motion.span 
-                            className="text-5xl font-bold text-[hsl(152,100%,50%)]"
+                            className="text-5xl font-bold text-[#22C55E]"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.5 }}
@@ -1935,7 +1935,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                           </motion.span>
                         </div>
                       </div>
-                      <p className="text-xl text-[hsl(220,10%,55%)] mt-2">Average Runway (months)</p>
+                      <p className="text-xl text-[rgba(255,255,255,0.5)] mt-2">Average Runway (months)</p>
                     </motion.div>
 
                     {/* Stats Row */}
@@ -1946,9 +1946,9 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       className="grid grid-cols-3 gap-4 mb-6"
                     >
                       {[
-                        { label: "Minimum", value: analyses.length > 0 ? Math.min(...analyses.map(a => a.runway)).toFixed(1) : "0", color: "hsl(0,70%,55%)", icon: TrendingDownIcon },
+                        { label: "Minimum", value: analyses.length > 0 ? Math.min(...analyses.map(a => a.runway)).toFixed(1) : "0", color: "#DC2626", icon: TrendingDownIcon },
                         { label: "Current", value: analyses[0]?.runway.toFixed(1) || "0", color: "hsl(226,100%,59%)", icon: Target },
-                        { label: "Maximum", value: analyses.length > 0 ? Math.max(...analyses.map(a => a.runway)).toFixed(1) : "0", color: "hsl(152,100%,50%)", icon: Crown }
+                        { label: "Maximum", value: analyses.length > 0 ? Math.max(...analyses.map(a => a.runway)).toFixed(1) : "0", color: "#22C55E", icon: Crown }
                       ].map((stat, i) => (
                         <motion.div
                           key={stat.label}
@@ -1970,10 +1970,10 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.4 }}
-                      className="p-6 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5"
+                      className="p-6 rounded-2xl bg-[rgba(20,20,20,0.6)] border border-white/5"
                     >
                       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+                        <Activity className="w-5 h-5 text-[#22C55E]" />
                         Runway Evolution
                       </h3>
                       <div className="h-40">
@@ -1981,8 +1981,8 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                           <AreaChart data={[...analyses].reverse().map((a, i) => ({ index: i, runway: a.runway, date: a.date }))}>
                             <defs>
                               <linearGradient id="runwayFill" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="hsl(152,100%,50%)" stopOpacity={0.4} />
-                                <stop offset="100%" stopColor="hsl(152,100%,50%)" stopOpacity={0} />
+                                <stop offset="0%" stopColor="#22C55E" stopOpacity={0.4} />
+                                <stop offset="100%" stopColor="#22C55E" stopOpacity={0} />
                               </linearGradient>
                             </defs>
                             <XAxis dataKey="index" hide />
@@ -1991,7 +1991,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                               contentStyle={{ background: "hsl(240,7%,12%)", border: "1px solid hsl(152,100%,50%,0.3)", borderRadius: "12px" }}
                               formatter={(value: number) => [`${value.toFixed(1)} months`, "Runway"]}
                             />
-                            <Area type="monotone" dataKey="runway" stroke="hsl(152,100%,50%)" strokeWidth={3} fill="url(#runwayFill)" />
+                            <Area type="monotone" dataKey="runway" stroke="#22C55E" strokeWidth={3} fill="url(#runwayFill)" />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
@@ -2001,7 +2001,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                   <div className="px-8 pb-8">
                     <Button 
                       onClick={() => setStatsModalOpen(null)}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[hsl(152,100%,50%)] to-[hsl(180,80%,45%)] hover:opacity-90 text-black font-semibold"
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#22C55E] to-[hsl(180,80%,45%)] hover:opacity-90 text-black font-semibold"
                     >
                       Close
                     </Button>
@@ -2026,7 +2026,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       </div>
                       <div>
                         <h2 className="text-3xl font-bold text-white">Latest Analysis</h2>
-                        <p className="text-[hsl(220,10%,55%)]">{stats.lastAnalysis}</p>
+                        <p className="text-[rgba(255,255,255,0.5)]">{stats.lastAnalysis}</p>
                       </div>
                     </motion.div>
                   </div>
@@ -2048,7 +2048,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-[hsl(220,10%,55%)] text-sm mb-1">Financial Health Grade</p>
+                          <p className="text-[rgba(255,255,255,0.5)] text-sm mb-1">Financial Health Grade</p>
                           <div className="flex items-center gap-4">
                             <motion.div
                               initial={{ rotate: -180, scale: 0 }}
@@ -2060,14 +2060,14 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                             </motion.div>
                             <div>
                               <p className="text-3xl font-bold text-white">{analyses[0].runway.toFixed(1)} mo</p>
-                              <p className={`text-sm ${analyses[0].trend === "up" ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
+                              <p className={`text-sm ${analyses[0].trend === "up" ? "text-[#22C55E]" : "text-[#DC2626]"}`}>
                                 {analyses[0].change} from previous
                               </p>
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-[hsl(220,10%,55%)] text-sm">Analyzed</p>
+                          <p className="text-[rgba(255,255,255,0.5)] text-sm">Analyzed</p>
                           <p className="text-xl font-semibold text-white">{analyses[0].date}</p>
                         </div>
                       </div>
@@ -2080,15 +2080,15 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       transition={{ delay: 0.2 }}
                       className="grid grid-cols-3 gap-4 mb-6"
                     >
-                      <div className="p-4 rounded-xl bg-[hsl(152,100%,50%)/0.1] border border-[hsl(152,100%,50%)/0.2] text-center">
-                        <Wallet className="w-5 h-5 mx-auto mb-2 text-[hsl(152,100%,50%)]" />
+                      <div className="p-4 rounded-xl bg-[#22C55E/0.1] border border-[#22C55E/0.2] text-center">
+                        <Wallet className="w-5 h-5 mx-auto mb-2 text-[#22C55E]" />
                         <p className="text-xl font-bold text-white">
                           {analyses[0].cashOnHand ? `$${(analyses[0].cashOnHand / 1000).toFixed(0)}k` : "—"}
                         </p>
                         <p className="text-xs text-[hsl(220,10%,50%)]">Cash on Hand</p>
                       </div>
-                      <div className="p-4 rounded-xl bg-[hsl(0,70%,55%)/0.1] border border-[hsl(0,70%,55%)/0.2] text-center">
-                        <Flame className="w-5 h-5 mx-auto mb-2 text-[hsl(0,70%,55%)]" />
+                      <div className="p-4 rounded-xl bg-[#DC2626/0.1] border border-[#DC2626/0.2] text-center">
+                        <Flame className="w-5 h-5 mx-auto mb-2 text-[#DC2626]" />
                         <p className="text-xl font-bold text-white">
                           {analyses[0].monthlyBurn ? `$${(analyses[0].monthlyBurn / 1000).toFixed(0)}k` : "—"}
                         </p>
@@ -2175,21 +2175,21 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
               {metricModalOpen === "cash" && (
                 <>
                   <div className="relative p-6 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-[hsl(152,100%,50%)/0.2] via-transparent to-transparent" />
-                    <div className="absolute top-0 left-0 w-[300px] h-[150px] bg-[hsl(152,100%,50%)/0.3] blur-[80px] rounded-full" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#22C55E/0.2] via-transparent to-transparent" />
+                    <div className="absolute top-0 left-0 w-[300px] h-[150px] bg-[#22C55E/0.3] blur-[80px] rounded-full" />
                     
                     <motion.div className="relative flex items-center gap-4">
                       <motion.div 
                         initial={{ rotate: -180, scale: 0 }}
                         animate={{ rotate: 0, scale: 1 }}
                         transition={{ type: "spring", damping: 15 }}
-                        className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(152,100%,50%)] to-[hsl(180,80%,45%)] flex items-center justify-center shadow-lg"
+                        className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#22C55E] to-[hsl(180,80%,45%)] flex items-center justify-center shadow-lg"
                       >
                         <Wallet className="w-7 h-7 text-white" />
                       </motion.div>
                       <div>
                         <h2 className="text-2xl font-bold text-white">Cash on Hand</h2>
-                        <p className="text-[hsl(220,10%,55%)]">Available runway capital</p>
+                        <p className="text-[rgba(255,255,255,0.5)]">Available runway capital</p>
                       </div>
                     </motion.div>
                   </div>
@@ -2199,16 +2199,16 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 0.1 }}
-                      className="text-center mb-6 py-8 rounded-2xl bg-[hsl(152,100%,50%)/0.1] border border-[hsl(152,100%,50%)/0.2]"
+                      className="text-center mb-6 py-8 rounded-2xl bg-[#22C55E/0.1] border border-[#22C55E/0.2]"
                     >
                       <motion.span 
-                        className="text-5xl font-bold text-[hsl(152,100%,50%)]"
+                        className="text-5xl font-bold text-[#22C55E]"
                         initial={{ y: 20 }}
                         animate={{ y: 0 }}
                       >
                         ${selectedAnalysis.cashOnHand?.toLocaleString() || "0"}
                       </motion.span>
-                      <p className="text-[hsl(220,10%,55%)] mt-2">Current Balance</p>
+                      <p className="text-[rgba(255,255,255,0.5)] mt-2">Current Balance</p>
                     </motion.div>
 
                     {/* Cash Insights */}
@@ -2220,7 +2220,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         className="flex items-center justify-between p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-white/5"
                       >
                         <div className="flex items-center gap-3">
-                          <Shield className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+                          <Shield className="w-5 h-5 text-[#22C55E]" />
                           <span className="text-[hsl(220,10%,70%)]">Runway Coverage</span>
                         </div>
                         <span className="font-bold text-white">{selectedAnalysis.runway.toFixed(1)} months</span>
@@ -2246,7 +2246,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         className="flex items-center justify-between p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-white/5"
                       >
                         <div className="flex items-center gap-3">
-                          <AlertTriangle className="w-5 h-5 text-[hsl(0,70%,55%)]" />
+                          <AlertTriangle className="w-5 h-5 text-[#DC2626]" />
                           <span className="text-[hsl(220,10%,70%)]">Zero Cash Date</span>
                         </div>
                         <span className="font-bold text-white">
@@ -2264,7 +2264,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                   <div className="px-6 pb-6">
                     <Button 
                       onClick={() => setMetricModalOpen(null)}
-                      className="w-full py-3 rounded-xl bg-[hsl(152,100%,50%)] hover:bg-[hsl(152,100%,55%)] text-black font-semibold"
+                      className="w-full py-3 rounded-xl bg-[#22C55E] hover:bg-[hsl(152,100%,55%)] text-black font-semibold"
                     >
                       Close
                     </Button>
@@ -2276,21 +2276,21 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
               {metricModalOpen === "burn" && (
                 <>
                   <div className="relative p-6 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-[hsl(0,70%,55%)/0.2] via-transparent to-transparent" />
-                    <div className="absolute top-0 left-0 w-[300px] h-[150px] bg-[hsl(0,70%,55%)/0.3] blur-[80px] rounded-full" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#DC2626/0.2] via-transparent to-transparent" />
+                    <div className="absolute top-0 left-0 w-[300px] h-[150px] bg-[#DC2626/0.3] blur-[80px] rounded-full" />
                     
                     <motion.div className="relative flex items-center gap-4">
                       <motion.div 
                         initial={{ rotate: 180, scale: 0 }}
                         animate={{ rotate: 0, scale: 1 }}
                         transition={{ type: "spring", damping: 15 }}
-                        className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(0,70%,55%)] to-[hsl(15,80%,50%)] flex items-center justify-center shadow-lg"
+                        className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#DC2626] to-[hsl(15,80%,50%)] flex items-center justify-center shadow-lg"
                       >
                         <Flame className="w-7 h-7 text-white" />
                       </motion.div>
                       <div>
                         <h2 className="text-2xl font-bold text-white">Monthly Burn</h2>
-                        <p className="text-[hsl(220,10%,55%)]">Cash outflow rate</p>
+                        <p className="text-[rgba(255,255,255,0.5)]">Cash outflow rate</p>
                       </div>
                     </motion.div>
                   </div>
@@ -2300,16 +2300,16 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 0.1 }}
-                      className="text-center mb-6 py-8 rounded-2xl bg-[hsl(0,70%,55%)/0.1] border border-[hsl(0,70%,55%)/0.2]"
+                      className="text-center mb-6 py-8 rounded-2xl bg-[#DC2626/0.1] border border-[#DC2626/0.2]"
                     >
                       <motion.span 
-                        className="text-5xl font-bold text-[hsl(0,70%,55%)]"
+                        className="text-5xl font-bold text-[#DC2626]"
                         initial={{ y: 20 }}
                         animate={{ y: 0 }}
                       >
                         ${selectedAnalysis.monthlyBurn?.toLocaleString() || "0"}
                       </motion.span>
-                      <p className="text-[hsl(220,10%,55%)] mt-2">Per Month</p>
+                      <p className="text-[rgba(255,255,255,0.5)] mt-2">Per Month</p>
                     </motion.div>
 
                     {/* Burn Breakdown */}
@@ -2321,7 +2321,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         className="flex items-center justify-between p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-white/5"
                       >
                         <div className="flex items-center gap-3">
-                          <DollarSign className="w-5 h-5 text-[hsl(0,70%,55%)]" />
+                          <DollarSign className="w-5 h-5 text-[#DC2626]" />
                           <span className="text-[hsl(220,10%,70%)]">Weekly Burn</span>
                         </div>
                         <span className="font-bold text-white">
@@ -2349,7 +2349,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         className="flex items-center justify-between p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-white/5"
                       >
                         <div className="flex items-center gap-3">
-                          <Zap className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+                          <Zap className="w-5 h-5 text-[#22C55E]" />
                           <span className="text-[hsl(220,10%,70%)]">Burn Efficiency</span>
                         </div>
                         <span className="font-bold text-white">
@@ -2364,7 +2364,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                   <div className="px-6 pb-6">
                     <Button 
                       onClick={() => setMetricModalOpen(null)}
-                      className="w-full py-3 rounded-xl bg-[hsl(0,70%,55%)] hover:bg-[hsl(0,70%,60%)] text-white font-semibold"
+                      className="w-full py-3 rounded-xl bg-[#DC2626] hover:bg-[hsl(0,70%,60%)] text-white font-semibold"
                     >
                       Close
                     </Button>
@@ -2390,7 +2390,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       </motion.div>
                       <div>
                         <h2 className="text-2xl font-bold text-white">Profit Margin</h2>
-                        <p className="text-[hsl(220,10%,55%)]">Profitability ratio</p>
+                        <p className="text-[rgba(255,255,255,0.5)]">Profitability ratio</p>
                       </div>
                     </motion.div>
                   </div>
@@ -2427,7 +2427,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                       >
                         {selectedAnalysis.profitMargin !== undefined ? `${selectedAnalysis.profitMargin}%` : "—"}
                       </motion.span>
-                      <p className="relative text-[hsl(220,10%,55%)] mt-2">Current Margin</p>
+                      <p className="relative text-[rgba(255,255,255,0.5)] mt-2">Current Margin</p>
                     </motion.div>
 
                     {/* Margin Insights */}
@@ -2451,13 +2451,13 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         className="flex items-center justify-between p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-white/5"
                       >
                         <div className="flex items-center gap-3">
-                          <Target className="w-5 h-5 text-[hsl(152,100%,50%)]" />
+                          <Target className="w-5 h-5 text-[#22C55E]" />
                           <span className="text-[hsl(220,10%,70%)]">Status</span>
                         </div>
                         <span className={`font-bold ${
-                          (selectedAnalysis.profitMargin || 0) >= 20 ? "text-[hsl(152,100%,50%)]" :
+                          (selectedAnalysis.profitMargin || 0) >= 20 ? "text-[#22C55E]" :
                           (selectedAnalysis.profitMargin || 0) >= 10 ? "text-[hsl(45,90%,55%)]" :
-                          "text-[hsl(0,70%,55%)]"
+                          "text-[#DC2626]"
                         }`}>
                           {(selectedAnalysis.profitMargin || 0) >= 20 ? "Excellent" :
                            (selectedAnalysis.profitMargin || 0) >= 10 ? "Healthy" :
@@ -2475,7 +2475,7 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                           <span className="text-[hsl(220,10%,70%)]">Trend</span>
                         </div>
                         <span className={`font-bold flex items-center gap-1 ${
-                          selectedAnalysis.trend === "up" ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"
+                          selectedAnalysis.trend === "up" ? "text-[#22C55E]" : "text-[#DC2626]"
                         }`}>
                           {selectedAnalysis.trend === "up" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                           {selectedAnalysis.change}

@@ -571,6 +571,13 @@ const DNALab = () => {
       maximumFractionDigits: 0
     }).format(value);
 
+  // Spring transition config - Superlist style
+  const springTransition = {
+    type: "spring" as const,
+    stiffness: 300,
+    damping: 30,
+  };
+
   const Sparkline = ({ data: chartData, positive = true }: { data: number[]; positive?: boolean }) => {
     const max = Math.max(...chartData);
     const min = Math.min(...chartData);
@@ -580,7 +587,7 @@ const DNALab = () => {
       const y = 100 - ((value - min) / range) * 100;
       return `${x},${y}`;
     }).join(" ");
-    const color = positive ? "hsl(142, 69%, 50%)" : "hsl(211, 100%, 45%)";
+    const color = positive ? "#22C55E" : "#0099FF";
 
     return (
       <svg className="w-full h-12" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -606,10 +613,10 @@ const DNALab = () => {
 
   const getGradeColor = (grade: string) => {
     const g = grade.toLowerCase();
-    if (g === "a") return "bg-[hsl(142,69%,50%)] text-white";
-    if (g === "b") return "bg-[hsl(211,100%,45%)] text-white";
-    if (g === "c") return "bg-[hsl(35,100%,52%)] text-black";
-    return "bg-[hsl(0,100%,62%)] text-white";
+    if (g === "a") return "bg-[#22C55E] text-white shadow-[0_0_30px_rgba(34,197,94,0.4)]";
+    if (g === "b") return "bg-[#0099FF] text-white shadow-[0_0_30px_rgba(0,153,255,0.4)]";
+    if (g === "c") return "bg-[#F59E0B] text-black shadow-[0_0_30px_rgba(245,158,11,0.4)]";
+    return "bg-[#DC2626] text-white shadow-[0_0_30px_rgba(220,38,38,0.4)]";
   };
 
   return (
@@ -618,19 +625,22 @@ const DNALab = () => {
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={springTransition}
         className="flex items-center justify-between mb-12"
       >
         <div>
-          <h1 className="text-3xl font-semibold text-white mb-1">DNA Lab</h1>
-          <p className="text-[hsl(0,0%,53%)]">
+          <h1 className="text-3xl font-bold text-white mb-1 tracking-tight">DNA Lab</h1>
+          <p className="text-white/50">
             Analyze your financial health
           </p>
         </div>
         {stage === "complete" && (
-          <Button onClick={resetAnalysis} variant="secondary">
-            <Zap className="w-4 h-4 mr-2" />
-            New Analysis
-          </Button>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={springTransition}>
+            <Button onClick={resetAnalysis} variant="glass">
+              <Zap className="w-4 h-4 mr-2" />
+              New Analysis
+            </Button>
+          </motion.div>
         )}
       </motion.header>
 
@@ -659,17 +669,21 @@ const DNALab = () => {
                 className="hidden"
               />
 
-              <div className={`w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-8 transition-all ${
-                isDragging ? "bg-[hsl(211,100%,45%)]" : "bg-[hsl(0,0%,14%)]"
-              }`}>
-                <Upload className={`w-10 h-10 ${isDragging ? "text-white" : "text-[hsl(0,0%,53%)]"}`} />
-              </div>
+              <motion.div 
+                className={`w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-8 transition-all ${
+                  isDragging ? "bg-[#0099FF] shadow-[0_0_40px_rgba(0,153,255,0.5)]" : "bg-white/[0.08]"
+                }`}
+                animate={{ scale: isDragging ? 1.1 : 1 }}
+                transition={springTransition}
+              >
+                <Upload className={`w-10 h-10 ${isDragging ? "text-white" : "text-white/50"}`} />
+              </motion.div>
 
               <h2 className="text-3xl font-semibold text-white mb-3">
                 Upload Financial Data
               </h2>
 
-              <p className="text-[hsl(0,0%,53%)] mb-10 max-w-md mx-auto">
+              <p className="text-white/50 mb-10 max-w-md mx-auto">
                 Drop a CSV or Excel file with your bank exports, Stripe data, or any financial spreadsheet
               </p>
 
@@ -678,12 +692,12 @@ const DNALab = () => {
                   <Upload className="w-5 h-5 mr-2" />
                   Choose File
                 </Button>
-                <span className="text-[hsl(0,0%,40%)]">or</span>
+                <span className="text-white/40">or</span>
                 <Button
                   size="lg"
                   variant="ghost"
                   onClick={(e) => { e.stopPropagation(); handleDemoMode(); }}
-                  className="text-[hsl(142,69%,50%)]"
+                  className="text-[#22C55E]"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
                   View Demo
@@ -691,13 +705,13 @@ const DNALab = () => {
               </div>
             </div>
 
-            <div className="mt-10 flex items-center justify-center gap-8 text-[hsl(0,0%,40%)] text-sm">
+            <div className="mt-10 flex items-center justify-center gap-8 text-white/40 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[hsl(142,69%,50%)]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
                 <span>256-bit encrypted</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[hsl(211,100%,45%)]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#0099FF]" />
                 <span>Data never stored</span>
               </div>
             </div>
@@ -713,9 +727,13 @@ const DNALab = () => {
             exit={{ opacity: 0 }}
             className="max-w-md mx-auto text-center py-24"
           >
-            <div className="w-20 h-20 mx-auto rounded-2xl bg-[hsl(211,100%,45%)] flex items-center justify-center mb-8">
-              <Dna className="w-10 h-10 text-white animate-spin" style={{ animationDuration: '3s' }} />
-            </div>
+            <motion.div 
+              className="w-20 h-20 mx-auto rounded-2xl bg-[#0099FF] flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(0,153,255,0.5)]"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            >
+              <Dna className="w-10 h-10 text-white" />
+            </motion.div>
 
             <h2 className="text-2xl font-semibold text-white mb-4">
               {STAGE_MESSAGES[stage]}
@@ -730,7 +748,7 @@ const DNALab = () => {
                   <div
                     key={s}
                     className={`w-2 h-2 rounded-full transition-colors ${
-                      isActive ? "bg-[hsl(211,100%,45%)]" : "bg-[hsl(0,0%,20%)]"
+                      isActive ? "bg-[#0099FF]" : "bg-white/[0.1]"
                     }`}
                   />
                 );
@@ -743,8 +761,9 @@ const DNALab = () => {
         {stage === "complete" && data && (
           <motion.div
             key="complete"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={springTransition}
             id="health-card-export"
             className="space-y-6"
           >
@@ -752,10 +771,10 @@ const DNALab = () => {
             {isHistoricalView && (data as HistoricalData).historicalDate && (
               <div className="card-surface p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <Clock className="w-5 h-5 text-[hsl(0,0%,53%)]" />
+                  <Clock className="w-5 h-5 text-white/50" />
                   <div>
                     <p className="text-white font-medium">Historical View</p>
-                    <p className="text-sm text-[hsl(0,0%,53%)]">
+                    <p className="text-sm text-white/50">
                       Snapshot from {(data as HistoricalData).historicalDate}
                     </p>
                   </div>
@@ -773,24 +792,26 @@ const DNALab = () => {
 
             {/* Main Grid */}
             <div className="grid grid-cols-12 gap-6">
-              {/* Runway */}
+              {/* Runway - with success glow animation */}
               <motion.div
-                className="col-span-12 md:col-span-6 card-surface-hover p-8 cursor-pointer"
+                className="col-span-12 md:col-span-6 glass-card p-8 cursor-pointer success-glow"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
+                transition={{ ...springTransition, delay: 0.1 }}
+                whileHover={{ scale: 1.02, y: -4 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleRunwayClick}
               >
                 <div className="flex items-center gap-2 mb-6">
-                  <Target className="w-4 h-4 text-[hsl(211,100%,45%)]" />
-                  <p className="text-[hsl(0,0%,53%)] text-sm font-medium uppercase tracking-wider">
+                  <Target className="w-4 h-4 text-[#0099FF]" />
+                  <p className="text-white/50 text-sm font-semibold uppercase tracking-wider">
                     Runway
                   </p>
                 </div>
-                <div className="text-6xl lg:text-7xl font-semibold text-white mb-2 tabular-nums">
+                <div className="text-6xl lg:text-7xl font-bold text-white mb-2 tabular-nums tracking-tighter">
                   {!isFinite(data.runway_months) ? "∞" : displayedRunway.toFixed(1)}
                 </div>
-                <p className="text-[hsl(0,0%,53%)]">months remaining</p>
+                <p className="text-white/50">months remaining</p>
               </motion.div>
 
               {/* Grade */}
@@ -801,13 +822,13 @@ const DNALab = () => {
                 transition={{ delay: 0.15 }}
                 onClick={handleGradeClick}
               >
-                <p className="text-[hsl(0,0%,53%)] text-sm font-medium uppercase tracking-wider mb-6">
+                <p className="text-white/50 text-sm font-medium uppercase tracking-wider mb-6">
                   Health Grade
                 </p>
                 <div className={`inline-flex items-center justify-center w-24 h-24 rounded-2xl text-5xl font-semibold ${getGradeColor(data.grade)}`}>
                   {data.grade.toUpperCase()}
                 </div>
-                <p className="text-[hsl(0,0%,53%)] mt-6 text-sm max-w-xs mx-auto">
+                <p className="text-white/50 mt-6 text-sm max-w-xs mx-auto">
                   {data.insight}
                 </p>
               </motion.div>
@@ -822,7 +843,7 @@ const DNALab = () => {
               >
                 <div className="flex items-center gap-2 mb-4">
                   <TrendingDown className="w-4 h-4 text-[hsl(0,100%,62%)]" />
-                  <p className="text-[hsl(0,0%,53%)] text-xs font-medium uppercase tracking-wider">
+                  <p className="text-white/50 text-xs font-medium uppercase tracking-wider">
                     Monthly Burn
                   </p>
                 </div>
@@ -841,12 +862,12 @@ const DNALab = () => {
                 onClick={handleCashClick}
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <DollarSign className="w-4 h-4 text-[hsl(142,69%,50%)]" />
-                  <p className="text-[hsl(0,0%,53%)] text-xs font-medium uppercase tracking-wider">
+                  <DollarSign className="w-4 h-4 text-[#22C55E]" />
+                  <p className="text-white/50 text-xs font-medium uppercase tracking-wider">
                     Cash on Hand
                   </p>
                 </div>
-                <p className="text-2xl font-semibold text-[hsl(142,69%,50%)] mb-4">
+                <p className="text-2xl font-semibold text-[#22C55E] mb-4">
                   {formatCurrency(data.cash_on_hand)}
                 </p>
                 <Sparkline data={data.revenue_trend} positive={true} />
@@ -861,17 +882,17 @@ const DNALab = () => {
                 onClick={handleProfitClick}
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <Percent className="w-4 h-4 text-[hsl(211,100%,45%)]" />
-                  <p className="text-[hsl(0,0%,53%)] text-xs font-medium uppercase tracking-wider">
+                  <Percent className="w-4 h-4 text-[#0099FF]" />
+                  <p className="text-white/50 text-xs font-medium uppercase tracking-wider">
                     Profit Margin
                   </p>
                 </div>
                 <p className="text-2xl font-semibold text-white mb-4">
                   {data.profit_margin.toFixed(1)}%
                 </p>
-                <div className="h-2 bg-[hsl(0,0%,14%)] rounded-full overflow-hidden">
+                <div className="h-2 bg-white/[0.08] rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-[hsl(211,100%,45%)] rounded-full"
+                    className="h-full bg-[#0099FF] rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(Math.max(data.profit_margin, 0) * 2, 100)}%` }}
                     transition={{ delay: 0.5, duration: 0.8 }}
@@ -902,19 +923,19 @@ const DNALab = () => {
                           <AlertTriangle className="w-5 h-5 text-[hsl(0,100%,62%)]" />
                         ) : (
                           <Activity className={`w-5 h-5 ${
-                            driftResult.severity === "medium" ? "text-[hsl(35,100%,52%)]" : "text-[hsl(211,100%,45%)]"
+                            driftResult.severity === "medium" ? "text-[hsl(35,100%,52%)]" : "text-[#0099FF]"
                           }`} />
                         )}
                       </div>
                       <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-[hsl(0,0%,53%)] mb-1">
+                        <p className="text-xs font-medium uppercase tracking-wider text-white/50 mb-1">
                           Drift Detected
                         </p>
                         <p className="text-white font-medium mb-2">{driftResult.message}</p>
-                        <div className="flex items-center gap-4 text-sm text-[hsl(0,0%,53%)]">
+                        <div className="flex items-center gap-4 text-sm text-white/50">
                           <span>Predicted: {driftResult.driftType === "burn" ? formatCurrency(driftResult.predictedValue) : `${driftResult.predictedValue.toFixed(1)} mo`}</span>
                           <ArrowRight className="w-4 h-4" />
-                          <span className={driftResult.driftPercentage > 0 ? "text-[hsl(0,100%,62%)]" : "text-[hsl(142,69%,50%)]"}>
+                          <span className={driftResult.driftPercentage > 0 ? "text-[hsl(0,100%,62%)]" : "text-[#22C55E]"}>
                             Actual: {driftResult.driftType === "burn" ? formatCurrency(driftResult.actualValue) : `${driftResult.actualValue.toFixed(1)} mo`}
                           </span>
                         </div>
@@ -947,12 +968,12 @@ const DNALab = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[hsl(211,100%,45%)] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#0099FF] flex items-center justify-center">
                       <BarChart3 className="w-5 h-5 text-white" />
                     </div>
                     <div>
                       <p className="font-medium text-white">Export & Share</p>
-                      <p className="text-sm text-[hsl(0,0%,53%)]">Download or share your analysis</p>
+                      <p className="text-sm text-white/50">Download or share your analysis</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
