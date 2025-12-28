@@ -1,6 +1,6 @@
 import { forwardRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Archive, Calendar, TrendingUp, TrendingDown, FileText, Search, ArrowUpDown, ArrowRight, Minus, ChevronUp, ChevronDown, GitCompare } from "lucide-react";
+import { Archive, Calendar, TrendingUp, TrendingDown, FileText, Search, ArrowUpDown, ArrowRight, Minus, ChevronUp, ChevronDown, GitCompare, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiUrl } from "@/lib/config";
@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 
 interface Analysis {
   id: number;
@@ -624,6 +625,163 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                             </motion.div>
                           </div>
                         </div>
+                      </motion.div>
+
+                      {/* Runway Trend Sparkline */}
+                      <motion.div 
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.7 }}
+                        className="mt-4 p-5 rounded-2xl bg-gradient-to-br from-[hsl(152,100%,50%)/0.05] via-[hsl(180,80%,45%)/0.03] to-[hsl(226,100%,59%)/0.05] border border-[hsl(152,100%,50%)/0.15]"
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(152,100%,50%)/0.3] to-[hsl(180,80%,45%)/0.3] flex items-center justify-center">
+                            <Activity className="w-5 h-5 text-[hsl(152,100%,60%)]" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-white">Runway Trend</p>
+                            <p className="text-xs text-[hsl(220,10%,50%)]">Last 5 analyses</p>
+                          </div>
+                        </div>
+                        
+                        {(() => {
+                          // Get last 5 analyses for sparkline (reversed for chronological order)
+                          const currentIndex = analyses.findIndex(a => a.id === selectedAnalysis.id);
+                          const sparklineData = analyses
+                            .slice(currentIndex, Math.min(currentIndex + 5, analyses.length))
+                            .reverse()
+                            .map((a, idx) => ({
+                              index: idx,
+                              runway: a.runway,
+                              label: a.date.split(",")[0], // Just "Dec 28" part
+                              isCurrent: a.id === selectedAnalysis.id
+                            }));
+                          
+                          const minRunway = Math.min(...sparklineData.map(d => d.runway));
+                          const maxRunway = Math.max(...sparklineData.map(d => d.runway));
+                          const avgRunway = sparklineData.reduce((sum, d) => sum + d.runway, 0) / sparklineData.length;
+                          
+                          return (
+                            <div className="relative">
+                              {/* Glow effect behind chart */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-[hsl(152,100%,50%)/0.1] to-transparent blur-xl" />
+                              
+                              <div className="relative h-[140px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={sparklineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <defs>
+                                      <linearGradient id="runwaySparkGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="hsl(152, 100%, 50%)" stopOpacity={0.5} />
+                                        <stop offset="50%" stopColor="hsl(180, 80%, 45%)" stopOpacity={0.2} />
+                                        <stop offset="100%" stopColor="hsl(180, 80%, 45%)" stopOpacity={0} />
+                                      </linearGradient>
+                                      <linearGradient id="runwayStrokeGradient" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stopColor="hsl(180, 80%, 45%)" />
+                                        <stop offset="50%" stopColor="hsl(152, 100%, 50%)" />
+                                        <stop offset="100%" stopColor="hsl(140, 90%, 55%)" />
+                                      </linearGradient>
+                                      <filter id="glow">
+                                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                        <feMerge>
+                                          <feMergeNode in="coloredBlur"/>
+                                          <feMergeNode in="SourceGraphic"/>
+                                        </feMerge>
+                                      </filter>
+                                    </defs>
+                                    <XAxis 
+                                      dataKey="label" 
+                                      axisLine={false} 
+                                      tickLine={false}
+                                      tick={{ fill: "hsl(220,10%,50%)", fontSize: 10 }}
+                                    />
+                                    <YAxis 
+                                      hide 
+                                      domain={[minRunway - 2, maxRunway + 2]} 
+                                    />
+                                    <ReferenceLine 
+                                      y={avgRunway} 
+                                      stroke="hsl(220, 10%, 30%)" 
+                                      strokeDasharray="4 4"
+                                      strokeWidth={1}
+                                    />
+                                    <Tooltip
+                                      contentStyle={{
+                                        background: "hsl(240,7%,12%)",
+                                        border: "1px solid hsl(152,100%,50%,0.3)",
+                                        borderRadius: "12px",
+                                        color: "white",
+                                        boxShadow: "0 10px 40px hsl(152,100%,50%,0.2)"
+                                      }}
+                                      formatter={(value: number) => [`${value.toFixed(1)} months`, "Runway"]}
+                                      labelFormatter={(label) => label}
+                                    />
+                                    <Area
+                                      type="monotone"
+                                      dataKey="runway"
+                                      stroke="url(#runwayStrokeGradient)"
+                                      strokeWidth={3}
+                                      fill="url(#runwaySparkGradient)"
+                                      filter="url(#glow)"
+                                      animationDuration={1500}
+                                      animationBegin={700}
+                                      dot={({ cx, cy, payload }) => (
+                                        <motion.circle
+                                          key={payload.index}
+                                          initial={{ scale: 0 }}
+                                          animate={{ scale: 1 }}
+                                          transition={{ delay: 0.8 + payload.index * 0.1 }}
+                                          cx={cx}
+                                          cy={cy}
+                                          r={payload.isCurrent ? 6 : 4}
+                                          fill={payload.isCurrent ? "hsl(152, 100%, 50%)" : "hsl(180, 80%, 45%)"}
+                                          stroke={payload.isCurrent ? "white" : "transparent"}
+                                          strokeWidth={2}
+                                          style={{ filter: payload.isCurrent ? "drop-shadow(0 0 8px hsl(152, 100%, 50%))" : "none" }}
+                                        />
+                                      )}
+                                      activeDot={{
+                                        r: 8,
+                                        fill: "hsl(152, 100%, 50%)",
+                                        stroke: "white",
+                                        strokeWidth: 2,
+                                        style: { filter: "drop-shadow(0 0 10px hsl(152, 100%, 50%))" }
+                                      }}
+                                    />
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              </div>
+                              
+                              {/* Stats Row */}
+                              <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
+                                <div className="text-center">
+                                  <p className="text-xs text-[hsl(220,10%,45%)]">Min</p>
+                                  <p className="text-sm font-bold text-[hsl(0,70%,60%)]">{minRunway.toFixed(1)}</p>
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-xs text-[hsl(220,10%,45%)]">Average</p>
+                                  <p className="text-sm font-bold text-[hsl(180,80%,55%)]">{avgRunway.toFixed(1)}</p>
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-xs text-[hsl(220,10%,45%)]">Max</p>
+                                  <p className="text-sm font-bold text-[hsl(152,100%,55%)]">{maxRunway.toFixed(1)}</p>
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-xs text-[hsl(220,10%,45%)]">Trend</p>
+                                  <div className={`flex items-center gap-1 ${sparklineData[sparklineData.length - 1]?.runway > sparklineData[0]?.runway ? "text-[hsl(152,100%,55%)]" : "text-[hsl(0,70%,60%)]"}`}>
+                                    {sparklineData[sparklineData.length - 1]?.runway > sparklineData[0]?.runway ? (
+                                      <TrendingUp className="w-3 h-3" />
+                                    ) : (
+                                      <TrendingDown className="w-3 h-3" />
+                                    )}
+                                    <span className="text-sm font-bold">
+                                      {((sparklineData[sparklineData.length - 1]?.runway - sparklineData[0]?.runway)).toFixed(1)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </motion.div>
                     </div>
                   </div>
