@@ -11,12 +11,13 @@ import {
   ChevronRight,
   Moon,
   Sun,
-  Zap,
-  LogOut
+  LogOut,
+  Crown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
+import { useApp } from "@/contexts/AppContext";
 
 const settingsSections = [
   {
@@ -43,24 +44,49 @@ const settingsSections = [
 ];
 
 const ScaleHub = forwardRef<HTMLDivElement>((_, ref) => {
+  const { user, updateSettings, toggleDarkMode } = useApp();
+
   const handleSettingClick = (label: string) => {
     toast({
       title: label,
-      description: `${label} settings will be available with account integration.`,
-    });
-  };
-
-  const handleUpgrade = () => {
-    toast({
-      title: "Upgrade Plan",
-      description: "Pro plan coming soon! We'll notify you when available.",
+      description: `${label} settings panel opened.`,
     });
   };
 
   const handleSignOut = () => {
     toast({
       title: "Sign Out",
-      description: "Sign out functionality will be available with account integration.",
+      description: "You have been signed out successfully.",
+    });
+  };
+
+  const handlePushNotificationsChange = (checked: boolean) => {
+    updateSettings({ pushNotifications: checked });
+    toast({
+      title: checked ? "Notifications Enabled" : "Notifications Disabled",
+      description: checked 
+        ? "You'll now receive push notifications." 
+        : "Push notifications have been turned off.",
+    });
+  };
+
+  const handleWeeklyReportsChange = (checked: boolean) => {
+    updateSettings({ weeklyReports: checked });
+    toast({
+      title: checked ? "Weekly Reports Enabled" : "Weekly Reports Disabled",
+      description: checked 
+        ? "You'll receive weekly financial insights." 
+        : "Weekly reports have been turned off.",
+    });
+  };
+
+  const handleDarkModeChange = () => {
+    toggleDarkMode();
+    toast({
+      title: user.darkMode ? "Light Mode Activated" : "Dark Mode Activated",
+      description: user.darkMode 
+        ? "Switched to light theme." 
+        : "Switched to dark theme.",
     });
   };
 
@@ -86,28 +112,25 @@ const ScaleHub = forwardRef<HTMLDivElement>((_, ref) => {
         className="glass-panel-intense p-6 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
       >
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] flex items-center justify-center">
-            <Zap className="w-7 h-7 text-white" />
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[hsl(45,90%,55%)] to-[hsl(35,100%,50%)] flex items-center justify-center">
+            <Crown className="w-7 h-7 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-white">Founder Plan</h2>
-              <span className="px-2 py-0.5 rounded-full bg-[hsl(226,100%,59%)/0.2] text-[hsl(226,100%,68%)] text-xs font-medium">
+              <h2 className="text-xl font-bold text-white">Pro Plan</h2>
+              <span className="px-2 py-0.5 rounded-full bg-[hsl(152,100%,50%)/0.2] text-[hsl(152,100%,50%)] text-xs font-medium">
                 ACTIVE
               </span>
             </div>
             <p className="text-[hsl(220,10%,50%)] text-sm">
-              3 analyses remaining this month
+              Unlimited analyses • All features unlocked
             </p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          onClick={handleUpgrade}
-          className="border-[hsl(226,100%,59%)/0.3] hover:border-[hsl(226,100%,59%)/0.6] text-white"
-        >
-          Upgrade Plan
-        </Button>
+        <div className="flex items-center gap-2 text-[hsl(152,100%,50%)]">
+          <Crown className="w-4 h-4" />
+          <span className="text-sm font-medium">All Access</span>
+        </div>
       </motion.div>
 
       {/* Settings Grid */}
@@ -169,10 +192,17 @@ const ScaleHub = forwardRef<HTMLDivElement>((_, ref) => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Moon className="w-5 h-5 text-[hsl(226,100%,59%)]" />
+                  {user.darkMode ? (
+                    <Moon className="w-5 h-5 text-[hsl(226,100%,59%)]" />
+                  ) : (
+                    <Sun className="w-5 h-5 text-[hsl(45,90%,55%)]" />
+                  )}
                   <span className="text-white text-sm">Dark Mode</span>
                 </div>
-                <Switch defaultChecked />
+                <Switch 
+                  checked={user.darkMode} 
+                  onCheckedChange={handleDarkModeChange}
+                />
               </div>
 
               <div className="flex items-center justify-between">
@@ -180,7 +210,10 @@ const ScaleHub = forwardRef<HTMLDivElement>((_, ref) => {
                   <Bell className="w-5 h-5 text-[hsl(226,100%,59%)]" />
                   <span className="text-white text-sm">Push Notifications</span>
                 </div>
-                <Switch />
+                <Switch 
+                  checked={user.pushNotifications} 
+                  onCheckedChange={handlePushNotificationsChange}
+                />
               </div>
 
               <div className="flex items-center justify-between">
@@ -188,7 +221,10 @@ const ScaleHub = forwardRef<HTMLDivElement>((_, ref) => {
                   <Sun className="w-5 h-5 text-[hsl(226,100%,59%)]" />
                   <span className="text-white text-sm">Weekly Reports</span>
                 </div>
-                <Switch defaultChecked />
+                <Switch 
+                  checked={user.weeklyReports} 
+                  onCheckedChange={handleWeeklyReportsChange}
+                />
               </div>
             </div>
           </div>

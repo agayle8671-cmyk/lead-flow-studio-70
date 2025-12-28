@@ -12,11 +12,20 @@ import {
   Share2,
   Zap,
   Target,
-  BarChart3
+  BarChart3,
+  FileImage,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { apiUrl } from "@/lib/config";
+import { exportAsPNG, exportAsPDF, shareToTwitter } from "@/lib/exportUtils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface FinancialData {
   runway_months: number;
@@ -55,6 +64,7 @@ const DNALab = () => {
   const [stage, setStage] = useState<ProcessingStage>("idle");
   const [data, setData] = useState<FinancialData | null>(null);
   const [displayedRunway, setDisplayedRunway] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Animate runway counter
@@ -109,15 +119,17 @@ const DNALab = () => {
       if (!response.ok) throw new Error("Analysis failed");
 
       const result = await response.json();
+      const dnaData = result.dna || result;
+      
       setData({
-        runway_months: result.runway_months || 12,
-        grade: (result.grade || "B").toUpperCase(),
-        monthly_burn: result.monthly_burn || 35000,
-        cash_on_hand: result.cash_on_hand || 420000,
-        profit_margin: result.profit_margin || 15,
-        revenue_trend: result.revenue_trend || [40, 45, 50, 55, 60, 65, 70],
-        expense_trend: result.expense_trend || [35, 38, 40, 42, 45, 48, 52],
-        insight: result.insight || "Your financial DNA has been decoded."
+        runway_months: dnaData.runway_months || 12,
+        grade: (dnaData.grade || "B").toUpperCase(),
+        monthly_burn: dnaData.monthly_burn || 35000,
+        cash_on_hand: dnaData.cash_on_hand || 420000,
+        profit_margin: dnaData.profit_margin || 15,
+        revenue_trend: dnaData.revenue_trend || [40, 45, 50, 55, 60, 65, 70],
+        expense_trend: dnaData.expense_trend || [35, 38, 40, 42, 45, 48, 52],
+        insight: dnaData.insight || "Your financial DNA has been decoded."
       });
     } catch {
       setData(DEMO_DATA);
@@ -165,6 +177,55 @@ const DNALab = () => {
     setStage("idle");
     setData(null);
     setDisplayedRunway(0);
+  };
+
+  const handleExportPNG = async () => {
+    if (!data) return;
+    setIsExporting(true);
+    try {
+      await exportAsPNG("health-card-export", `runway-dna-${data.grade}-${Date.now()}.png`);
+      toast({
+        title: "Exported Successfully",
+        description: "Your Health Card has been downloaded as PNG.",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Could not export the Health Card. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!data) return;
+    setIsExporting(true);
+    try {
+      await exportAsPDF("health-card-export", `runway-dna-${data.grade}-${Date.now()}.pdf`);
+      toast({
+        title: "Exported Successfully",
+        description: "Your Health Card has been downloaded as PDF.",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Could not export the Health Card. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleShare = () => {
+    if (!data) return;
+    shareToTwitter(data);
+    toast({
+      title: "Opening Twitter",
+      description: "Share your financial DNA with the world!",
+    });
   };
 
   const formatCurrency = (value: number) =>
@@ -404,6 +465,7 @@ const DNALab = () => {
             key="complete"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            id="health-card-export"
             className="bento-grid"
           >
             {/* THE PULSE - Runway Counter */}
@@ -539,26 +601,40 @@ const DNALab = () => {
                 </div>
               </div>
               <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => toast({
-                    title: "Download",
-                    description: "Health Card export coming soon in Pro version.",
-                  })}
-                  className="border-[hsl(226,100%,59%)/0.3] hover:border-[hsl(226,100%,59%)/0.6] hover:bg-[hsl(226,100%,59%)/0.1] text-white"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      disabled={isExporting}
+                      className="border-[hsl(226,100%,59%)/0.3] hover:border-[hsl(226,100%,59%)/0.6] hover:bg-[hsl(226,100%,59%)/0.1] text-white"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      {isExporting ? "Exporting..." : "Download"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-[hsl(270,15%,10%)] border-[hsl(226,100%,59%)/0.2]">
+                    <DropdownMenuItem 
+                      onClick={handleExportPNG}
+                      className="text-white hover:bg-[hsl(226,100%,59%)/0.1] cursor-pointer"
+                    >
+                      <FileImage className="w-4 h-4 mr-2" />
+                      Download as PNG
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={handleExportPDF}
+                      className="text-white hover:bg-[hsl(226,100%,59%)/0.1] cursor-pointer"
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Download as PDF
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button 
-                  onClick={() => toast({
-                    title: "Share",
-                    description: "Sharing functionality coming soon!",
-                  })}
+                  onClick={handleShare}
                   className="bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] text-white hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.3]"
                 >
                   <Share2 className="w-4 h-4 mr-2" />
-                  Share
+                  Share on X
                 </Button>
               </div>
             </motion.div>
