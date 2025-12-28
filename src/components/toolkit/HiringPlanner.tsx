@@ -46,7 +46,7 @@ import {
   ComposedChart,
   Line,
   CartesianGrid,
-  PieChart,
+  PieChart as RechartsPieChart,
   Pie
 } from "recharts";
 import { useHiring, HireRole as ContextHireRole } from "@/contexts/HiringContext";
@@ -804,7 +804,7 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
                     {/* Pie Chart */}
                     <div className="h-[280px]">
                       <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
+                        <RechartsPieChart>
                           <Pie
                             data={teamCompositionData}
                             cx="50%"
@@ -840,7 +840,7 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
                               );
                             }}
                           />
-                        </PieChart>
+                        </RechartsPieChart>
                       </ResponsiveContainer>
                     </div>
                     
