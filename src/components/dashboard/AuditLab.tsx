@@ -6,8 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useClient, Client } from "@/contexts/ClientContext";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { apiUrl } from "@/lib/config";
-import CIDErrorDialog from "./CIDErrorDialog";
 
 interface AuditLabProps {
   onAuditComplete: (client: Client) => void;
@@ -19,7 +17,6 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [processingStatus, setProcessingStatus] = useState<string>("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [showCIDError, setShowCIDError] = useState(false);
   const { toast } = useToast();
   const { clients, refreshClients, addUploadedCID } = useClient();
 
@@ -43,8 +40,8 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
       
       setProcessingStatus("Analyzing with AI...");
       
-      // Send to parse-finances endpoint
-      const response = await fetch(apiUrl("/api/parse-finances"), {
+      // Send to live backend at marginauditpro.com
+      const response = await fetch("https://marginauditpro.com/api/parse-finances", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -56,12 +53,16 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
 
       const responseText = await response.text();
       
-      // Check for Missing CID error
+      // Check for Missing CID error - show Compass Gold toast
       if (!response.ok) {
         if (responseText.toLowerCase().includes("missing cid") || 
             responseText.toLowerCase().includes("missing client") ||
             responseText.toLowerCase().includes("invalid cid")) {
-          setShowCIDError(true);
+          toast({
+            title: "Audit Failed: Missing CID Header",
+            description: "Refer to the Master User Guide.",
+            className: "bg-gradient-to-r from-amber-500 to-yellow-600 text-charcoal border-none shadow-lg",
+          });
           throw new Error("Missing CID");
         }
         throw new Error(`Parse failed: ${response.status} - ${responseText}`);
@@ -98,7 +99,7 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
       console.error("Upload error:", error);
       const errorMessage = error instanceof Error ? error.message : "Could not process the document.";
       
-      // Don't show toast for CID errors (dialog handles it)
+      // Don't show additional toast for CID errors (already shown above)
       if (!errorMessage.includes("Missing CID")) {
         toast({
           variant: "destructive",
@@ -308,8 +309,6 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
         </motion.div>
       </main>
 
-      {/* CID Error Dialog */}
-      <CIDErrorDialog open={showCIDError} onClose={() => setShowCIDError(false)} />
     </div>
   );
 };
