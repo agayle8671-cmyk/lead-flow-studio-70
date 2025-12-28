@@ -287,19 +287,20 @@ const RunwayDNA = () => {
       <motion.div
         className="absolute left-1/2 z-10 pointer-events-none"
         style={{ translateX: "-50%" }}
+        initial={{ bottom: "15%", scale: 1.2, opacity: 0 }}
         animate={{
           // Start at bottom (close to viewer), fly up toward horizon (away from viewer)
-          bottom: ["15%", "30%", "55%", "85%"],
+          bottom: ["15%", "25%", "50%", "80%"],
           // Gets smaller as it flies away into distance
-          scale: [1.2, 1, 0.6, 0.25],
+          scale: [1.2, 1.1, 0.7, 0.3],
           opacity: [0, 1, 1, 0],
         }}
         transition={{
-          duration: 4.5,
+          duration: 4,
           repeat: Infinity,
-          repeatDelay: 3,
-          ease: [0.4, 0, 0.2, 1],
-          times: [0, 0.15, 0.5, 1],
+          repeatDelay: 2.5,
+          ease: "easeOut",
+          times: [0, 0.1, 0.5, 1],
         }}
       >
         <motion.div
