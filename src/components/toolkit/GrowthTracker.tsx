@@ -224,6 +224,12 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
 
   // Fetch AI Insights
   const fetchAIInsights = useCallback(async () => {
+    if (!supabase) {
+      setInsightsError('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env file.');
+      setIsLoadingInsights(false);
+      return;
+    }
+    
     setIsLoadingInsights(true);
     setInsightsError(null);
     
