@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { apiUrl } from "@/lib/config";
 
 export interface Client {
   id: number;
@@ -30,7 +31,7 @@ export function ClientProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch("https://finance-core--agayle8671.replit.app/api/portfolio", {
+      const response = await fetch(apiUrl("/api/portfolio"), {
         method: "GET",
         headers: { Accept: "application/json" },
         mode: "cors",
