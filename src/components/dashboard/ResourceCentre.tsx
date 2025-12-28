@@ -34,21 +34,21 @@ const protocolResources: ResourceCard[] = [
     icon: BookOpen,
     title: "Master User Guide",
     description: "Learn the M.A.P. Header Protocol and CID Tagging system for seamless audit workflows.",
-    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/master_user_guide_1766883983983.pdf",
+    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/master_user_guide.pdf",
   },
   {
     id: "excel-template",
     icon: FileSpreadsheet,
     title: "M.A.P. Excel Template",
     description: "Pre-formatted sheet with CID headers for 100% upload success rate.",
-    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/map_excel_template_guide_1766883983983.pdf",
+    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/map_excel_template.pdf",
   },
   {
     id: "lab-manual",
     icon: FlaskConical,
     title: "The Audit Lab Manual",
     description: "A 60-second technical breakdown of the M.A.P. engine and audit algorithms.",
-    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/audit_lab_manual_1766883983985.pdf",
+    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/audit_lab_manual.pdf",
   },
 ];
 
@@ -58,7 +58,7 @@ const clientToolkitResources: ResourceCard[] = [
     icon: FileText,
     title: "Health Grade One-Pager",
     description: "Help your clients understand their A-F Grade and what it means for their business.",
-    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/health_grade_one_pager_1766883983982.pdf",
+    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/health_grade_one_pager.pdf",
     proOnly: true,
   },
   {
@@ -66,7 +66,7 @@ const clientToolkitResources: ResourceCard[] = [
     icon: Map,
     title: "Projected Route Explainer",
     description: "A visual guide to the 90-day trajectory map and profit optimization path.",
-    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/projected_route_explainer_1766883983984.pdf",
+    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/projected_route_explainer.pdf",
     proOnly: true,
   },
 ];
