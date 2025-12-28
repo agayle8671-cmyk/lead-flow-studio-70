@@ -45,7 +45,9 @@ import {
   Area,
   ComposedChart,
   Line,
-  CartesianGrid
+  CartesianGrid,
+  PieChart,
+  Pie
 } from "recharts";
 import { useHiring, HireRole as ContextHireRole } from "@/contexts/HiringContext";
 
@@ -171,6 +173,36 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
   // These now come from the shared context
   const totalAdditionalBurn = hiringImpact.totalMonthlyIncrease;
   const runwayImpact = currentRunway - projectedRunway;
+  
+  // Team Composition Data for Pie Chart
+  const teamCompositionData = useMemo(() => {
+    return roles
+      .filter(role => role.count > 0)
+      .map(role => ({
+        name: role.title,
+        value: role.count,
+        color: role.color,
+        salary: role.salary * role.count
+      }));
+  }, [roles]);
+  
+  // Hiring Schedule Timeline Data
+  const hiringScheduleData = useMemo(() => {
+    const schedule: { month: number; hires: { role: string; count: number; color: string }[] }[] = [];
+    for (let month = 1; month <= 24; month++) {
+      const monthHires = roles
+        .filter(role => role.startMonth === month && role.count > 0)
+        .map(role => ({
+          role: role.title,
+          count: role.count,
+          color: role.color
+        }));
+      if (monthHires.length > 0) {
+        schedule.push({ month, hires: monthHires });
+      }
+    }
+    return schedule;
+  }, [roles]);
 
   const formatCurrency = (value: number) => {
     if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`;
@@ -752,6 +784,151 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Team Composition Breakdown */}
+              {totalNewHires > 0 && (
+                <div className="p-6 rounded-2xl glass-panel border border-white/5 mb-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[hsl(226,100%,59%)/0.2] flex items-center justify-center">
+                        <PieChart className="w-5 h-5 text-[hsl(226,100%,68%)]" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold">Team Composition</h3>
+                        <p className="text-xs text-[hsl(220,10%,50%)]">Breakdown by role</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Pie Chart */}
+                    <div className="h-[280px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={teamCompositionData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={90}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {teamCompositionData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            content={({ active, payload }) => {
+                              if (!active || !payload || !payload.length) return null;
+                              const data = payload[0].payload;
+                              return (
+                                <div className="p-3 rounded-lg bg-[hsl(240,7%,10%)] border border-white/10 shadow-xl">
+                                  <p className="text-white font-semibold mb-2">{data.name}</p>
+                                  <div className="space-y-1 text-sm">
+                                    <div className="flex justify-between gap-4">
+                                      <span className="text-[hsl(220,10%,55%)]">Hires:</span>
+                                      <span className="text-white font-bold">{data.value}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-4">
+                                      <span className="text-[hsl(220,10%,55%)]">Monthly Cost:</span>
+                                      <span className="text-white font-bold font-mono">{formatCurrency(data.salary)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    
+                    {/* Legend */}
+                    <div className="flex flex-col justify-center gap-4">
+                      {teamCompositionData.map((item, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-[hsl(240,7%,12%)] border border-white/5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color }} />
+                            <span className="text-white font-medium">{item.name}</span>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-white font-bold">{item.value} hire{item.value > 1 ? 's' : ''}</p>
+                            <p className="text-xs text-[hsl(220,10%,55%)]">{formatCurrency(item.salary)}/mo</p>
+                          </div>
+                        </div>
+                      ))}
+                      {totalNewHires > 0 && (
+                        <div className="mt-4 pt-4 border-t border-white/10">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-[hsl(220,10%,55%)]">Total Hires:</span>
+                            <span className="text-lg font-bold text-white">{totalNewHires}</span>
+                          </div>
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-sm text-[hsl(220,10%,55%)]">Total Monthly Cost:</span>
+                            <span className="text-lg font-bold text-[hsl(0,70%,55%)] font-mono">{formatCurrency(totalAdditionalBurn)}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Hiring Schedule Timeline */}
+              {hiringScheduleData.length > 0 && (
+                <div className="p-6 rounded-2xl glass-panel border border-white/5 mb-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[hsl(45,90%,55%)/0.2] flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-[hsl(45,90%,55%)]" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold">Hiring Schedule</h3>
+                        <p className="text-xs text-[hsl(220,10%,50%)]">When hires start over next 24 months</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {hiringScheduleData.map((scheduleItem, index) => (
+                      <motion.div
+                        key={scheduleItem.month}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="p-4 rounded-xl bg-[hsl(240,7%,12%)] border border-white/5"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-[hsl(45,90%,55%)/0.2] flex items-center justify-center border border-[hsl(45,90%,55%)/0.3]">
+                              <span className="text-sm font-bold text-[hsl(45,90%,55%)]">M{scheduleItem.month}</span>
+                            </div>
+                            <div>
+                              <p className="text-white font-semibold">
+                                {scheduleItem.month === 1 ? 'Starting Now' : `Month ${scheduleItem.month} (+${scheduleItem.month - 1}mo)`}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          {scheduleItem.hires.map((hire, hireIndex) => (
+                            <div
+                              key={hireIndex}
+                              className="flex items-center gap-2 px-3 py-2 rounded-lg"
+                              style={{ backgroundColor: `${hire.color}20`, border: `1px solid ${hire.color}40` }}
+                            >
+                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: hire.color }} />
+                              <span className="text-sm font-semibold text-white">{hire.role}</span>
+                              <span className="text-xs text-[hsl(220,10%,60%)]">×{hire.count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Cash Runway Timeline */}
               <div className="p-6 rounded-2xl glass-panel border border-white/5">

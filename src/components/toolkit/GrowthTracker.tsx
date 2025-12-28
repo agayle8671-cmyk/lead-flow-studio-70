@@ -36,7 +36,10 @@ import {
   Line,
   ComposedChart,
   Bar,
-  ReferenceLine
+  ReferenceLine,
+  PieChart,
+  Pie,
+  Cell
 } from "recharts";
 
 interface GrowthTrackerProps {
@@ -60,6 +63,10 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
   const [churnRate, setChurnRate] = useState(3);
   const [animatedMRR, setAnimatedMRR] = useState(currentMRR);
   const [projectionData, setProjectionData] = useState<MonthlyData[]>([]);
+  
+  // New features: LTV:CAC and Revenue Goal
+  const [customerAcquisitionCost, setCustomerAcquisitionCost] = useState(150);
+  const [revenueGoal, setRevenueGoal] = useState(50000);
 
   // Calculate projections whenever inputs change
   useEffect(() => {
@@ -120,6 +127,25 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
   const projectedCustomers = projectionData.length > 0 ? projectionData[projectionData.length - 1].customers : 0;
   const currentCustomers = avgRevenuePerUser > 0 ? Math.round(currentMRR / avgRevenuePerUser) : 0;
   const customerGrowth = currentCustomers > 0 ? ((projectedCustomers - currentCustomers) / currentCustomers) * 100 : 0;
+  
+  // LTV:CAC Calculations
+  const avgLifetimeMonths = churnRate > 0 ? 1 / (churnRate / 100) : 0;
+  const lifetimeValue = avgRevenuePerUser * avgLifetimeMonths;
+  const ltvCacRatio = customerAcquisitionCost > 0 ? lifetimeValue / customerAcquisitionCost : 0;
+  
+  // Revenue Goal Calculations
+  const monthsToGoal = useMemo(() => {
+    if (revenueGoal <= currentMRR) return 0;
+    let mrr = currentMRR;
+    const growthMultiplier = 1 + (monthlyGrowthRate / 100);
+    const churnMultiplier = 1 - (churnRate / 100);
+    let months = 0;
+    while (mrr < revenueGoal && months < 60) {
+      mrr = mrr * growthMultiplier * churnMultiplier;
+      months++;
+    }
+    return months <= 60 ? months : -1; // -1 means goal not reachable in 5 years
+  }, [currentMRR, revenueGoal, monthlyGrowthRate, churnRate]);
 
   const formatCurrency = (value: number) => {
     if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`;
@@ -612,6 +638,137 @@ export function GrowthTracker({ onClose }: GrowthTrackerProps) {
                     </p>
                   </div>
                   <p className="text-xs text-[hsl(220,10%,50%)] mt-1">12 months</p>
+                </div>
+              </div>
+
+              {/* LTV:CAC Ratio Calculator */}
+              <div className="p-6 rounded-2xl glass-panel border border-white/5 mb-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(226,100%,59%)/0.2] flex items-center justify-center">
+                      <Gauge className="w-5 h-5 text-[hsl(226,100%,68%)]" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold">LTV:CAC Ratio</h3>
+                      <p className="text-xs text-[hsl(220,10%,50%)]">Lifetime Value vs Customer Acquisition Cost</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <Label className="text-[hsl(220,10%,55%)] text-xs uppercase mb-2 block">Customer Acquisition Cost</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[hsl(220,10%,50%)] text-sm">$</span>
+                      <Input
+                        type="number"
+                        value={customerAcquisitionCost}
+                        onChange={(e) => setCustomerAcquisitionCost(Math.max(0, Number(e.target.value) || 0))}
+                        className="pl-8 h-11 bg-[hsl(240,7%,8%)] border-white/10 text-white font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-[hsl(220,10%,55%)] text-xs uppercase mb-2 block">Lifetime Value</Label>
+                    <div className="h-11 px-4 rounded-lg bg-[hsl(240,7%,12%)] border border-white/10 flex items-center">
+                      <span className="text-lg font-bold text-white font-mono">
+                        {formatCurrency(lifetimeValue)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className={`p-5 rounded-xl border-2 ${
+                  ltvCacRatio >= 3
+                    ? 'bg-gradient-to-br from-[hsl(152,100%,50%)/0.15] to-transparent border-[hsl(152,100%,50%)/0.4]'
+                    : ltvCacRatio >= 2
+                      ? 'bg-gradient-to-br from-[hsl(45,90%,55%)/0.15] to-transparent border-[hsl(45,90%,55%)/0.4]'
+                      : 'bg-gradient-to-br from-[hsl(0,70%,55%)/0.15] to-transparent border-[hsl(0,70%,55%)/0.4]'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Target className={`w-6 h-6 ${
+                        ltvCacRatio >= 3 ? 'text-[hsl(152,100%,50%)]' : ltvCacRatio >= 2 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'
+                      }`} />
+                      <div>
+                        <p className={`text-sm font-semibold ${
+                          ltvCacRatio >= 3 ? 'text-[hsl(152,100%,50%)]' : ltvCacRatio >= 2 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'
+                        }`}>
+                          {ltvCacRatio >= 3 ? 'Healthy Ratio' : ltvCacRatio >= 2 ? 'Moderate Ratio' : 'Poor Ratio'}
+                        </p>
+                        <p className="text-xs text-[hsl(220,10%,55%)]">
+                          {ltvCacRatio >= 3 ? '3:1+ is ideal for SaaS' : ltvCacRatio >= 2 ? 'Aim for 3:1 or higher' : 'Needs improvement'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-3xl font-bold font-mono ${
+                        ltvCacRatio >= 3 ? 'text-[hsl(152,100%,50%)]' : ltvCacRatio >= 2 ? 'text-[hsl(45,90%,55%)]' : 'text-[hsl(0,70%,55%)]'
+                      }`}>
+                        {ltvCacRatio.toFixed(1)}:1
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Revenue Goal Tracker */}
+              <div className="p-6 rounded-2xl glass-panel border border-white/5 mb-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(270,60%,55%)/0.2] flex items-center justify-center">
+                      <Target className="w-5 h-5 text-[hsl(270,60%,65%)]" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold">Revenue Goal Tracker</h3>
+                      <p className="text-xs text-[hsl(220,10%,50%)]">Set target and track progress</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <Label className="text-[hsl(220,10%,55%)] text-xs uppercase mb-2 block">Target MRR</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[hsl(220,10%,50%)] text-sm">$</span>
+                    <Input
+                      type="number"
+                      value={revenueGoal}
+                      onChange={(e) => setRevenueGoal(Math.max(0, Number(e.target.value) || 0))}
+                      className="pl-8 h-11 bg-[hsl(240,7%,8%)] border-white/10 text-white font-mono"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[hsl(220,10%,55%)]">Current MRR</span>
+                    <span className="text-lg font-bold text-white font-mono">{formatCurrency(currentMRR)}</span>
+                  </div>
+                  <div className="w-full h-3 bg-[hsl(240,7%,18%)] rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (currentMRR / revenueGoal) * 100)}%` }}
+                      transition={{ duration: 0.8 }}
+                      className={`h-full rounded-full ${
+                        (currentMRR / revenueGoal) >= 1
+                          ? 'bg-gradient-to-r from-[hsl(152,100%,50%)] to-[hsl(152,100%,60%)]'
+                          : 'bg-gradient-to-r from-[hsl(270,60%,55%)] to-[hsl(290,70%,45%)]'
+                      }`}
+                    />
+                  </div>
+                  {monthsToGoal >= 0 ? (
+                    <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                      <span className="text-sm text-[hsl(220,10%,55%)]">Estimated time to goal</span>
+                      <span className="text-xl font-bold text-[hsl(270,60%,65%)] font-mono">
+                        {monthsToGoal} {monthsToGoal === 1 ? 'month' : 'months'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                      <span className="text-sm text-[hsl(0,70%,55%)]">Goal not reachable</span>
+                      <span className="text-sm text-[hsl(0,70%,55%)]">Increase growth rate</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
