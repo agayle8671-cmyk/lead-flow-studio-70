@@ -8,14 +8,15 @@ import {
   LogOut,
   ChevronLeft,
   Building2,
-  CreditCard
+  CreditCard,
+  BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { usePlan } from "@/contexts/PlanContext";
 
-type NavItem = "portfolio" | "lab" | "archive" | "settings" | "licensing";
+type NavItem = "portfolio" | "lab" | "archive" | "settings" | "licensing" | "resources";
 
 interface AppSidebarProps {
   activeNav: NavItem;
@@ -31,6 +32,7 @@ const AppSidebar = ({ activeNav, onNavChange }: AppSidebarProps) => {
     { id: "portfolio" as NavItem, icon: Briefcase, label: "Client Portfolio" },
     { id: "lab" as NavItem, icon: FlaskConical, label: "Audit Lab" },
     { id: "archive" as NavItem, icon: Archive, label: "Audit Archive" },
+    { id: "resources" as NavItem, icon: BookOpen, label: "Resource Centre" },
     { id: "settings" as NavItem, icon: Settings, label: "Firm Settings" },
   ];
 
