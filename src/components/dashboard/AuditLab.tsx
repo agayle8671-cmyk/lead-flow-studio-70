@@ -79,17 +79,8 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
         // ignore
       }
 
-      // Check for Missing CID error - show Compass Gold toast
+      // Check for non-recoverable errors (not CID-related since unassigned is allowed)
       if (!response.ok) {
-        const msg = apiMessage.toLowerCase();
-        if (msg.includes("missing cid") || msg.includes("missing client") || msg.includes("invalid cid")) {
-          toast({
-            title: "Audit Failed: Missing CID Header",
-            description: `${apiMessage} Refer to the Master User Guide.`,
-            className: "gradient-gold text-charcoal shadow-gold",
-          });
-          throw new Error("Missing CID");
-        }
         throw new Error(`Parse failed: ${response.status} - ${apiMessage}`);
       }
 
@@ -104,23 +95,37 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
       setUploadSuccess(true);
       setProcessingStatus("Audit complete!");
       
-      // Track the uploaded CID for portfolio filtering
+      // Track the uploaded CID for portfolio filtering (even if unassigned)
       addUploadedCID(selectedClientId);
       
+      // Show success message - works for both assigned and unassigned audits
+      const successMessage = extractedCID 
+        ? `Audit linked to CID: ${extractedCID}` 
+        : "Audit saved as Unassigned. You can link it to a client later.";
+      
       toast({
-        title: "Audit Processed",
-        description: data.message || "Financial data has been extracted and saved.",
+        title: "Audit Processed Successfully",
+        description: data.message || successMessage,
+        className: "bg-emerald-500/10 border-emerald-500/30",
       });
 
       // Refresh clients to get updated data from backend
       await refreshClients();
 
-      const selected = clients.find((c) => c.id === parseInt(selectedClientId));
-      
-      // Navigate to Maestro Command Center (AuditDetail) immediately to show updated results
-      if (selected) {
-        setTimeout(() => onAuditComplete(selected), 800);
-      }
+      // Navigate to Recent Audits view (pass null to signal general view instead of specific client)
+      setTimeout(() => {
+        // Signal to parent that audit is complete - pass selected client if available, otherwise trigger general view
+        const selected = clients.find((c) => c.id === parseInt(selectedClientId));
+        const fallbackClient: Client = { 
+          id: 0, 
+          name: "Recent Audits", 
+          industry: "", 
+          grade: "B", 
+          score: 0,
+          lastAuditDate: new Date().toISOString()
+        };
+        onAuditComplete(selected || fallbackClient);
+      }, 800);
     } catch (error) {
       console.error("Upload error:", error);
       const errorMessage = error instanceof Error ? error.message : "Could not process the document.";
