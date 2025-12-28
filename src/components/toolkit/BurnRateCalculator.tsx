@@ -181,12 +181,23 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
                       </div>
                       <span className="text-white font-medium">{cat.label}</span>
                     </div>
-                    <span className="text-xl font-bold" style={{ color: cat.color }}>
-                      ${inputs[cat.key as keyof typeof inputs].toLocaleString()}
-                    </span>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[hsl(220,10%,45%)] text-xs">$</span>
+                      <Input
+                        type="number"
+                        value={inputs[cat.key as keyof typeof inputs]}
+                        onChange={(e) => {
+                          const val = Math.max(0, Number(e.target.value) || 0);
+                          setInputs(prev => ({ ...prev, [cat.key]: val }));
+                        }}
+                        className="h-7 w-24 pl-6 pr-2 text-sm bg-[hsl(240,7%,12%)] border-white/10 text-white font-mono focus:border-white/30"
+                        min={0}
+                        step={500}
+                      />
+                    </div>
                   </div>
                   <Slider
-                    value={[inputs[cat.key as keyof typeof inputs]]}
+                    value={[Math.min(inputs[cat.key as keyof typeof inputs] as number, cat.max)]}
                     onValueChange={([val]) => setInputs(prev => ({ ...prev, [cat.key]: val }))}
                     max={cat.max}
                     step={500}
@@ -196,6 +207,11 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
                       "--slider-track": cat.color 
                     }}
                   />
+                  {(inputs[cat.key as keyof typeof inputs] as number) > cat.max && (
+                    <p className="text-xs mt-1 text-right" style={{ color: cat.color }}>
+                      Above ${cat.max.toLocaleString()} range
+                    </p>
+                  )}
                 </motion.div>
               ))}
             </div>

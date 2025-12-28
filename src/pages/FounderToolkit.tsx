@@ -1,5 +1,6 @@
 import { forwardRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "react-router-dom";
 import { 
   Wrench, 
   BookOpen, 
@@ -12,7 +13,8 @@ import {
   Sparkles,
   Users,
   DollarSign,
-  Crown
+  Crown,
+  Link2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -21,6 +23,7 @@ import { BurnRateCalculator } from "@/components/toolkit/BurnRateCalculator";
 import { RunwaySimulator } from "@/components/toolkit/RunwaySimulator";
 import { GrowthTracker } from "@/components/toolkit/GrowthTracker";
 import { HiringPlanner } from "@/components/toolkit/HiringPlanner";
+import { HiringProvider, useHiring } from "@/contexts/HiringContext";
 
 interface AnalysisData {
   monthly_burn?: number;
@@ -59,12 +62,84 @@ const resources = [
   },
 ];
 
-const FounderToolkit = forwardRef<HTMLDivElement>((_, ref) => {
+// Simulation snapshot data for rehydration
+interface SimulationSnapshot {
+  simParams?: {
+    cashOnHand: number;
+    monthlyExpenses: number;
+    monthlyRevenue: number;
+    expenseGrowth: number;
+    revenueGrowth: number;
+  };
+  scenarioB?: {
+    cashOnHand: number;
+    monthlyExpenses: number;
+    monthlyRevenue: number;
+    expenseGrowth: number;
+    revenueGrowth: number;
+  };
+  hiringPlan?: {
+    id: string;
+    title: string;
+    salary: number;
+    count: number;
+    start_month: number;
+  }[];
+  scenarioMode?: boolean;
+  date?: string;
+}
+
+// Inner component that uses the HiringContext
+const FounderToolkitContent = forwardRef<HTMLDivElement>((_, ref) => {
+  const [searchParams] = useSearchParams();
   const [burnCalcOpen, setBurnCalcOpen] = useState(false);
   const [runwaySimOpen, setRunwaySimOpen] = useState(false);
   const [growthTrackerOpen, setGrowthTrackerOpen] = useState(false);
   const [hiringPlannerOpen, setHiringPlannerOpen] = useState(false);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  const [simulationSnapshot, setSimulationSnapshot] = useState<SimulationSnapshot | null>(null);
+  
+  // Get hiring data from shared context
+  const { totalNewHires, hiringImpact, updateRole } = useHiring();
+  
+  // ═══════════════════════════════════════════════════════════════════════════
+  // REHYDRATION HOOK - Check for simulation snapshot and auto-open simulator
+  // ═══════════════════════════════════════════════════════════════════════════
+  useEffect(() => {
+    const isSimulationRedirect = searchParams.get("simulation") === "true";
+    
+    if (isSimulationRedirect) {
+      const storedData = sessionStorage.getItem("runwayDNA_simulation");
+      if (storedData) {
+        try {
+          const snapshot: SimulationSnapshot = JSON.parse(storedData);
+          setSimulationSnapshot(snapshot);
+          
+          // Rehydrate hiring plan into context
+          if (snapshot.hiringPlan && snapshot.hiringPlan.length > 0) {
+            snapshot.hiringPlan.forEach(hire => {
+              if (hire.count > 0) {
+                // Update role count and start month in context
+                updateRole(hire.id, { 
+                  count: hire.count, 
+                  startMonth: hire.start_month,
+                  salary: hire.salary,
+                });
+              }
+            });
+          }
+          
+          // Auto-open the simulator
+          setRunwaySimOpen(true);
+          
+          // Clear the session storage after loading
+          sessionStorage.removeItem("runwayDNA_simulation");
+        } catch (e) {
+          console.error("Failed to parse simulation snapshot:", e);
+        }
+      }
+    }
+  }, [searchParams, updateRole]);
 
   // Try to fetch latest analysis data from backend
   useEffect(() => {
@@ -100,14 +175,19 @@ const FounderToolkit = forwardRef<HTMLDivElement>((_, ref) => {
       color: "hsl(226,100%,59%)",
       bgColor: "hsl(226,100%,59%)/0.15",
       onClick: () => setBurnCalcOpen(true),
+      linked: false,
     },
     {
       icon: PieChart,
       title: "Runway Simulator",
-      description: "Visualize cash runway projections",
+      description: totalNewHires > 0 
+        ? `Connected: +${totalNewHires} hire${totalNewHires > 1 ? 's' : ''} planned`
+        : "Visualize cash runway projections",
       color: "hsl(152,100%,50%)",
       bgColor: "hsl(152,100%,50%)/0.15",
       onClick: () => setRunwaySimOpen(true),
+      linked: totalNewHires > 0,
+      badge: totalNewHires > 0 ? `+${totalNewHires}` : null,
     },
     {
       icon: TrendingUp,
@@ -116,14 +196,19 @@ const FounderToolkit = forwardRef<HTMLDivElement>((_, ref) => {
       color: "hsl(270,60%,55%)",
       bgColor: "hsl(270,60%,55%)/0.15",
       onClick: () => setGrowthTrackerOpen(true),
+      linked: false,
     },
     {
       icon: Users,
       title: "Hiring Planner",
-      description: "Plan team growth vs burn",
+      description: totalNewHires > 0 
+        ? `${totalNewHires} hire${totalNewHires > 1 ? 's' : ''} → Simulator`
+        : "Plan team growth vs burn",
       color: "hsl(45,90%,55%)",
       bgColor: "hsl(45,90%,55%)/0.15",
       onClick: () => setHiringPlannerOpen(true),
+      linked: totalNewHires > 0,
+      badge: totalNewHires > 0 ? `${totalNewHires}` : null,
     },
   ];
 
@@ -168,20 +253,42 @@ const FounderToolkit = forwardRef<HTMLDivElement>((_, ref) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * index + 0.2 }}
               onClick={tool.onClick}
-              className="glass-panel p-6 hover:border-[hsl(226,100%,59%)/0.3] transition-all cursor-pointer group"
+              className={`glass-panel p-6 hover:border-[hsl(226,100%,59%)/0.3] transition-all cursor-pointer group relative overflow-hidden ${
+                tool.linked ? "border-[hsl(152,100%,50%)/0.3]" : ""
+              }`}
             >
-              <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                style={{ background: tool.bgColor }}
-              >
-                <tool.icon className="w-6 h-6" style={{ color: tool.color }} />
+              {/* Linked indicator glow */}
+              {tool.linked && (
+                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(152,100%,50%)/0.05] to-transparent pointer-events-none" />
+              )}
+              
+              <div className="relative">
+                <div className="flex items-start justify-between mb-4">
+                  <div 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center"
+                    style={{ background: tool.bgColor }}
+                  >
+                    <tool.icon className="w-6 h-6" style={{ color: tool.color }} />
+                  </div>
+                  
+                  {/* Linked badge */}
+                  {tool.linked && (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-[hsl(152,100%,50%)/0.15] border border-[hsl(152,100%,50%)/0.3]">
+                      <Link2 className="w-3 h-3 text-[hsl(152,100%,50%)]" />
+                      <span className="text-[10px] font-semibold text-[hsl(152,100%,50%)]">
+                        {tool.badge}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                
+                <h3 className="text-white font-semibold mb-2 group-hover:text-[hsl(226,100%,68%)] transition-colors">
+                  {tool.title}
+                </h3>
+                <p className={`text-sm ${tool.linked ? "text-[hsl(152,100%,60%)]" : "text-[hsl(220,10%,50%)]"}`}>
+                  {tool.description}
+                </p>
               </div>
-              <h3 className="text-white font-semibold mb-2 group-hover:text-[hsl(226,100%,68%)] transition-colors">
-                {tool.title}
-              </h3>
-              <p className="text-[hsl(220,10%,50%)] text-sm">
-                {tool.description}
-              </p>
             </motion.div>
           ))}
         </div>
@@ -278,8 +385,17 @@ const FounderToolkit = forwardRef<HTMLDivElement>((_, ref) => {
         )}
         {runwaySimOpen && (
           <RunwaySimulator 
-            initialData={analysisData || undefined} 
-            onClose={() => setRunwaySimOpen(false)} 
+            initialData={simulationSnapshot?.simParams ? {
+              monthly_burn: simulationSnapshot.simParams.monthlyExpenses,
+              cash_on_hand: simulationSnapshot.simParams.cashOnHand,
+              monthly_revenue: simulationSnapshot.simParams.monthlyRevenue,
+            } : analysisData || undefined}
+            initialScenarioB={simulationSnapshot?.scenarioB}
+            initialScenarioMode={simulationSnapshot?.scenarioMode}
+            onClose={() => {
+              setRunwaySimOpen(false);
+              setSimulationSnapshot(null);
+            }} 
           />
         )}
         {growthTrackerOpen && (
@@ -295,6 +411,17 @@ const FounderToolkit = forwardRef<HTMLDivElement>((_, ref) => {
         )}
       </AnimatePresence>
     </div>
+  );
+});
+
+FounderToolkitContent.displayName = "FounderToolkitContent";
+
+// Wrapper component that provides the HiringContext
+const FounderToolkit = forwardRef<HTMLDivElement>((props, ref) => {
+  return (
+    <HiringProvider>
+      <FounderToolkitContent ref={ref} {...props} />
+    </HiringProvider>
   );
 });
 

@@ -1,7 +1,6 @@
 import { forwardRef, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { SettingsPanel, SettingsPanelType } from "@/components/settings/SettingsPanel";
-import { motion } from "framer-motion";
 import { 
   Settings, 
   User, 
@@ -173,8 +172,8 @@ const ScaleHub = forwardRef<HTMLDivElement>((_, ref) => {
             </div>
             <Button
               onClick={() => toast({
-                title: "Upgrade to Pro",
-                description: "Pro features coming soon! We'll notify you when available.",
+                title: "You're Already Pro!",
+                description: "All premium features are unlocked and ready to use.",
               })}
               className="bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] hover:opacity-90"
             >

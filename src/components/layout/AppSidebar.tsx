@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dna, FlaskConical, Archive, Wrench, Settings, Rocket, Zap, Crown, CheckCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -589,7 +589,19 @@ const RunwayDNA = () => {
 
 const AppSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useApp();
+
+  const handleHomeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Always navigate home, even if already on home page
+    if (location.pathname === "/") {
+      // Force reload by navigating away and back, or just scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      navigate("/");
+    }
+  };
 
   return (
     <motion.aside
@@ -600,8 +612,8 @@ const AppSidebar = () => {
     >
       {/* Logo - Clickable Home Button */}
       <div className="p-6 border-b border-white/5">
-        <NavLink 
-          to="/"
+        <div 
+          onClick={handleHomeClick}
           className="flex items-center gap-3 cursor-pointer group transition-all hover:opacity-80 active:scale-[0.98]"
         >
           <motion.div 
@@ -615,7 +627,7 @@ const AppSidebar = () => {
             <h1 className="text-lg font-bold text-gradient-cobalt group-hover:text-[hsl(226,100%,68%)] transition-colors">Runway DNA</h1>
             <p className="text-xs text-[hsl(220,10%,50%)] group-hover:text-[hsl(220,10%,60%)] transition-colors">Founder Intelligence</p>
           </div>
-        </NavLink>
+        </div>
       </div>
 
       {/* Navigation */}
@@ -767,7 +779,7 @@ const AppSidebar = () => {
                 <button 
                   onClick={() => toast({
                     title: "Founder Pro",
-                    description: "Pro features coming soon! We'll notify you when available.",
+                    description: "You're already enjoying Pro features! All premium tools are unlocked.",
                   })}
                   className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] text-white text-xs font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.3] transition-all"
                 >

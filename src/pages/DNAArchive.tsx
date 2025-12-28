@@ -56,6 +56,35 @@ interface Analysis {
   cashOnHand?: number;
   profitMargin?: number;
   insight?: string;
+  companyName?: string;  // Added for Deep Search
+  // Simulation-specific fields
+  entryType?: "ANALYSIS" | "SIMULATION";
+  scenarioA?: {
+    cash_on_hand: number;
+    monthly_expenses: number;
+    monthly_revenue: number;
+    expense_growth: number;
+    revenue_growth: number;
+    runway_months: number;
+  };
+  scenarioB?: {
+    cash_on_hand: number;
+    monthly_expenses: number;
+    monthly_revenue: number;
+    expense_growth: number;
+    revenue_growth: number;
+    runway_months: number;
+  };
+  hiringPlan?: {
+    id: string;
+    title: string;
+    salary: number;
+    count: number;
+    start_month: number;
+  }[];
+  runwayDelta?: number;
+  totalNewHires?: number;
+  hiringBurnImpact?: number;
 }
 
 const mockAnalyses: Analysis[] = [
@@ -69,7 +98,8 @@ const mockAnalyses: Analysis[] = [
     monthlyBurn: 42500,
     cashOnHand: 782300,
     profitMargin: 24.7,
-    insight: "Elite burn efficiency detected. You're in the top 12% of funded startups. Classification: Blitzscaler."
+    insight: "Elite burn efficiency detected. You're in the top 12% of funded startups. Classification: Blitzscaler.",
+    companyName: "My Startup"
   },
   { 
     id: 2, 
@@ -81,7 +111,8 @@ const mockAnalyses: Analysis[] = [
     monthlyBurn: 45000,
     cashOnHand: 733500,
     profitMargin: 22.1,
-    insight: "Strong revenue growth trajectory. Consider accelerating customer acquisition."
+    insight: "Strong revenue growth trajectory. Consider accelerating customer acquisition.",
+    companyName: "My Startup"
   },
   { 
     id: 3, 
@@ -93,7 +124,8 @@ const mockAnalyses: Analysis[] = [
     monthlyBurn: 48200,
     cashOnHand: 698900,
     profitMargin: 18.5,
-    insight: "Slight dip in efficiency. Monitor expense growth closely this quarter."
+    insight: "Slight dip in efficiency. Monitor expense growth closely this quarter.",
+    companyName: "My Startup"
   },
   { 
     id: 4, 
@@ -105,7 +137,8 @@ const mockAnalyses: Analysis[] = [
     monthlyBurn: 46800,
     cashOnHand: 702000,
     profitMargin: 19.2,
-    insight: "Healthy position with room for growth investment."
+    insight: "Healthy position with room for growth investment.",
+    companyName: "My Startup"
   },
   { 
     id: 5, 
@@ -117,7 +150,8 @@ const mockAnalyses: Analysis[] = [
     monthlyBurn: 47500,
     cashOnHand: 674500,
     profitMargin: 17.8,
-    insight: "Post-funding stabilization complete. Ready for scaling phase."
+    insight: "Post-funding stabilization complete. Ready for scaling phase.",
+    companyName: "My Startup"
   },
 ];
 
@@ -167,16 +201,63 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
   // Get unique months for filter
   const uniqueMonths = useMemo(() => getUniqueMonths(analyses), [analyses]);
 
-  // Fetch from API on mount
+  // ═══════════════════════════════════════════════════════════════════════════
+  // REHYDRATION HOOK - Load simulation back into Toolkit
+  // ═══════════════════════════════════════════════════════════════════════════
+  const rehydrateSimulation = (analysis: Analysis) => {
+    if (analysis.entryType !== "SIMULATION") {
+      // For regular analyses, use the existing rehydration
+      rehydrateDNALab(analysis);
+      return;
+    }
+    
+    // Store simulation data for Toolkit to pick up
+    const simulationData = {
+      simParams: analysis.scenarioA ? {
+        cashOnHand: analysis.scenarioA.cash_on_hand,
+        monthlyExpenses: analysis.scenarioA.monthly_expenses,
+        monthlyRevenue: analysis.scenarioA.monthly_revenue,
+        expenseGrowth: analysis.scenarioA.expense_growth,
+        revenueGrowth: analysis.scenarioA.revenue_growth,
+      } : null,
+      scenarioB: analysis.scenarioB ? {
+        cashOnHand: analysis.scenarioB.cash_on_hand,
+        monthlyExpenses: analysis.scenarioB.monthly_expenses,
+        monthlyRevenue: analysis.scenarioB.monthly_revenue,
+        expenseGrowth: analysis.scenarioB.expense_growth,
+        revenueGrowth: analysis.scenarioB.revenue_growth,
+      } : null,
+      hiringPlan: analysis.hiringPlan || [],
+      scenarioMode: !!analysis.scenarioB,
+      date: analysis.date,
+    };
+    
+    sessionStorage.setItem("runwayDNA_simulation", JSON.stringify(simulationData));
+    
+    toast({
+      title: "Simulation Snapshot Loading",
+      description: `Restoring strategic scenario from ${analysis.date}...`,
+    });
+    
+    // Navigate to Toolkit
+    navigate("/toolkit?simulation=true");
+  };
+
+  // Fetch from API on mount + merge local simulations
   useEffect(() => {
     const fetchArchive = async () => {
       setIsLoading(true);
       try {
+        // Also load locally-stored simulations
+        const localSimulations = JSON.parse(localStorage.getItem("runwayDNA_simulations") || "[]");
+        
         const response = await fetch(apiUrl("/api/archive"));
         if (response.ok) {
           const data = await response.json();
-          if (Array.isArray(data) && data.length > 0) {
-            const mapped = data.map((item: any, index: number) => {
+          const allData = [...localSimulations, ...data]; // Merge local + API
+          
+          if (allData.length > 0) {
+            const mapped = allData.map((item: any, index: number) => {
               // Parse date properly
               const dateObj = new Date(item.date || item.created_at);
               const formattedDate = dateObj.toLocaleDateString("en-US", {
@@ -204,6 +285,15 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                 cashOnHand: item.cashOnHand ? Number(item.cashOnHand) : undefined,
                 profitMargin: item.profitMargin ? Number(item.profitMargin) : undefined,
                 insight: item.insight || undefined,
+                companyName: item.companyName || item.company_name || "My Startup",
+                // Simulation-specific fields
+                entryType: item.entry_type || "ANALYSIS",
+                scenarioA: item.scenario_a,
+                scenarioB: item.scenario_b,
+                hiringPlan: item.hiring_plan,
+                runwayDelta: item.runway_delta,
+                totalNewHires: item.total_new_hires,
+                hiringBurnImpact: item.hiring_burn_impact,
               } satisfies Analysis;
             });
             setAnalyses(mapped);
@@ -211,7 +301,35 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
         }
       } catch (error) {
         console.log("Archive fetch error:", error);
-        // Use mock data if API unavailable
+        // Load local simulations even if API unavailable
+        const localSimulations = JSON.parse(localStorage.getItem("runwayDNA_simulations") || "[]");
+        if (localSimulations.length > 0) {
+          const mapped = localSimulations.map((item: any, index: number) => {
+            const dateObj = new Date(item.date || item.created_at);
+            const formattedDate = dateObj.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
+            const runwayValue = parseFloat(item.runway) || 0;
+            return {
+              id: item.id || `sim-${index}`,
+              date: formattedDate,
+              runway: runwayValue,
+              grade: item.grade || "B",
+              change: "+0.0",
+              trend: "up" as const,
+              insight: item.insight,
+              entryType: item.entry_type || "SIMULATION",
+              scenarioA: item.scenario_a,
+              scenarioB: item.scenario_b,
+              hiringPlan: item.hiring_plan,
+              runwayDelta: item.runway_delta,
+              totalNewHires: item.total_new_hires,
+            } satisfies Analysis;
+          });
+          setAnalyses([...mapped, ...mockAnalyses]);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -256,40 +374,70 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
     setSortField(field);
   };
 
-  // Enhanced filtering with Deep Search - searches across date, grade, insight, and runway
-  // MUST be defined before sortedAnalyses
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DEEP SEARCH & FILTERING ENGINE
+  // Real-time, case-insensitive search across company_name, grade, insight
+  // Works in tandem with Grade and Month dropdown filters
+  // ═══════════════════════════════════════════════════════════════════════════
   const filteredAnalyses = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     
     return analyses.filter(a => {
-      // Text search across multiple fields (case-insensitive)
+      // ═══ TEXT SEARCH (case-insensitive) ═══
+      // Searches across: company_name, grade, insight, date, runway, burn, cash
       let matchesSearch = true;
       if (query) {
         const searchableText = [
-          a.date,
+          // Primary search fields
+          a.companyName || "",
           a.grade,
           a.insight || "",
+          // Secondary search fields
+          a.date,
+          `${a.runway}`,
           `${a.runway} months`,
           `runway ${a.runway}`,
-          a.monthlyBurn ? `burn $${a.monthlyBurn}` : "",
-          a.cashOnHand ? `cash $${a.cashOnHand}` : "",
+          `grade ${a.grade}`,
+          // Financial data
+          a.monthlyBurn ? `burn $${a.monthlyBurn.toLocaleString()}` : "",
+          a.monthlyBurn ? `${a.monthlyBurn}` : "",
+          a.cashOnHand ? `cash $${a.cashOnHand.toLocaleString()}` : "",
+          a.cashOnHand ? `${a.cashOnHand}` : "",
+          a.profitMargin ? `margin ${a.profitMargin}%` : "",
+          // Keywords from insight for fuzzy matching
+          a.insight?.includes("Elite") ? "top performer blitzscaler" : "",
+          a.insight?.includes("Strong") ? "growth trajectory scaling" : "",
+          a.insight?.includes("Slight") ? "attention monitor caution" : "",
+          a.insight?.includes("Healthy") ? "good position stable" : "",
         ].join(" ").toLowerCase();
         
-        matchesSearch = searchableText.includes(query);
+        // Split query into words for multi-term search
+        const queryTerms = query.split(/\s+/);
+        matchesSearch = queryTerms.every(term => searchableText.includes(term));
       }
       
-      // Grade filter
+      // ═══ GRADE FILTER (A-F) ═══
+      // Works in tandem with search - both must match
       const matchesGrade = gradeFilter === "All" || 
-        a.grade.toUpperCase() === gradeFilter;
+        a.grade.toUpperCase() === gradeFilter.toUpperCase();
       
-      // Month filter
+      // ═══ MONTH FILTER ═══
+      // Filters by specific month/year combination
       let matchesMonth = true;
       if (monthFilter !== "All") {
-        const analysisDate = new Date(a.date);
-        const analysisMonthYear = analysisDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-        matchesMonth = analysisMonthYear === monthFilter;
+        try {
+          const analysisDate = new Date(a.date);
+          const analysisMonthYear = analysisDate.toLocaleDateString("en-US", { 
+            month: "long", 
+            year: "numeric" 
+          });
+          matchesMonth = analysisMonthYear === monthFilter;
+        } catch {
+          matchesMonth = false;
+        }
       }
       
+      // ALL filters must pass (AND logic)
       return matchesSearch && matchesGrade && matchesMonth;
     });
   }, [analyses, searchQuery, gradeFilter, monthFilter]);
@@ -522,11 +670,19 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(220,10%,40%)]" />
             <Input
-              placeholder="Search analyses..."
+              placeholder="Search by company, grade, insight, runway..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-[hsl(270,15%,10%)/0.6] border-[hsl(226,100%,59%)/0.1] text-white placeholder:text-[hsl(220,10%,40%)]"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-white/10 transition-colors"
+              >
+                <X className="w-3 h-3 text-[hsl(220,10%,50%)]" />
+              </button>
+            )}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -635,108 +791,163 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
           </span>
         </div>
         
-        {/* Empty State */}
+        {/* ═══════════════════════════════════════════════════════════════════
+            HIGH-STATUS EMPTY STATE
+            Appears when filters return zero results
+        ═══════════════════════════════════════════════════════════════════ */}
         {sortedAnalyses.length === 0 ? (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-12 flex flex-col items-center justify-center"
+            className="py-16 px-8 flex flex-col items-center justify-center relative overflow-hidden"
           >
-            {/* DNA Helix Illustration */}
-            <div className="relative mb-8">
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-[hsl(270,60%,55%)/0.2] blur-[60px] rounded-full" />
+            {/* Background Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[hsl(270,60%,55%)/0.05] via-transparent to-[hsl(226,100%,59%)/0.05]" />
+            
+            {/* DNA Helix Illustration - High Status */}
+            <div className="relative mb-10">
+              {/* Multi-layer glow effect */}
+              <div className="absolute inset-0 bg-[hsl(270,60%,55%)/0.3] blur-[80px] rounded-full scale-150" />
+              <div className="absolute inset-0 bg-[hsl(226,100%,59%)/0.2] blur-[60px] rounded-full scale-125" />
               
-              {/* DNA Icon with animation */}
+              {/* Main DNA Container */}
               <motion.div
-                className="relative w-32 h-32 rounded-3xl bg-gradient-to-br from-[hsl(270,60%,55%)/0.2] via-[hsl(226,100%,59%)/0.15] to-[hsl(180,80%,45%)/0.2] flex items-center justify-center border border-white/10"
+                className="relative w-40 h-40 rounded-[2rem] bg-gradient-to-br from-[hsl(270,60%,55%)/0.15] via-[hsl(240,15%,12%)] to-[hsl(226,100%,59%)/0.15] flex items-center justify-center border border-white/10 shadow-2xl shadow-[hsl(270,60%,55%)/0.2]"
                 animate={{
-                  rotateY: [0, 10, 0, -10, 0],
+                  rotateY: [0, 15, 0, -15, 0],
+                  rotateX: [0, 5, 0, -5, 0],
                 }}
                 transition={{
-                  duration: 4,
+                  duration: 6,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
               >
+                {/* Inner glow */}
+                <div className="absolute inset-4 rounded-2xl bg-gradient-to-br from-[hsl(270,60%,55%)/0.1] to-transparent" />
+                
+                {/* Rotating DNA */}
                 <motion.div
                   animate={{
                     rotate: [0, 360],
                   }}
                   transition={{
-                    duration: 20,
+                    duration: 25,
                     repeat: Infinity,
                     ease: "linear",
                   }}
                 >
-                  <Dna className="w-16 h-16 text-[hsl(270,60%,65%)]" />
+                  <Dna className="w-20 h-20 text-[hsl(270,60%,60%)]" />
                 </motion.div>
                 
-                {/* Orbiting particles */}
-                {[0, 1, 2].map((i) => (
+                {/* Orbiting particles with trails */}
+                {[0, 1, 2, 3].map((i) => (
                   <motion.div
                     key={i}
-                    className="absolute w-2 h-2 rounded-full"
+                    className="absolute w-2.5 h-2.5 rounded-full"
                     style={{
-                      background: i === 0 
-                        ? "hsl(226, 100%, 59%)" 
-                        : i === 1 
-                        ? "hsl(152, 100%, 50%)" 
-                        : "hsl(270, 60%, 55%)",
-                      boxShadow: `0 0 10px ${
-                        i === 0 
-                          ? "hsl(226, 100%, 59%)" 
-                          : i === 1 
-                          ? "hsl(152, 100%, 50%)" 
-                          : "hsl(270, 60%, 55%)"
-                      }`,
+                      background: [
+                        "hsl(226, 100%, 59%)",
+                        "hsl(152, 100%, 50%)",
+                        "hsl(270, 60%, 55%)",
+                        "hsl(45, 90%, 55%)",
+                      ][i],
+                      boxShadow: `0 0 15px 3px ${[
+                        "hsl(226, 100%, 59%)",
+                        "hsl(152, 100%, 50%)",
+                        "hsl(270, 60%, 55%)",
+                        "hsl(45, 90%, 55%)",
+                      ][i]}`,
                     }}
                     animate={{
-                      x: [0, 40, 0, -40, 0],
-                      y: [40, 0, -40, 0, 40],
-                      opacity: [0.5, 1, 0.5, 1, 0.5],
+                      x: [0, 50, 0, -50, 0],
+                      y: [50, 0, -50, 0, 50],
+                      opacity: [0.4, 1, 0.4, 1, 0.4],
+                      scale: [0.8, 1.2, 0.8, 1.2, 0.8],
                     }}
                     transition={{
-                      duration: 3,
+                      duration: 4,
                       delay: i * 1,
                       repeat: Infinity,
                       ease: "easeInOut",
                     }}
                   />
                 ))}
+                
+                {/* Scanning line effect */}
+                <motion.div
+                  className="absolute inset-0 rounded-[2rem] overflow-hidden"
+                  initial={false}
+                >
+                  <motion.div
+                    className="absolute w-full h-1 bg-gradient-to-r from-transparent via-[hsl(270,60%,55%)/0.5] to-transparent"
+                    animate={{
+                      top: ["-10%", "110%"],
+                    }}
+                    transition={{
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                </motion.div>
               </motion.div>
             </div>
 
+            {/* Title with gradient */}
             <motion.h3 
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-2xl font-bold text-white mb-2"
+              className="text-3xl font-bold mb-3 text-center"
             >
-              No DNA Matches Found
+              <span className="bg-gradient-to-r from-[hsl(270,60%,65%)] via-white to-[hsl(226,100%,68%)] bg-clip-text text-transparent">
+                No DNA Matches Found
+              </span>
             </motion.h3>
+            
+            {/* Contextual message */}
             <motion.p 
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-[hsl(220,10%,55%)] text-center max-w-md mb-6"
+              className="text-[hsl(220,10%,55%)] text-center max-w-lg mb-2"
             >
-              {searchQuery 
-                ? `No analyses match "${searchQuery}". Try adjusting your search or filters.`
-                : "No analyses match your current filters. Try broadening your search criteria."
-              }
+              {searchQuery && gradeFilter !== "All" ? (
+                <>Your search for "<span className="text-white font-medium">{searchQuery}</span>" with Grade <span className="text-[hsl(226,100%,68%)] font-medium">{gradeFilter}</span> returned no results.</>
+              ) : searchQuery ? (
+                <>No analyses match "<span className="text-white font-medium">{searchQuery}</span>"</>
+              ) : gradeFilter !== "All" && monthFilter !== "All" ? (
+                <>No Grade <span className="text-[hsl(226,100%,68%)] font-medium">{gradeFilter}</span> analyses found in <span className="text-[hsl(270,60%,65%)] font-medium">{monthFilter}</span></>
+              ) : gradeFilter !== "All" ? (
+                <>No analyses with Grade <span className="text-[hsl(226,100%,68%)] font-medium">{gradeFilter}</span> found</>
+              ) : monthFilter !== "All" ? (
+                <>No analyses found for <span className="text-[hsl(270,60%,65%)] font-medium">{monthFilter}</span></>
+              ) : (
+                <>No analyses match your current filters</>
+              )}
             </motion.p>
             
-            <motion.div
+            <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="text-[hsl(220,10%,45%)] text-sm text-center max-w-md mb-8"
+            >
+              Try adjusting your search terms, changing the grade filter, or selecting a different month.
+            </motion.p>
+            
+            {/* Action buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="flex gap-3"
+              className="flex gap-4"
             >
               {hasActiveFilters && (
                 <Button
                   onClick={clearFilters}
-                  className="bg-[hsl(270,60%,55%)] hover:bg-[hsl(270,60%,60%)] text-white"
+                  className="bg-gradient-to-r from-[hsl(270,60%,55%)] to-[hsl(270,60%,50%)] hover:from-[hsl(270,60%,60%)] hover:to-[hsl(270,60%,55%)] text-white shadow-lg shadow-[hsl(270,60%,55%)/0.3]"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Clear All Filters
@@ -745,12 +956,39 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
               <Button
                 onClick={() => navigate("/")}
                 variant="outline"
-                className="border-[hsl(226,100%,59%)/0.3] hover:border-[hsl(226,100%,59%)/0.6] text-[hsl(226,100%,68%)]"
+                className="border-[hsl(226,100%,59%)/0.3] hover:border-[hsl(226,100%,59%)] text-[hsl(226,100%,68%)] hover:bg-[hsl(226,100%,59%)/0.1]"
               >
                 <FlaskConical className="w-4 h-4 mr-2" />
-                New Analysis
+                Run New Analysis
               </Button>
             </motion.div>
+            
+            {/* Filter summary chips */}
+            {hasActiveFilters && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mt-6 flex items-center gap-2"
+              >
+                <span className="text-xs text-[hsl(220,10%,45%)]">Active filters:</span>
+                {searchQuery && (
+                  <span className="px-2 py-1 rounded-lg bg-white/5 text-xs text-white border border-white/10">
+                    "{searchQuery}"
+                  </span>
+                )}
+                {gradeFilter !== "All" && (
+                  <span className="px-2 py-1 rounded-lg bg-[hsl(226,100%,59%)/0.15] text-xs text-[hsl(226,100%,68%)] border border-[hsl(226,100%,59%)/0.3]">
+                    Grade {gradeFilter}
+                  </span>
+                )}
+                {monthFilter !== "All" && (
+                  <span className="px-2 py-1 rounded-lg bg-[hsl(270,60%,55%)/0.15] text-xs text-[hsl(270,60%,65%)] border border-[hsl(270,60%,55%)/0.3]">
+                    {monthFilter}
+                  </span>
+                )}
+              </motion.div>
+            )}
           </motion.div>
         ) : (
           /* Animated List with staggerChildren */
@@ -812,10 +1050,27 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                         {analysis.grade}
                       </motion.div>
                       <div>
-                        <p className="text-white font-medium group-hover:text-[hsl(226,100%,68%)] transition-colors">{analysis.date}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-white font-medium group-hover:text-[hsl(226,100%,68%)] transition-colors">{analysis.date}</p>
+                          {/* SIMULATION Badge */}
+                          {analysis.entryType === "SIMULATION" && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[hsl(270,60%,55%)/0.2] border border-[hsl(270,60%,55%)/0.3]">
+                              <FlaskConical className="w-3 h-3 text-[hsl(270,60%,60%)]" />
+                              <span className="text-[10px] font-semibold text-[hsl(270,60%,65%)] uppercase">Simulation</span>
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[hsl(220,10%,50%)] text-sm">
                           {analysis.runway.toFixed(1)} months runway
-                          {analysis.insight && (
+                          {analysis.entryType === "SIMULATION" && analysis.totalNewHires && analysis.totalNewHires > 0 && (
+                            <span className="text-[hsl(45,90%,55%)] ml-2">• {analysis.totalNewHires} planned hire{analysis.totalNewHires > 1 ? 's' : ''}</span>
+                          )}
+                          {analysis.entryType === "SIMULATION" && analysis.runwayDelta !== undefined && (
+                            <span className={`ml-2 ${analysis.runwayDelta >= 0 ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
+                              • Δ {analysis.runwayDelta >= 0 ? "+" : ""}{analysis.runwayDelta.toFixed(1)}mo
+                            </span>
+                          )}
+                          {analysis.entryType !== "SIMULATION" && analysis.insight && (
                             <span className="text-[hsl(270,60%,60%)] ml-2">• Has insight</span>
                           )}
                         </p>
@@ -1412,19 +1667,33 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
               transition={{ delay: 0.6 }}
               className="px-8 pb-8 flex flex-col sm:flex-row justify-center gap-4"
             >
-              <Button 
-                onClick={() => rehydrateDNALab(selectedAnalysis)}
-                className="px-8 py-3 rounded-xl bg-gradient-to-r from-[hsl(152,100%,50%)] to-[hsl(180,80%,45%)] hover:from-[hsl(152,100%,55%)] hover:to-[hsl(180,80%,50%)] text-black font-semibold shadow-lg shadow-[hsl(152,100%,50%)/0.3] transition-all"
-              >
-                <FlaskConical className="w-4 h-4 mr-2" />
-                View in DNA Lab
-              </Button>
+              {/* Conditional button based on entry type */}
+              {selectedAnalysis.entryType === "SIMULATION" ? (
+                <Button 
+                  onClick={() => {
+                    setDetailOpen(false);
+                    rehydrateSimulation(selectedAnalysis);
+                  }}
+                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-[hsl(270,60%,55%)] to-[hsl(226,100%,59%)] hover:from-[hsl(270,60%,60%)] hover:to-[hsl(226,100%,65%)] text-white font-semibold shadow-lg shadow-[hsl(270,60%,55%)/0.3] transition-all"
+                >
+                  <FlaskConical className="w-4 h-4 mr-2" />
+                  Load in Simulator
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => rehydrateDNALab(selectedAnalysis)}
+                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-[hsl(152,100%,50%)] to-[hsl(180,80%,45%)] hover:from-[hsl(152,100%,55%)] hover:to-[hsl(180,80%,50%)] text-black font-semibold shadow-lg shadow-[hsl(152,100%,50%)/0.3] transition-all"
+                >
+                  <FlaskConical className="w-4 h-4 mr-2" />
+                  View in DNA Lab
+                </Button>
+              )}
               <Button 
                 onClick={() => setDetailOpen(false)}
                 variant="outline"
                 className="px-8 py-3 rounded-xl border-white/20 hover:border-white/40 text-white font-semibold transition-all"
               >
-                Close Analysis
+                Close
               </Button>
             </motion.div>
           </motion.div>
