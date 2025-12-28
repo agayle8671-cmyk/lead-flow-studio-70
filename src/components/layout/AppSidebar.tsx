@@ -1,7 +1,8 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Dna, FlaskConical, Archive, Wrench, Settings, Rocket, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const navigation = [
   {
@@ -34,9 +35,103 @@ const navigation = [
 const DNAHelix = () => {
   const numBasePairs = 16;
   const basePairs = Array.from({ length: numBasePairs }, (_, i) => i);
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div className="relative w-full h-64 overflow-hidden">
+    <div 
+      className="relative w-full h-64 overflow-hidden cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Hover Tooltip */}
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 5, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-2 left-1/2 -translate-x-1/2 z-20"
+          >
+            <div 
+              className="px-4 py-3 rounded-xl backdrop-blur-xl border border-white/10"
+              style={{
+                background: "linear-gradient(135deg, hsl(226, 50%, 15%, 0.95) 0%, hsl(260, 40%, 12%, 0.95) 100%)",
+                boxShadow: "0 8px 32px hsl(226, 100%, 30%, 0.3), 0 0 0 1px hsl(226, 100%, 50%, 0.1), inset 0 1px 0 hsl(226, 100%, 70%, 0.1)",
+              }}
+            >
+              {/* Scanning indicator */}
+              <div className="flex items-center gap-2 mb-2">
+                <motion.div
+                  className="w-2 h-2 rounded-full bg-[hsl(170,80%,50%)]"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.7, 1, 0.7],
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  style={{
+                    boxShadow: "0 0 8px hsl(170, 80%, 50%)",
+                  }}
+                />
+                <span className="text-xs font-medium text-[hsl(170,80%,60%)]">ACTIVE</span>
+              </div>
+              
+              {/* Main text */}
+              <p className="text-[11px] font-medium text-white/90 mb-2 whitespace-nowrap">
+                Analyzing financial patterns...
+              </p>
+              
+              {/* Progress bar */}
+              <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{
+                    background: "linear-gradient(90deg, hsl(226, 100%, 60%), hsl(170, 80%, 50%), hsl(260, 80%, 60%))",
+                    backgroundSize: "200% 100%",
+                  }}
+                  animate={{
+                    width: ["0%", "100%"],
+                    backgroundPosition: ["0% 0%", "100% 0%"],
+                  }}
+                  transition={{
+                    width: {
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    },
+                    backgroundPosition: {
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "linear",
+                    },
+                  }}
+                />
+              </div>
+              
+              {/* Data points */}
+              <div className="flex justify-between mt-2 text-[9px] text-white/50">
+                <span>Runway</span>
+                <span>Burn Rate</span>
+                <span>Growth</span>
+              </div>
+            </div>
+            
+            {/* Tooltip arrow */}
+            <div 
+              className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 rotate-45"
+              style={{
+                background: "linear-gradient(135deg, transparent 50%, hsl(260, 40%, 12%, 0.95) 50%)",
+                borderRight: "1px solid hsl(226, 100%, 50%, 0.1)",
+                borderBottom: "1px solid hsl(226, 100%, 50%, 0.1)",
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Multi-layer ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div
