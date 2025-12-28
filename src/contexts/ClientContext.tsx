@@ -17,6 +17,11 @@ interface ClientContextType {
   isLoading: boolean;
   error: string | null;
   refreshClients: () => Promise<void>;
+  uploadedCIDs: string[];
+  addUploadedCID: (cid: string) => void;
+  filteredClients: Client[];
+  filterByUploadedCIDs: boolean;
+  setFilterByUploadedCIDs: (filter: boolean) => void;
 }
 
 const ClientContext = createContext<ClientContextType | undefined>(undefined);
@@ -26,6 +31,26 @@ export function ClientProvider({ children }: { children: ReactNode }) {
   const [activeClient, setActiveClient] = useState<Client | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [uploadedCIDs, setUploadedCIDs] = useState<string[]>(() => {
+    // Load from localStorage on init
+    const stored = localStorage.getItem("uploadedCIDs");
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [filterByUploadedCIDs, setFilterByUploadedCIDs] = useState(false);
+
+  const addUploadedCID = (cid: string) => {
+    setUploadedCIDs(prev => {
+      if (prev.includes(cid)) return prev;
+      const updated = [...prev, cid];
+      localStorage.setItem("uploadedCIDs", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Filter clients based on uploaded CIDs when filter is active
+  const filteredClients = filterByUploadedCIDs && uploadedCIDs.length > 0
+    ? clients.filter(c => uploadedCIDs.includes(c.id.toString()))
+    : clients;
 
   const refreshClients = async () => {
     setIsLoading(true);
@@ -70,7 +95,19 @@ export function ClientProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ClientContext.Provider value={{ clients, activeClient, setActiveClient, isLoading, error, refreshClients }}>
+    <ClientContext.Provider value={{ 
+      clients, 
+      activeClient, 
+      setActiveClient, 
+      isLoading, 
+      error, 
+      refreshClients,
+      uploadedCIDs,
+      addUploadedCID,
+      filteredClients,
+      filterByUploadedCIDs,
+      setFilterByUploadedCIDs
+    }}>
       {children}
     </ClientContext.Provider>
   );
