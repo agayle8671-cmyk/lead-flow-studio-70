@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Runway DNA — Decode Your Startup's Financial Genome</title>
+    <!-- Prevent dark mode flash: apply theme before first paint -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('runwayDNA_settings');
+          if (stored) {
+            var settings = JSON.parse(stored);
+            if (settings.darkMode === false) {
+              document.documentElement.classList.remove('dark');
+            } else {
+              document.documentElement.classList.add('dark');
+            }
+          } else {
+            // Default to dark mode
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {
+          // Fallback to dark mode
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+    <meta name="description" content="Drop your financials. Get your startup's DNA decoded in 30 seconds. A cinematic intelligence report for founders who move fast." />
+    <meta name="author" content="Runway DNA" />
+
+    <meta property="og:title" content="Runway DNA — Decode Your Startup's Financial Genome" />
+    <meta property="og:description" content="Drop your financials. Get your startup's DNA decoded in 30 seconds. A cinematic intelligence report for founders." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@RunwayDNA" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <link rel="canonical" href="/" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
