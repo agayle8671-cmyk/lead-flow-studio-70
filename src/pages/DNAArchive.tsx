@@ -1,9 +1,15 @@
 import { forwardRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Archive, Calendar, TrendingUp, FileText, Search, Filter, ChevronRight, ArrowUpDown } from "lucide-react";
+import { Archive, Calendar, TrendingUp, FileText, Search, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { apiUrl } from "@/lib/config";
 import {
   DropdownMenu,
@@ -19,6 +25,11 @@ interface Analysis {
   grade: string;
   change: string;
   trend: "up" | "down";
+  // optional details (available from API)
+  monthlyBurn?: number;
+  cashOnHand?: number;
+  profitMargin?: number;
+  insight?: string;
 }
 
 const mockAnalyses: Analysis[] = [
@@ -37,6 +48,9 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
   const [sortField, setSortField] = useState<SortField>("date");
   const [isLoading, setIsLoading] = useState(false);
 
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<Analysis | null>(null);
+
   // Fetch from API on mount
   useEffect(() => {
     const fetchArchive = async () => {
@@ -49,20 +63,20 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
             const mapped = data.map((item: any, index: number) => {
               // Parse date properly
               const dateObj = new Date(item.date || item.created_at);
-              const formattedDate = dateObj.toLocaleDateString("en-US", { 
-                month: "short", 
-                day: "numeric", 
-                year: "numeric" 
+              const formattedDate = dateObj.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
               });
-              
+
               // Parse runway - API returns it as a string
               const runwayValue = parseFloat(item.runway) || 0;
-              
+
               // Calculate change from previous if exists
               const prevItem = data[index + 1];
               const prevRunway = prevItem ? parseFloat(prevItem.runway) || 0 : runwayValue;
               const change = runwayValue - prevRunway;
-              
+
               return {
                 id: item.id || index + 1,
                 date: formattedDate,
@@ -70,7 +84,11 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                 grade: item.grade || "B",
                 change: change >= 0 ? `+${change.toFixed(1)}` : change.toFixed(1),
                 trend: (change >= 0 ? "up" : "down") as "up" | "down",
-              };
+                monthlyBurn: item.monthlyBurn ? Number(item.monthlyBurn) : undefined,
+                cashOnHand: item.cashOnHand ? Number(item.cashOnHand) : undefined,
+                profitMargin: item.profitMargin ? Number(item.profitMargin) : undefined,
+                insight: item.insight || undefined,
+              } satisfies Analysis;
             });
             setAnalyses(mapped);
           }
@@ -92,11 +110,9 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
     return "bg-[hsl(45,90%,55%)] text-[hsl(45,100%,10%)]";
   };
 
-  const handleViewAnalysis = (id: number, date: string) => {
-    toast({
-      title: "Opening Analysis",
-      description: `Loading ${date} analysis...`,
-    });
+  const handleViewAnalysis = (analysis: Analysis) => {
+    setSelectedAnalysis(analysis);
+    setDetailOpen(true);
   };
 
   const handleSort = (field: SortField) => {
@@ -208,27 +224,93 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
         </div>
         <div className="divide-y divide-white/5">
           {filteredAnalyses.map((analysis, index) => (
-            <motion.div key={analysis.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 * index + 0.3 }} onClick={() => handleViewAnalysis(analysis.id, analysis.date)} className="p-4 hover:bg-white/[0.02] transition-colors cursor-pointer group">
+            <motion.div
+              key={analysis.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 * index + 0.3 }}
+              onClick={() => handleViewAnalysis(analysis)}
+              className="p-4 hover:bg-white/[0.02] transition-colors cursor-pointer group"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") handleViewAnalysis(analysis);
+              }}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl ${getGradeClass(analysis.grade)} flex items-center justify-center font-bold text-lg uppercase`}>{analysis.grade}</div>
+                  <div
+                    className={`w-10 h-10 rounded-xl ${getGradeClass(analysis.grade)} flex items-center justify-center font-bold text-lg uppercase`}
+                  >
+                    {analysis.grade}
+                  </div>
                   <div>
                     <p className="text-white font-medium">{analysis.date}</p>
-                    <p className="text-[hsl(220,10%,50%)] text-sm">{analysis.runway} months runway</p>
+                    <p className="text-[hsl(220,10%,50%)] text-sm">
+                      {analysis.runway} months runway
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-6">
-                  <div className={`flex items-center gap-1 text-sm font-medium ${analysis.trend === "up" ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
+                  <div
+                    className={`flex items-center gap-1 text-sm font-medium ${analysis.trend === "up" ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}
+                  >
                     <TrendingUp className={`w-4 h-4 ${analysis.trend === "down" ? "rotate-180" : ""}`} />
                     {analysis.change} months
                   </div>
-                  <ChevronRight className="w-5 h-5 text-[hsl(220,10%,40%)] group-hover:text-[hsl(226,100%,59%)] transition-colors" />
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
       </motion.div>
+
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="bg-[hsl(270,15%,10%)] border-[hsl(226,100%,59%)/0.2] text-white max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gradient-cobalt">
+              {selectedAnalysis ? `Analysis — ${selectedAnalysis.date}` : "Analysis"}
+            </DialogTitle>
+            <DialogDescription className="text-[hsl(220,10%,55%)]">
+              Review your runway snapshot.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedAnalysis && (
+            <div className="mt-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl bg-[hsl(240,7%,8%)] border border-white/5">
+                  <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)]">Grade</p>
+                  <p className="mt-1 text-2xl font-bold text-white">{selectedAnalysis.grade}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-[hsl(240,7%,8%)] border border-white/5">
+                  <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)]">Runway</p>
+                  <p className="mt-1 text-2xl font-bold text-white">{selectedAnalysis.runway} months</p>
+                </div>
+                <div className="p-4 rounded-xl bg-[hsl(240,7%,8%)] border border-white/5">
+                  <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)]">Monthly Burn</p>
+                  <p className="mt-1 text-2xl font-bold text-white">
+                    {typeof selectedAnalysis.monthlyBurn === "number" ? `$${selectedAnalysis.monthlyBurn.toLocaleString()}` : "—"}
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-[hsl(240,7%,8%)] border border-white/5">
+                  <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)]">Cash on Hand</p>
+                  <p className="mt-1 text-2xl font-bold text-white">
+                    {typeof selectedAnalysis.cashOnHand === "number" ? `$${selectedAnalysis.cashOnHand.toLocaleString()}` : "—"}
+                  </p>
+                </div>
+              </div>
+
+              {selectedAnalysis.insight && (
+                <div className="p-4 rounded-xl bg-[hsl(226,100%,59%)/0.08] border border-[hsl(226,100%,59%)/0.2]">
+                  <p className="text-xs uppercase tracking-wider text-[hsl(226,100%,68%)] mb-2">Insight</p>
+                  <p className="text-[hsl(220,10%,70%)] leading-relaxed">{selectedAnalysis.insight}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 });
