@@ -48,17 +48,22 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
 
       setProcessingStatus("Analyzing with AI...");
 
-      // Send as multipart/form-data (most backends expect this for file uploads)
+      // Send as multipart/form-data (backend uses Multer for file uploads)
       const formData = new FormData();
       formData.append("file", file);
       formData.append("clientId", selectedClientId);
-      if (extractedCID) formData.append("cid", extractedCID);
+
+      // Build headers - CID must be sent as an HTTP header, not form data
+      const headers: Record<string, string> = {
+        Accept: "application/json",
+      };
+      if (extractedCID) {
+        headers["X-CID"] = extractedCID;
+      }
 
       const response = await fetch("https://marginauditpro.com/api/parse-finances", {
         method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
+        headers,
         body: formData,
         mode: "cors",
       });
