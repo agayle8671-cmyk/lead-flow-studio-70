@@ -46,18 +46,37 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {
-            const mapped = data.map((item: any, index: number) => ({
-              id: item.id || index + 1,
-              date: item.date || new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-              runway: item.runway_months || item.runway || 0,
-              grade: item.grade || "B",
-              change: item.change || "+0.0",
-              trend: (item.trend || "up") as "up" | "down",
-            }));
+            const mapped = data.map((item: any, index: number) => {
+              // Parse date properly
+              const dateObj = new Date(item.date || item.created_at);
+              const formattedDate = dateObj.toLocaleDateString("en-US", { 
+                month: "short", 
+                day: "numeric", 
+                year: "numeric" 
+              });
+              
+              // Parse runway - API returns it as a string
+              const runwayValue = parseFloat(item.runway) || 0;
+              
+              // Calculate change from previous if exists
+              const prevItem = data[index + 1];
+              const prevRunway = prevItem ? parseFloat(prevItem.runway) || 0 : runwayValue;
+              const change = runwayValue - prevRunway;
+              
+              return {
+                id: item.id || index + 1,
+                date: formattedDate,
+                runway: runwayValue,
+                grade: item.grade || "B",
+                change: change >= 0 ? `+${change.toFixed(1)}` : change.toFixed(1),
+                trend: (change >= 0 ? "up" : "down") as "up" | "down",
+              };
+            });
             setAnalyses(mapped);
           }
         }
-      } catch {
+      } catch (error) {
+        console.log("Archive fetch error:", error);
         // Use mock data if API unavailable
       } finally {
         setIsLoading(false);
