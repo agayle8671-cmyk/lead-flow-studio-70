@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { apiUrl } from "@/lib/config";
 
 interface FinancialData {
   runway_months: number;
@@ -95,7 +96,7 @@ const DNALab = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-      const response = await fetch("https://marginauditpro.com/api/parse-finances", {
+      const response = await fetch(apiUrl("/api/parse-finances"), {
         method: "POST",
         body: formData,
         mode: "cors",
@@ -109,13 +110,13 @@ const DNALab = () => {
 
       const result = await response.json();
       setData({
-        runway_months: result.runwayMonths || 12,
+        runway_months: result.runway_months || 12,
         grade: (result.grade || "B").toUpperCase(),
-        monthly_burn: result.monthlyBurn || 35000,
-        cash_on_hand: result.cashOnHand || 420000,
-        profit_margin: result.profitMargin || 15,
-        revenue_trend: result.revenueTrend || [40, 45, 50, 55, 60, 65, 70],
-        expense_trend: result.expenseTrend || [35, 38, 40, 42, 45, 48, 52],
+        monthly_burn: result.monthly_burn || 35000,
+        cash_on_hand: result.cash_on_hand || 420000,
+        profit_margin: result.profit_margin || 15,
+        revenue_trend: result.revenue_trend || [40, 45, 50, 55, 60, 65, 70],
+        expense_trend: result.expense_trend || [35, 38, 40, 42, 45, 48, 52],
         insight: result.insight || "Your financial DNA has been decoded."
       });
     } catch {
