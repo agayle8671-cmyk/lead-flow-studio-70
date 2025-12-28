@@ -104,16 +104,17 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
       
       toast({
         title: "Audit Processed",
-        description: "Financial data has been extracted and saved.",
+        description: data.message || "Financial data has been extracted and saved.",
       });
+
+      // Refresh clients to get updated data from backend
+      await refreshClients();
 
       const selected = clients.find((c) => c.id === parseInt(selectedClientId));
       
-      // Refresh clients to update dashboard data
-      await refreshClients();
-
+      // Navigate to Maestro Command Center (AuditDetail) immediately to show updated results
       if (selected) {
-        setTimeout(() => onAuditComplete(selected), 1500);
+        setTimeout(() => onAuditComplete(selected), 800);
       }
     } catch (error) {
       console.error("Upload error:", error);
