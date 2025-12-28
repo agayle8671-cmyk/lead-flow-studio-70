@@ -77,8 +77,8 @@ const ResourceCentre = ({ onBack }: ResourceCentreProps) => {
   const handleDownload = (resource: ResourceCard) => {
     if (resource.proOnly && !isFirm) return;
     
-    // Simulate download - in production, this would trigger actual file download
-    window.open(resource.downloadUrl, "_blank");
+    // Open PDF in new tab with security attributes
+    window.open(resource.downloadUrl, "_blank", "noopener,noreferrer");
   };
 
   const ResourceCardComponent = ({ resource, index }: { resource: ResourceCard; index: number }) => {
