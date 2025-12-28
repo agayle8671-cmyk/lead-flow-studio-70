@@ -319,10 +319,11 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-weight: 900;
+  font-feature-settings: normal;
   border-radius: 1.5rem;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.06em;
   position: relative;
   text-transform: uppercase;
 }
