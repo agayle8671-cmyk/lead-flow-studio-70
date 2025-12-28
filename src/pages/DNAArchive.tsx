@@ -1,6 +1,6 @@
 import { forwardRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Archive, Calendar, TrendingUp, FileText, Search, ArrowUpDown } from "lucide-react";
+import { Archive, Calendar, TrendingUp, TrendingDown, FileText, Search, ArrowUpDown, ArrowRight, Minus, ChevronUp, ChevronDown, GitCompare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiUrl } from "@/lib/config";
@@ -106,6 +106,27 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
   const handleViewAnalysis = (analysis: Analysis) => {
     setSelectedAnalysis(analysis);
     setDetailOpen(true);
+  };
+
+  // Get previous analysis for comparison
+  const getPreviousAnalysis = (current: Analysis): Analysis | null => {
+    const currentIndex = analyses.findIndex(a => a.id === current.id);
+    if (currentIndex < analyses.length - 1) {
+      return analyses[currentIndex + 1];
+    }
+    return null;
+  };
+
+  // Calculate diff between two values
+  const getDiff = (current: number | undefined, previous: number | undefined): { value: number; percent: number; trend: "up" | "down" | "same" } | null => {
+    if (current === undefined || previous === undefined) return null;
+    const diff = current - previous;
+    const percent = previous !== 0 ? ((current - previous) / previous) * 100 : 0;
+    return {
+      value: diff,
+      percent,
+      trend: diff > 0 ? "up" : diff < 0 ? "down" : "same"
+    };
   };
 
   const handleSort = (field: SortField) => {
@@ -413,6 +434,202 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
                 </div>
               )}
             </motion.div>
+
+            {/* Comparison Section */}
+            {(() => {
+              const previousAnalysis = getPreviousAnalysis(selectedAnalysis);
+              if (!previousAnalysis) return null;
+
+              const runwayDiff = getDiff(selectedAnalysis.runway, previousAnalysis.runway);
+              const burnDiff = getDiff(selectedAnalysis.monthlyBurn, previousAnalysis.monthlyBurn);
+              const cashDiff = getDiff(selectedAnalysis.cashOnHand, previousAnalysis.cashOnHand);
+
+              return (
+                <motion.div 
+                  initial={{ y: 30, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.45 }}
+                  className="px-8 pb-6"
+                >
+                  <div className="relative p-6 rounded-3xl overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[hsl(180,80%,45%)/0.08] via-[hsl(200,70%,50%)/0.05] to-[hsl(220,80%,55%)/0.08]" />
+                    <div className="absolute inset-0 backdrop-blur-xl bg-[hsl(240,7%,8%)/0.4]" />
+                    <div className="absolute top-0 right-0 w-[200px] h-[100px] bg-[hsl(180,80%,45%)/0.15] blur-[60px] rounded-full" />
+                    
+                    <div className="relative">
+                      {/* Header */}
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[hsl(180,80%,45%)] to-[hsl(200,70%,50%)] flex items-center justify-center shadow-lg shadow-[hsl(180,80%,45%)/0.3]">
+                          <GitCompare className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-white">Comparison with Previous</h3>
+                          <p className="text-[hsl(220,10%,55%)] text-sm">{previousAnalysis.date}</p>
+                        </div>
+                      </div>
+
+                      {/* Comparison Grid */}
+                      <div className="grid grid-cols-3 gap-4">
+                        {/* Runway Comparison */}
+                        <motion.div 
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: 0.5 }}
+                          className="p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5"
+                        >
+                          <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)] mb-2">Runway</p>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-center">
+                              <p className="text-xs text-[hsl(220,10%,45%)]">Previous</p>
+                              <p className="text-lg font-bold text-[hsl(220,10%,65%)]">{previousAnalysis.runway.toFixed(1)}</p>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-[hsl(180,80%,50%)]" />
+                            <div className="text-center">
+                              <p className="text-xs text-[hsl(220,10%,45%)]">Current</p>
+                              <p className="text-lg font-bold text-white">{selectedAnalysis.runway.toFixed(1)}</p>
+                            </div>
+                          </div>
+                          {runwayDiff && (
+                            <div className={`flex items-center justify-center gap-1 py-2 rounded-xl ${runwayDiff.trend === "up" ? "bg-[hsl(152,100%,50%)/0.15]" : runwayDiff.trend === "down" ? "bg-[hsl(0,70%,55%)/0.15]" : "bg-[hsl(220,10%,20%)]"}`}>
+                              {runwayDiff.trend === "up" ? (
+                                <ChevronUp className="w-4 h-4 text-[hsl(152,100%,50%)]" />
+                              ) : runwayDiff.trend === "down" ? (
+                                <ChevronDown className="w-4 h-4 text-[hsl(0,70%,55%)]" />
+                              ) : (
+                                <Minus className="w-4 h-4 text-[hsl(220,10%,55%)]" />
+                              )}
+                              <span className={`text-sm font-semibold ${runwayDiff.trend === "up" ? "text-[hsl(152,100%,50%)]" : runwayDiff.trend === "down" ? "text-[hsl(0,70%,55%)]" : "text-[hsl(220,10%,55%)]"}`}>
+                                {runwayDiff.value > 0 ? "+" : ""}{runwayDiff.value.toFixed(1)} mo
+                              </span>
+                            </div>
+                          )}
+                        </motion.div>
+
+                        {/* Cash Comparison */}
+                        <motion.div 
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: 0.55 }}
+                          className="p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5"
+                        >
+                          <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)] mb-2">Cash</p>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-center">
+                              <p className="text-xs text-[hsl(220,10%,45%)]">Previous</p>
+                              <p className="text-lg font-bold text-[hsl(220,10%,65%)]">
+                                {previousAnalysis.cashOnHand ? `$${(previousAnalysis.cashOnHand / 1000).toFixed(0)}k` : "—"}
+                              </p>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-[hsl(180,80%,50%)]" />
+                            <div className="text-center">
+                              <p className="text-xs text-[hsl(220,10%,45%)]">Current</p>
+                              <p className="text-lg font-bold text-white">
+                                {selectedAnalysis.cashOnHand ? `$${(selectedAnalysis.cashOnHand / 1000).toFixed(0)}k` : "—"}
+                              </p>
+                            </div>
+                          </div>
+                          {cashDiff && (
+                            <div className={`flex items-center justify-center gap-1 py-2 rounded-xl ${cashDiff.trend === "up" ? "bg-[hsl(152,100%,50%)/0.15]" : cashDiff.trend === "down" ? "bg-[hsl(0,70%,55%)/0.15]" : "bg-[hsl(220,10%,20%)]"}`}>
+                              {cashDiff.trend === "up" ? (
+                                <ChevronUp className="w-4 h-4 text-[hsl(152,100%,50%)]" />
+                              ) : cashDiff.trend === "down" ? (
+                                <ChevronDown className="w-4 h-4 text-[hsl(0,70%,55%)]" />
+                              ) : (
+                                <Minus className="w-4 h-4 text-[hsl(220,10%,55%)]" />
+                              )}
+                              <span className={`text-sm font-semibold ${cashDiff.trend === "up" ? "text-[hsl(152,100%,50%)]" : cashDiff.trend === "down" ? "text-[hsl(0,70%,55%)]" : "text-[hsl(220,10%,55%)]"}`}>
+                                {cashDiff.percent > 0 ? "+" : ""}{cashDiff.percent.toFixed(1)}%
+                              </span>
+                            </div>
+                          )}
+                        </motion.div>
+
+                        {/* Burn Comparison */}
+                        <motion.div 
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: 0.6 }}
+                          className="p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5"
+                        >
+                          <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)] mb-2">Burn Rate</p>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-center">
+                              <p className="text-xs text-[hsl(220,10%,45%)]">Previous</p>
+                              <p className="text-lg font-bold text-[hsl(220,10%,65%)]">
+                                {previousAnalysis.monthlyBurn ? `$${(previousAnalysis.monthlyBurn / 1000).toFixed(0)}k` : "—"}
+                              </p>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-[hsl(180,80%,50%)]" />
+                            <div className="text-center">
+                              <p className="text-xs text-[hsl(220,10%,45%)]">Current</p>
+                              <p className="text-lg font-bold text-white">
+                                {selectedAnalysis.monthlyBurn ? `$${(selectedAnalysis.monthlyBurn / 1000).toFixed(0)}k` : "—"}
+                              </p>
+                            </div>
+                          </div>
+                          {burnDiff && (
+                            <div className={`flex items-center justify-center gap-1 py-2 rounded-xl ${burnDiff.trend === "down" ? "bg-[hsl(152,100%,50%)/0.15]" : burnDiff.trend === "up" ? "bg-[hsl(0,70%,55%)/0.15]" : "bg-[hsl(220,10%,20%)]"}`}>
+                              {burnDiff.trend === "down" ? (
+                                <ChevronDown className="w-4 h-4 text-[hsl(152,100%,50%)]" />
+                              ) : burnDiff.trend === "up" ? (
+                                <ChevronUp className="w-4 h-4 text-[hsl(0,70%,55%)]" />
+                              ) : (
+                                <Minus className="w-4 h-4 text-[hsl(220,10%,55%)]" />
+                              )}
+                              <span className={`text-sm font-semibold ${burnDiff.trend === "down" ? "text-[hsl(152,100%,50%)]" : burnDiff.trend === "up" ? "text-[hsl(0,70%,55%)]" : "text-[hsl(220,10%,55%)]"}`}>
+                                {burnDiff.percent > 0 ? "+" : ""}{burnDiff.percent.toFixed(1)}%
+                              </span>
+                            </div>
+                          )}
+                        </motion.div>
+                      </div>
+
+                      {/* Grade Evolution */}
+                      <motion.div 
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.65 }}
+                        className="mt-4 p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5"
+                      >
+                        <p className="text-xs uppercase tracking-wider text-[hsl(220,10%,55%)] mb-3">Grade Evolution</p>
+                        <div className="flex items-center justify-center gap-6">
+                          <div className="text-center">
+                            <p className="text-xs text-[hsl(220,10%,45%)] mb-2">Previous</p>
+                            <div className={`w-14 h-14 rounded-xl ${getGradeClass(previousAnalysis.grade)} flex items-center justify-center font-bold text-2xl opacity-60`}>
+                              {previousAnalysis.grade}
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <ArrowRight className="w-8 h-8 text-[hsl(180,80%,50%)]" />
+                            {previousAnalysis.grade !== selectedAnalysis.grade && (
+                              <span className={`text-xs font-semibold mt-1 ${selectedAnalysis.grade < previousAnalysis.grade ? "text-[hsl(152,100%,50%)]" : "text-[hsl(0,70%,55%)]"}`}>
+                                {selectedAnalysis.grade < previousAnalysis.grade ? "Improved!" : "Declined"}
+                              </span>
+                            )}
+                            {previousAnalysis.grade === selectedAnalysis.grade && (
+                              <span className="text-xs font-semibold mt-1 text-[hsl(220,10%,55%)]">
+                                Maintained
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-center">
+                            <p className="text-xs text-[hsl(220,10%,45%)] mb-2">Current</p>
+                            <motion.div 
+                              initial={{ scale: 0.8 }}
+                              animate={{ scale: 1 }}
+                              transition={{ delay: 0.7, type: "spring" }}
+                              className={`w-14 h-14 rounded-xl ${getGradeClass(selectedAnalysis.grade)} flex items-center justify-center font-bold text-2xl shadow-lg`}
+                            >
+                              {selectedAnalysis.grade}
+                            </motion.div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })()}
 
             {/* Insight Section */}
             {selectedAnalysis.insight && (
