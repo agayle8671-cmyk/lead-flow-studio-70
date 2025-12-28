@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dna, FlaskConical, Archive, Wrench, Settings, Rocket, Zap, Plane } from "lucide-react";
+import { Dna, FlaskConical, Archive, Wrench, Settings, Rocket, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 
@@ -283,227 +283,215 @@ const RunwayDNA = () => {
         </motion.div>
       </div>
 
-      {/* Takeoff Plane Animation - BIGGER & BRIGHTER */}
+      {/* Realistic Jet Takeoff Animation */}
       <motion.div
         className="absolute left-1/2 z-10 pointer-events-none"
         style={{ translateX: "-50%" }}
         animate={{
-          bottom: ["25%", "45%", "95%"],
-          scale: [1, 1.3, 0.7],
+          bottom: ["20%", "35%", "50%", "90%"],
+          scale: [0.8, 1, 1.1, 0.5],
           opacity: [0, 1, 1, 0],
-          x: ["-50%", "-50%", "-20%"],
         }}
         transition={{
-          duration: 4,
+          duration: 5,
           repeat: Infinity,
-          repeatDelay: 3,
-          ease: [0.2, 0.8, 0.4, 1],
-          times: [0, 0.35, 1],
+          repeatDelay: 2.5,
+          ease: "easeInOut",
+          times: [0, 0.2, 0.5, 1],
         }}
       >
-        {/* Plane with glow effect */}
         <motion.div
           className="relative"
           animate={{
-            rotate: [0, -8, -25],
+            rotate: [0, 0, -20, -35],
           }}
           transition={{
-            duration: 4,
+            duration: 5,
             repeat: Infinity,
-            repeatDelay: 3,
-            times: [0, 0.35, 1],
+            repeatDelay: 2.5,
+            times: [0, 0.4, 0.6, 1],
           }}
         >
-          {/* Massive engine exhaust flame */}
+          {/* Engine exhaust - realistic jet trail */}
           <motion.div
             className="absolute left-1/2 -translate-x-1/2"
-            style={{
-              bottom: -8,
-              width: 14,
-              height: 40,
-              background: "linear-gradient(180deg, hsl(45, 100%, 70%) 0%, hsl(30, 100%, 55%) 30%, hsl(15, 100%, 50%) 60%, transparent 100%)",
-              borderRadius: "50% 50% 50% 50% / 20% 20% 80% 80%",
-              filter: "blur(1px)",
-            }}
+            style={{ bottom: -6 }}
             animate={{
-              height: [30, 55, 70],
-              opacity: [0.7, 1, 0.9],
-              scaleX: [1, 1.2, 0.9],
+              opacity: [0, 0.9, 1, 0.8],
             }}
             transition={{
-              duration: 4,
+              duration: 5,
               repeat: Infinity,
-              repeatDelay: 3,
-              times: [0, 0.35, 1],
-            }}
-          />
-          {/* Secondary flame core */}
-          <motion.div
-            className="absolute left-1/2 -translate-x-1/2"
-            style={{
-              bottom: -4,
-              width: 8,
-              height: 25,
-              background: "linear-gradient(180deg, hsl(60, 100%, 90%) 0%, hsl(45, 100%, 70%) 50%, transparent 100%)",
-              borderRadius: "50%",
-              filter: "blur(2px)",
-            }}
-            animate={{
-              height: [20, 35, 45],
-              opacity: [0.8, 1, 0.85],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              repeatDelay: 3,
-              times: [0, 0.35, 1],
-            }}
-          />
-          
-          {/* Outer glow aura */}
-          <motion.div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-            style={{
-              width: 60,
-              height: 60,
-              background: "radial-gradient(circle, hsl(226, 100%, 60%, 0.4) 0%, hsl(226, 100%, 50%, 0.2) 40%, transparent 70%)",
-              filter: "blur(8px)",
-            }}
-            animate={{
-              scale: [1, 1.4, 1.2],
-              opacity: [0.5, 0.9, 0.6],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              repeatDelay: 3,
-              times: [0, 0.35, 1],
-            }}
-          />
-          
-          {/* The plane itself - BIGGER */}
-          <div
-            className="relative"
-            style={{
-              filter: "drop-shadow(0 0 12px hsl(226, 100%, 70%)) drop-shadow(0 0 25px hsl(226, 100%, 60%)) drop-shadow(0 0 40px hsl(200, 100%, 50%))",
+              repeatDelay: 2.5,
+              times: [0, 0.2, 0.5, 1],
             }}
           >
-            <Plane 
-              className="w-10 h-10 text-white" 
-              style={{ 
-                transform: "rotate(-90deg)",
-              }} 
-              fill="url(#planeGradient)"
-              stroke="hsl(200, 100%, 80%)"
-              strokeWidth={1}
+            {/* Hot core */}
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 bottom-0"
+              style={{
+                width: 6,
+                background: "linear-gradient(180deg, hsl(50, 100%, 95%) 0%, hsl(40, 100%, 70%) 40%, hsl(25, 100%, 55%) 70%, transparent 100%)",
+                borderRadius: "2px 2px 4px 4px",
+              }}
+              animate={{
+                height: [8, 18, 28, 35],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                repeatDelay: 2.5,
+                times: [0, 0.2, 0.5, 1],
+              }}
             />
-            {/* Inline SVG gradient definition */}
-            <svg width="0" height="0" className="absolute">
+            {/* Outer flame */}
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 bottom-0"
+              style={{
+                width: 12,
+                background: "linear-gradient(180deg, hsl(30, 100%, 60%, 0.8) 0%, hsl(20, 100%, 50%, 0.5) 50%, transparent 100%)",
+                borderRadius: "4px",
+                filter: "blur(2px)",
+              }}
+              animate={{
+                height: [12, 25, 40, 50],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                repeatDelay: 2.5,
+                times: [0, 0.2, 0.5, 1],
+              }}
+            />
+          </motion.div>
+          
+          {/* Sleek jet silhouette - custom SVG */}
+          <div
+            style={{
+              filter: "drop-shadow(0 0 8px hsl(200, 100%, 70%)) drop-shadow(0 0 20px hsl(226, 100%, 60%))",
+            }}
+          >
+            <svg 
+              width="32" 
+              height="40" 
+              viewBox="0 0 32 40" 
+              fill="none"
+              style={{ transform: "rotate(180deg)" }}
+            >
               <defs>
-                <linearGradient id="planeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="hsl(226, 100%, 75%)" />
-                  <stop offset="50%" stopColor="hsl(226, 100%, 60%)" />
-                  <stop offset="100%" stopColor="hsl(260, 80%, 55%)" />
+                <linearGradient id="jetBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="hsl(210, 20%, 95%)" />
+                  <stop offset="30%" stopColor="hsl(210, 15%, 85%)" />
+                  <stop offset="70%" stopColor="hsl(220, 20%, 70%)" />
+                  <stop offset="100%" stopColor="hsl(220, 25%, 55%)" />
+                </linearGradient>
+                <linearGradient id="jetWing" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="hsl(220, 20%, 80%)" />
+                  <stop offset="50%" stopColor="hsl(210, 15%, 90%)" />
+                  <stop offset="100%" stopColor="hsl(220, 20%, 80%)" />
+                </linearGradient>
+                <linearGradient id="jetAccent" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="hsl(226, 100%, 65%)" />
+                  <stop offset="100%" stopColor="hsl(226, 100%, 45%)" />
                 </linearGradient>
               </defs>
+              
+              {/* Fuselage */}
+              <path 
+                d="M16 2 L18 8 L18 28 L20 32 L16 38 L12 32 L14 28 L14 8 Z" 
+                fill="url(#jetBody)"
+                stroke="hsl(220, 30%, 60%)"
+                strokeWidth="0.5"
+              />
+              
+              {/* Cockpit */}
+              <ellipse cx="16" cy="6" rx="2" ry="3" fill="hsl(200, 80%, 35%)" opacity="0.9"/>
+              <ellipse cx="16" cy="5.5" rx="1.2" ry="1.8" fill="hsl(200, 90%, 55%)" opacity="0.6"/>
+              
+              {/* Main wings */}
+              <path 
+                d="M14 18 L2 26 L2 28 L14 24 Z" 
+                fill="url(#jetWing)"
+                stroke="hsl(220, 30%, 65%)"
+                strokeWidth="0.3"
+              />
+              <path 
+                d="M18 18 L30 26 L30 28 L18 24 Z" 
+                fill="url(#jetWing)"
+                stroke="hsl(220, 30%, 65%)"
+                strokeWidth="0.3"
+              />
+              
+              {/* Tail fins */}
+              <path 
+                d="M14 30 L10 36 L12 36 L14 33 Z" 
+                fill="url(#jetWing)"
+              />
+              <path 
+                d="M18 30 L22 36 L20 36 L18 33 Z" 
+                fill="url(#jetWing)"
+              />
+              
+              {/* Vertical stabilizer */}
+              <path 
+                d="M15 28 L15 34 L16 38 L17 34 L17 28 Z" 
+                fill="url(#jetAccent)"
+              />
+              
+              {/* Engine glow */}
+              <circle cx="16" cy="36" r="2" fill="hsl(40, 100%, 70%)" opacity="0.8"/>
+              <circle cx="16" cy="36" r="1" fill="hsl(50, 100%, 90%)" opacity="0.9"/>
+              
+              {/* Wing tip lights */}
+              <circle cx="2" cy="27" r="1" fill="hsl(0, 100%, 60%)" opacity="0.9"/>
+              <circle cx="30" cy="27" r="1" fill="hsl(120, 100%, 50%)" opacity="0.9"/>
             </svg>
           </div>
           
-          {/* Left contrail */}
+          {/* Contrails from wingtips */}
           <motion.div
-            className="absolute top-1/2 -translate-y-1/2"
+            className="absolute"
             style={{
+              top: "55%",
               right: "100%",
-              marginRight: 4,
-              height: 3,
-              background: "linear-gradient(90deg, transparent, hsl(200, 100%, 85%), hsl(200, 100%, 70%))",
-              borderRadius: 4,
-              filter: "blur(1px)",
+              marginRight: 2,
+              height: 2,
+              background: "linear-gradient(90deg, transparent, hsl(0, 0%, 90%, 0.6))",
+              borderRadius: 2,
             }}
             animate={{
-              width: [0, 30, 50],
-              opacity: [0, 0.8, 0.4],
+              width: [0, 15, 35, 50],
+              opacity: [0, 0.5, 0.7, 0.3],
             }}
             transition={{
-              duration: 4,
+              duration: 5,
               repeat: Infinity,
-              repeatDelay: 3,
-              times: [0, 0.35, 1],
+              repeatDelay: 2.5,
+              times: [0, 0.3, 0.6, 1],
             }}
           />
-          {/* Right contrail */}
           <motion.div
-            className="absolute top-1/2 -translate-y-1/2"
+            className="absolute"
             style={{
+              top: "55%",
               left: "100%",
-              marginLeft: 4,
-              height: 3,
-              background: "linear-gradient(-90deg, transparent, hsl(200, 100%, 85%), hsl(200, 100%, 70%))",
-              borderRadius: 4,
-              filter: "blur(1px)",
+              marginLeft: 2,
+              height: 2,
+              background: "linear-gradient(-90deg, transparent, hsl(0, 0%, 90%, 0.6))",
+              borderRadius: 2,
             }}
             animate={{
-              width: [0, 30, 50],
-              opacity: [0, 0.8, 0.4],
+              width: [0, 15, 35, 50],
+              opacity: [0, 0.5, 0.7, 0.3],
             }}
             transition={{
-              duration: 4,
+              duration: 5,
               repeat: Infinity,
-              repeatDelay: 3,
-              times: [0, 0.35, 1],
+              repeatDelay: 2.5,
+              times: [0, 0.3, 0.6, 1],
             }}
           />
-          
-          {/* Speed lines behind plane */}
-          {[...Array(3)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute"
-              style={{
-                bottom: 20 + i * 8,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 2,
-                height: 12 + i * 4,
-                background: `linear-gradient(180deg, transparent, hsl(${200 + i * 20}, 100%, 70%))`,
-                borderRadius: 2,
-              }}
-              animate={{
-                opacity: [0, 0.6, 0.3],
-                height: [8, 20 + i * 6, 30 + i * 8],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                repeatDelay: 3,
-                delay: i * 0.1,
-                times: [0, 0.35, 1],
-              }}
-            />
-          ))}
         </motion.div>
-      </motion.div>
-      
-      {/* Liftoff burst effect */}
-      <motion.div
-        className="absolute left-1/2 -translate-x-1/2 bottom-[25%] pointer-events-none"
-        animate={{
-          scale: [0, 2, 3],
-          opacity: [0.8, 0.3, 0],
-        }}
-        transition={{
-          duration: 1.5,
-          repeat: Infinity,
-          repeatDelay: 5.5,
-          ease: "easeOut",
-        }}
-      >
-        <div 
-          className="w-16 h-16 rounded-full"
-          style={{
-            background: "radial-gradient(circle, hsl(45, 100%, 60%, 0.6) 0%, hsl(30, 100%, 50%, 0.3) 50%, transparent 70%)",
-          }}
-        />
       </motion.div>
 
       {/* Horizon glow */}
