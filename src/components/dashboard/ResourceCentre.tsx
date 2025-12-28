@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { usePlan } from "@/contexts/PlanContext";
+import { apiUrl } from "@/lib/config";
 
 interface ResourceCentreProps {
   onBack: () => void;
@@ -34,21 +35,21 @@ const protocolResources: ResourceCard[] = [
     icon: BookOpen,
     title: "Master User Guide",
     description: "Learn the M.A.P. Header Protocol and CID Tagging system for seamless audit workflows.",
-    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/master_user_guide.pdf",
+    downloadUrl: apiUrl("/assets/master_user_guide.pdf"),
   },
   {
     id: "excel-template",
     icon: FileSpreadsheet,
     title: "M.A.P. Excel Template",
     description: "Pre-formatted sheet with CID headers for 100% upload success rate.",
-    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/map_excel_template.pdf",
+    downloadUrl: apiUrl("/assets/map_excel_template.pdf"),
   },
   {
     id: "lab-manual",
     icon: FlaskConical,
     title: "The Audit Lab Manual",
     description: "A 60-second technical breakdown of the M.A.P. engine and audit algorithms.",
-    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/audit_lab_manual.pdf",
+    downloadUrl: apiUrl("/assets/audit_lab_manual.pdf"),
   },
 ];
 
@@ -58,7 +59,7 @@ const clientToolkitResources: ResourceCard[] = [
     icon: FileText,
     title: "Health Grade One-Pager",
     description: "Help your clients understand their A-F Grade and what it means for their business.",
-    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/health_grade_one_pager.pdf",
+    downloadUrl: apiUrl("/assets/health_grade_one_pager.pdf"),
     proOnly: true,
   },
   {
@@ -66,20 +67,13 @@ const clientToolkitResources: ResourceCard[] = [
     icon: Map,
     title: "Projected Route Explainer",
     description: "A visual guide to the 90-day trajectory map and profit optimization path.",
-    downloadUrl: "https://finance-core-agayle8671.replit.app/assets/projected_route_explainer.pdf",
+    downloadUrl: apiUrl("/assets/projected_route_explainer.pdf"),
     proOnly: true,
   },
 ];
 
 const ResourceCentre = ({ onBack }: ResourceCentreProps) => {
   const { isFirm } = usePlan();
-
-  const handleDownload = (resource: ResourceCard) => {
-    if (resource.proOnly && !isFirm) return;
-    
-    // Open PDF in new tab with security attributes
-    window.open(resource.downloadUrl, "_blank", "noopener,noreferrer");
-  };
 
   const ResourceCardComponent = ({ resource, index }: { resource: ResourceCard; index: number }) => {
     const isLocked = resource.proOnly && !isFirm;
@@ -137,27 +131,22 @@ const ResourceCentre = ({ onBack }: ResourceCentreProps) => {
             </p>
 
             {/* Download Button */}
-            <Button
-              onClick={() => handleDownload(resource)}
-              disabled={isLocked}
-              className={`w-full ${
-                isLocked 
-                  ? "bg-muted text-muted-foreground cursor-not-allowed" 
-                  : "gradient-gold text-charcoal font-semibold shadow-gold hover:shadow-lg"
-              }`}
-            >
-              {isLocked ? (
-                <>
-                  <Lock className="w-4 h-4 mr-2" />
-                  Upgrade to Access
-                </>
-              ) : (
-                <>
+            {isLocked ? (
+              <Button
+                disabled
+                className="w-full bg-muted text-muted-foreground cursor-not-allowed"
+              >
+                <Lock className="w-4 h-4 mr-2" />
+                Upgrade to Access
+              </Button>
+            ) : (
+              <Button asChild className="w-full gradient-gold text-charcoal font-semibold shadow-gold hover:shadow-lg">
+                <a href={resource.downloadUrl} target="_blank" rel="noopener noreferrer">
                   <Download className="w-4 h-4 mr-2" />
                   Download PDF
-                </>
-              )}
-            </Button>
+                </a>
+              </Button>
+            )}
           </CardContent>
         </Card>
       </motion.div>
