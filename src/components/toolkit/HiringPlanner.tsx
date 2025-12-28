@@ -315,14 +315,14 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
         {/* ═══════════════════════════════════════════════════════════════════
             MAIN CONTENT - Tight 2-column layout
         ═══════════════════════════════════════════════════════════════════ */}
-        <div className="p-8 pt-0">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="p-6 pt-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* ═══ LEFT PANEL: CONTROLS ═══ */}
             <motion.div
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="space-y-6"
+              className="space-y-4"
             >
               {/* Current Financials */}
               <div className="p-6 rounded-2xl glass-panel border border-white/5">
@@ -567,7 +567,7 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="space-y-6"
+              className="space-y-4"
             >
               {/* Burn Rate Projection Chart */}
               <div className="p-6 rounded-2xl glass-panel border border-white/5">
@@ -587,7 +587,7 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
                   </div>
                 </div>
                 
-                <div className="h-[380px]">
+                <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={burnProjection} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
@@ -875,7 +875,7 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="p-8 pt-0 flex justify-end"
+            className="p-6 pt-0 flex justify-end"
           >
             <Button
               onClick={onClose}
