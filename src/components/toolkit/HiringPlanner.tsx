@@ -227,12 +227,12 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
         exit={{ scale: 0.95, y: 50, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-7xl max-h-[95vh] overflow-y-auto rounded-3xl bg-gradient-to-br from-[hsl(240,15%,8%)] via-[hsl(220,20%,10%)] to-[hsl(240,15%,8%)] border border-white/10 shadow-2xl"
+        className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gradient-to-br from-[hsl(240,15%,8%)] via-[hsl(220,20%,10%)] to-[hsl(240,15%,8%)] border border-[hsl(45,90%,55%)/0.2] shadow-2xl shadow-[hsl(45,90%,55%)/0.1]"
       >
         {/* ═══════════════════════════════════════════════════════════════════
             CINEMATIC HEADER
         ═══════════════════════════════════════════════════════════════════ */}
-        <div className="relative p-8 pb-6 overflow-hidden border-b border-white/5">
+        <div className="relative p-8 pb-4 overflow-hidden border-b border-white/5">
           <div className="absolute inset-0 bg-gradient-to-r from-[hsl(45,90%,55%)/0.15] via-transparent to-[hsl(226,100%,59%)/0.1]" />
           <div className="absolute top-0 left-1/4 w-[600px] h-[200px] bg-[hsl(45,90%,55%)/0.2] blur-[100px] rounded-full" />
           <div className="absolute top-0 right-1/4 w-[500px] h-[180px] bg-[hsl(152,100%,50%)/0.15] blur-[90px] rounded-full" />
@@ -283,13 +283,13 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
         {/* ═══════════════════════════════════════════════════════════════════
             MAIN CONTENT
         ═══════════════════════════════════════════════════════════════════ */}
-        <div className="p-8 pt-6">
+        <div className="p-8 pt-0">
           {/* ═══ HERO METRICS ═══ */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+            className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
           >
             {/* Total New Hires */}
             <div className="p-6 rounded-2xl bg-gradient-to-br from-[hsl(226,100%,59%)/0.15] via-[hsl(226,100%,59%)/0.08] to-transparent border border-[hsl(226,100%,59%)/0.3] relative overflow-hidden">
@@ -415,7 +415,7 @@ export function HiringPlanner({ initialData, onClose }: HiringPlannerProps) {
           )}
 
           {/* ═══ MAIN GRID ═══ */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             {/* ═══ LEFT PANEL: CONTROLS ═══ */}
             <motion.div
               initial={{ x: -20, opacity: 0 }}

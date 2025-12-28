@@ -103,10 +103,10 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
         exit={{ scale: 0.9, y: 50, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gradient-to-br from-[hsl(240,15%,8%)] via-[hsl(250,20%,10%)] to-[hsl(240,15%,8%)] border border-[hsl(226,100%,59%)/0.2] shadow-2xl shadow-[hsl(226,100%,59%)/0.1]"
+        className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gradient-to-br from-[hsl(240,15%,8%)] via-[hsl(250,20%,10%)] to-[hsl(240,15%,8%)] border border-[hsl(226,100%,59%)/0.2] shadow-2xl shadow-[hsl(226,100%,59%)/0.1]"
       >
         {/* Header */}
-        <div className="relative p-8 pb-4 overflow-hidden">
+        <div className="relative p-8 pb-4 overflow-hidden border-b border-white/5">
           <div className="absolute inset-0 bg-gradient-to-r from-[hsl(226,100%,59%)/0.1] via-transparent to-[hsl(340,80%,55%)/0.1]" />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-[hsl(226,100%,59%)/0.15] blur-[100px] rounded-full" />
           
@@ -126,7 +126,7 @@ export const BurnRateCalculator = ({ initialData, onClose }: BurnRateCalculatorP
           </motion.div>
         </div>
 
-        <div className="p-8 pt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="p-8 pt-0 grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left: Inputs */}
           <motion.div 
             initial={{ x: -30, opacity: 0 }}
