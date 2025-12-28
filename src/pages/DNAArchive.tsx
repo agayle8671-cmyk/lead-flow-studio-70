@@ -747,13 +747,13 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
             <div className="px-2 py-1 rounded-full bg-[#22C55E/0.2] text-[10px] text-[hsl(152,100%,60%)] uppercase tracking-wider">
               Click for details
         </div>
-          </div>
+            </div>
           <div className="relative flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-[#22C55E/0.15] flex items-center justify-center group-hover:scale-110 transition-transform">
               <TrendingUp className="w-5 h-5 text-[#22C55E]" />
-            </div>
-            <span className="text-[rgba(255,255,255,0.5)] text-sm">Average Runway</span>
           </div>
+            <span className="text-[rgba(255,255,255,0.5)] text-sm">Average Runway</span>
+        </div>
           <p className="relative text-4xl font-bold text-gradient-emerald">{stats.avgRunway}</p>
         </motion.div>
 
@@ -768,12 +768,12 @@ const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <div className="px-2 py-1 rounded-full bg-[hsl(270,60%,55%)/0.2] text-[10px] text-[hsl(270,60%,70%)] uppercase tracking-wider">
               Click for details
-        </div>
+            </div>
           </div>
           <div className="relative flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-[hsl(270,60%,50%)/0.15] flex items-center justify-center group-hover:scale-110 transition-transform">
               <Calendar className="w-5 h-5 text-[hsl(270,60%,55%)]" />
-            </div>
+        </div>
             <span className="text-[rgba(255,255,255,0.5)] text-sm">Last Analysis</span>
           </div>
           <p className="relative text-4xl font-bold text-white">{stats.lastAnalysis}</p>

@@ -620,42 +620,47 @@ const DNALab = () => {
   };
 
   return (
-    <div className="min-h-screen w-full p-8 lg:p-12">
-      {/* Header */}
+    <div className="min-h-screen w-full">
+      {/* Header - Architectural */}
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={springTransition}
-        className="flex items-center justify-between mb-12"
+        className="px-12 pt-16 pb-12 border-b border-white/[0.06] flex items-end justify-between"
       >
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1 tracking-tight">DNA Lab</h1>
-          <p className="text-white/50">
-            Analyze your financial health
+          <p className="text-[11px] tracking-[0.3em] text-white/30 uppercase mb-4">
+            Financial Analysis
           </p>
+          <h1 className="text-[42px] font-light text-white tracking-tight leading-none">
+            Lab
+          </h1>
         </div>
         {stage === "complete" && (
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={springTransition}>
-            <Button onClick={resetAnalysis} variant="glass">
-              <Zap className="w-4 h-4 mr-2" />
-              New Analysis
-            </Button>
-          </motion.div>
+          <motion.button 
+            onClick={resetAnalysis}
+            className="text-[11px] tracking-[0.15em] text-white/40 uppercase hover:text-white transition-colors duration-300"
+            whileHover={{ x: 4 }}
+          >
+            New Analysis →
+          </motion.button>
         )}
       </motion.header>
 
       <AnimatePresence mode="wait">
-        {/* IDLE STATE */}
+        {/* IDLE STATE - Architectural */}
         {stage === "idle" && (
           <motion.div
             key="idle"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="max-w-3xl mx-auto"
+            className="px-12 py-24"
           >
             <div
-              className={`drop-zone p-16 text-center cursor-pointer ${isDragging ? "drop-zone-active" : ""}`}
+              className={`border border-white/[0.08] cursor-pointer transition-all duration-300 ${
+                isDragging ? "border-white/30 bg-white/[0.02]" : "hover:border-white/15"
+              }`}
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
@@ -669,87 +674,85 @@ const DNALab = () => {
                 className="hidden"
               />
 
-              <motion.div 
-                className={`w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-8 transition-all ${
-                  isDragging ? "bg-[#0099FF] shadow-[0_0_40px_rgba(0,153,255,0.5)]" : "bg-white/[0.08]"
-                }`}
-                animate={{ scale: isDragging ? 1.1 : 1 }}
-                transition={springTransition}
-              >
-                <Upload className={`w-10 h-10 ${isDragging ? "text-white" : "text-white/50"}`} />
-              </motion.div>
-
-              <h2 className="text-3xl font-semibold text-white mb-3">
-                Upload Financial Data
-              </h2>
-
-              <p className="text-white/50 mb-10 max-w-md mx-auto">
-                Drop a CSV or Excel file with your bank exports, Stripe data, or any financial spreadsheet
-              </p>
-
-              <div className="flex items-center justify-center gap-6">
-                <Button size="lg">
-                  <Upload className="w-5 h-5 mr-2" />
-                  Choose File
-                </Button>
-                <span className="text-white/40">or</span>
-                <Button
-                  size="lg"
-                  variant="ghost"
-                  onClick={(e) => { e.stopPropagation(); handleDemoMode(); }}
-                  className="text-[#22C55E]"
+              <div className="py-32 px-12 text-center">
+                <motion.p 
+                  className="text-[11px] tracking-[0.3em] text-white/30 uppercase mb-6"
+                  animate={{ opacity: isDragging ? 1 : 0.6 }}
                 >
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  View Demo
-                </Button>
+                  {isDragging ? "Release to analyze" : "Drop file here"}
+                </motion.p>
+
+                <h2 className="text-[32px] font-light text-white mb-4 tracking-tight">
+                  Upload Financial Data
+                </h2>
+
+                <p className="text-[13px] text-white/40 mb-12 max-w-md mx-auto leading-relaxed">
+                  CSV or Excel file with bank exports, Stripe data, or financial spreadsheet
+                </p>
+
+                <div className="flex items-center justify-center gap-8">
+                  <motion.span 
+                    className="text-[11px] tracking-[0.15em] text-white/50 uppercase cursor-pointer hover:text-white transition-colors"
+                    whileHover={{ x: 4 }}
+                  >
+                    Choose File →
+                  </motion.span>
+                  <span className="text-white/20">|</span>
+                  <motion.span 
+                    className="text-[11px] tracking-[0.15em] text-white/50 uppercase cursor-pointer hover:text-white transition-colors"
+                    onClick={(e) => { e.stopPropagation(); handleDemoMode(); }}
+                    whileHover={{ x: 4 }}
+                  >
+                    View Demo →
+                  </motion.span>
+                </div>
               </div>
             </div>
 
-            <div className="mt-10 flex items-center justify-center gap-8 text-white/40 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
-                <span>256-bit encrypted</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#0099FF]" />
-                <span>Data never stored</span>
-              </div>
+            <div className="mt-8 flex items-center justify-center gap-12">
+              <p className="text-[10px] tracking-[0.2em] text-white/20 uppercase">
+                Encrypted
+              </p>
+              <p className="text-[10px] tracking-[0.2em] text-white/20 uppercase">
+                Private
+              </p>
+              <p className="text-[10px] tracking-[0.2em] text-white/20 uppercase">
+                Secure
+              </p>
             </div>
           </motion.div>
         )}
 
-        {/* PROCESSING STATE */}
+        {/* PROCESSING STATE - Minimal */}
         {(stage === "decoding" || stage === "mapping" || stage === "simulating") && (
           <motion.div
             key="processing"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="max-w-md mx-auto text-center py-24"
+            className="px-12 py-32 text-center"
           >
-            <motion.div 
-              className="w-20 h-20 mx-auto rounded-2xl bg-[#0099FF] flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(0,153,255,0.5)]"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            >
-              <Dna className="w-10 h-10 text-white" />
-            </motion.div>
+            <p className="text-[11px] tracking-[0.3em] text-white/30 uppercase mb-8">
+              Processing
+            </p>
 
-            <h2 className="text-2xl font-semibold text-white mb-4">
+            <h2 className="text-[28px] font-light text-white mb-6 tracking-tight">
               {STAGE_MESSAGES[stage]}
             </h2>
 
-            <div className="flex justify-center gap-2">
+            <div className="flex justify-center gap-3">
               {["decoding", "mapping", "simulating"].map((s, i) => {
                 const stages = ["decoding", "mapping", "simulating"];
                 const currentIndex = stages.indexOf(stage);
                 const isActive = i <= currentIndex;
                 return (
-                  <div
+                  <motion.div
                     key={s}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      isActive ? "bg-[#0099FF]" : "bg-white/[0.1]"
-                    }`}
+                    className="w-8 h-[1px]"
+                    animate={{ 
+                      backgroundColor: isActive ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.1)" 
+                    }}
+                    transition={{ duration: 0.3 }}
                   />
                 );
               })}
@@ -757,61 +760,59 @@ const DNALab = () => {
           </motion.div>
         )}
 
-        {/* COMPLETE STATE */}
+        {/* COMPLETE STATE - Architectural Grid */}
         {stage === "complete" && data && (
           <motion.div
             key="complete"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={springTransition}
             id="health-card-export"
-            className="space-y-6"
           >
             {/* Historical Banner */}
             {isHistoricalView && (data as HistoricalData).historicalDate && (
-              <div className="card-surface p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Clock className="w-5 h-5 text-white/50" />
-                  <div>
-                    <p className="text-white font-medium">Historical View</p>
-                    <p className="text-sm text-white/50">
-                      Snapshot from {(data as HistoricalData).historicalDate}
-                    </p>
-                  </div>
-                </div>
-                <Button
+              <div className="px-12 py-4 border-b border-white/[0.06] flex items-center justify-between">
+                <p className="text-[11px] tracking-[0.2em] text-white/40 uppercase">
+                  Historical Snapshot · {(data as HistoricalData).historicalDate}
+                </p>
+                <motion.button
                   onClick={() => { setIsHistoricalView(false); resetAnalysis(); }}
-                  variant="secondary"
-                  size="sm"
+                  className="text-[11px] tracking-[0.15em] text-white/40 uppercase hover:text-white transition-colors"
+                  whileHover={{ x: 4 }}
                 >
-                  <X className="w-4 h-4 mr-2" />
-                  Exit
-                </Button>
+                  Exit →
+                </motion.button>
               </div>
             )}
 
-            {/* Main Grid */}
-            <div className="grid grid-cols-12 gap-6">
-              {/* Runway - with success glow animation */}
+            {/* Main Grid - Architectural */}
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              {/* Runway */}
               <motion.div
-                className="col-span-12 md:col-span-6 glass-card p-8 cursor-pointer success-glow"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                className="border-b border-r border-white/[0.06] cursor-pointer group"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ ...springTransition, delay: 0.1 }}
-                whileHover={{ scale: 1.02, y: -4 }}
-                whileTap={{ scale: 0.98 }}
                 onClick={handleRunwayClick}
               >
-                <div className="flex items-center gap-2 mb-6">
-                  <Target className="w-4 h-4 text-[#0099FF]" />
-                  <p className="text-white/50 text-sm font-semibold uppercase tracking-wider">
+                <div className="p-12 min-h-[200px] flex flex-col justify-between relative">
+                  <p className="text-[11px] tracking-[0.2em] text-white/30 uppercase">
                     Runway
                   </p>
+                  <div>
+                    <span className="text-[64px] font-light text-white tabular-nums tracking-tighter leading-none">
+                      {!isFinite(data.runway_months) ? "∞" : displayedRunway.toFixed(1)}
+                    </span>
+                    <span className="text-[18px] font-light text-white/30 ml-2">
+                      months
+                    </span>
+                  </div>
+                  
+                  {/* Hover indicator */}
+                  <motion.div
+                    className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  />
                 </div>
-                <div className="text-6xl lg:text-7xl font-bold text-white mb-2 tabular-nums tracking-tighter">
-                  {!isFinite(data.runway_months) ? "∞" : displayedRunway.toFixed(1)}
-                </div>
-                <p className="text-white/50">months remaining</p>
               </motion.div>
 
               {/* Grade */}

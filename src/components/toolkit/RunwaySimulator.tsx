@@ -1036,16 +1036,16 @@ export const RunwaySimulator = ({
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-[hsl(152,100%,50%)/0.15] blur-[100px] rounded-full" />
           
           <div className="relative flex items-center justify-between">
-            <motion.div 
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
+          <motion.div 
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
               className="flex items-center gap-4"
-            >
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[hsl(152,100%,50%)] to-[hsl(180,80%,45%)] flex items-center justify-center shadow-lg shadow-[hsl(152,100%,50%)/0.3]">
-                <Rocket className="w-8 h-8 text-white" />
-              </div>
-              <div>
+          >
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[hsl(152,100%,50%)] to-[hsl(180,80%,45%)] flex items-center justify-center shadow-lg shadow-[hsl(152,100%,50%)/0.3]">
+              <Rocket className="w-8 h-8 text-white" />
+            </div>
+            <div>
                 <div className="flex items-center gap-3">
                   <h2 className="text-3xl font-bold text-white">Runway Simulation Engine</h2>
                   {isRehydrated && (
@@ -1073,8 +1073,8 @@ export const RunwaySimulator = ({
                       : "Advanced compound growth modeling"
                   }
                 </p>
-              </div>
-            </motion.div>
+            </div>
+          </motion.div>
             
             {/* Header Actions */}
             <div className="flex items-center gap-2">
@@ -1405,12 +1405,12 @@ export const RunwaySimulator = ({
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[hsl(180,80%,45%)/0.2] flex items-center justify-center">
                     <TrendingUp className="w-5 h-5 text-[hsl(180,80%,50%)]" />
-                  </div>
-                  <div>
+                </div>
+                <div>
                     <Label className="text-[hsl(180,80%,50%)] font-semibold">Monthly Revenue</Label>
                     <p className="text-xs text-[hsl(220,10%,50%)]">Current recurring revenue</p>
-                  </div>
                 </div>
+              </div>
                 <div className="relative">
                   <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[hsl(220,10%,45%)] text-sm">$</span>
                   <Input
@@ -1426,7 +1426,7 @@ export const RunwaySimulator = ({
                   />
                 </div>
               </div>
-              <Slider
+                <Slider
                 value={[Math.min(simParams.monthlyRevenue, 150000)]}
                 onValueChange={([val]) => setSimParams(prev => ({ ...prev, monthlyRevenue: val }))}
                 max={150000}
@@ -1464,7 +1464,7 @@ export const RunwaySimulator = ({
                   <Slider
                     value={[Math.max(-10, Math.min(simParams.expenseGrowth, 50))]}
                     onValueChange={([val]) => setSimParams(prev => ({ ...prev, expenseGrowth: val }))}
-                    max={50}
+                  max={50}
                     min={-10}
                     step={1}
                     className="flex-1 [&>span:first-child]:h-1.5 [&>span:first-child]:bg-[hsl(240,7%,20%)] [&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
@@ -1472,13 +1472,13 @@ export const RunwaySimulator = ({
                   <span className="text-xs text-[hsl(0,70%,55%)]">
                     +50%{simParams.expenseGrowth > 50 && <span className="text-[hsl(45,90%,55%)]">+</span>}
                   </span>
-                </div>
+              </div>
                 <p className="text-center text-sm font-semibold" style={{ 
                   color: simParams.expenseGrowth < 0 ? "hsl(152, 100%, 50%)" : simParams.expenseGrowth > 10 ? "hsl(0, 70%, 55%)" : "hsl(45, 90%, 55%)" 
                 }}>
                   {simParams.expenseGrowth > 0 ? "+" : ""}{simParams.expenseGrowth}% / year
-                </p>
-              </div>
+              </p>
+            </div>
 
               {/* Revenue Growth: 0% to +100% */}
               <div className="p-4 rounded-2xl bg-[hsl(240,7%,10%)] border border-white/5">
@@ -1527,7 +1527,7 @@ export const RunwaySimulator = ({
                 <h4 className="text-sm font-medium text-white flex items-center gap-2">
                   <Zap className="w-4 h-4 text-[hsl(45,90%,55%)]" />
                   Quick Presets
-                </h4>
+              </h4>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -2209,7 +2209,7 @@ export const RunwaySimulator = ({
                       );
                     })}
                     
-                    <Tooltip 
+                    <Tooltip
                       content={scenarioMode ? <DualScenarioTooltip /> : <CustomTooltip />} 
                     />
                     
@@ -2248,8 +2248,8 @@ export const RunwaySimulator = ({
                     {/* Proposed Strategy (B) - Emerald Green (only when in scenario mode) */}
                     {scenarioMode && (
                       <>
-                        <Area
-                          type="monotone"
+                    <Area
+                      type="monotone"
                           dataKey="cashB"
                           stroke="none"
                           fill="url(#scenarioBGradient)"
@@ -2259,8 +2259,8 @@ export const RunwaySimulator = ({
                           type="monotone"
                           dataKey="cashB"
                           name="Proposed Strategy"
-                          stroke="hsl(152, 100%, 50%)"
-                          strokeWidth={3}
+                      stroke="hsl(152, 100%, 50%)"
+                      strokeWidth={3}
                           strokeDasharray="5 3"
                           dot={({ cx, cy, payload }) => {
                             const color = payload.cashB > 0 ? "hsl(152, 100%, 50%)" : "hsl(0, 70%, 55%)";
@@ -2314,8 +2314,8 @@ export const RunwaySimulator = ({
                             );
                           }}
                           activeDot={{ r: 6, fill: "hsl(152, 100%, 50%)", stroke: "white", strokeWidth: 2 }}
-                          animationDuration={1500}
-                        />
+                      animationDuration={1500}
+                    />
                       </>
                     )}
                   </ComposedChart>
@@ -2459,7 +2459,7 @@ export const RunwaySimulator = ({
                           <span className="text-[hsl(152,100%,50%)]">+{simParams.revenueGrowth}%</span>
                         </div>
                       </div>
-                    </div>
+        </div>
                   </motion.div>
 
                   {/* Saved Snapshot Cards */}

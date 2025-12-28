@@ -1,22 +1,7 @@
 import { forwardRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
-import { 
-  Wrench, 
-  BookOpen, 
-  Video, 
-  FileText, 
-  Calculator, 
-  PieChart, 
-  TrendingUp,
-  ExternalLink,
-  Sparkles,
-  Users,
-  DollarSign,
-  Crown,
-  Link2
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowUpRight } from "lucide-react";
 import { apiUrl } from "@/lib/config";
 import { BurnRateCalculator } from "@/components/toolkit/BurnRateCalculator";
 import { RunwaySimulator } from "@/components/toolkit/RunwaySimulator";
@@ -29,37 +14,6 @@ interface AnalysisData {
   cash_on_hand?: number;
   runway_months?: number;
 }
-
-const resources = [
-  {
-    icon: BookOpen,
-    title: "Founder's Guide to Runway",
-    type: "Guide",
-    readTime: "12 min read",
-    url: "https://www.ycombinator.com/library/5k-how-to-keep-your-company-alive",
-  },
-  {
-    icon: Video,
-    title: "Decoding Your Financial DNA",
-    type: "Video",
-    readTime: "8 min watch",
-    url: "https://www.youtube.com/watch?v=XwM0jxN3xYo",
-  },
-  {
-    icon: FileText,
-    title: "Investor Update Template",
-    type: "Template",
-    readTime: "Download",
-    url: "https://docs.google.com/document/d/1xb6y8qpZRG-HG0AwgC0jWNHKQnp_hKV8qj3oVZ6pQqo/edit",
-  },
-  {
-    icon: DollarSign,
-    title: "Fundraising Metrics Cheatsheet",
-    type: "Cheatsheet",
-    readTime: "5 min read",
-    url: "https://visible.vc/blog/startup-fundraising-metrics/",
-  },
-];
 
 interface SimulationSnapshot {
   simParams?: {
@@ -87,6 +41,13 @@ interface SimulationSnapshot {
   date?: string;
 }
 
+// Ultra-smooth spring physics
+const spring = {
+  type: "spring" as const,
+  stiffness: 200,
+  damping: 30,
+};
+
 const FounderToolkitContent = forwardRef<HTMLDivElement>((_, ref) => {
   const [searchParams] = useSearchParams();
   const [burnCalcOpen, setBurnCalcOpen] = useState(false);
@@ -95,6 +56,7 @@ const FounderToolkitContent = forwardRef<HTMLDivElement>((_, ref) => {
   const [hiringPlannerOpen, setHiringPlannerOpen] = useState(false);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [simulationSnapshot, setSimulationSnapshot] = useState<SimulationSnapshot | null>(null);
+  const [hoveredTool, setHoveredTool] = useState<string | null>(null);
   
   const { totalNewHires, updateRole } = useHiring();
   
@@ -164,188 +126,219 @@ const FounderToolkitContent = forwardRef<HTMLDivElement>((_, ref) => {
     fetchAnalysisData();
   }, []);
 
-  const handleResourceClick = (url: string) => {
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
-
-  const handleViewAll = () => {
-    window.open("https://www.ycombinator.com/library?categories=finance", "_blank");
-  };
-
   const tools = [
     {
-      icon: Calculator,
-      title: "Burn Rate Calculator",
-      description: "Model different spending scenarios",
+      id: "burn",
+      number: "01",
+      title: "Burn Rate",
+      subtitle: "Calculator",
+      description: "Model spending scenarios and monthly cash flow",
       onClick: () => setBurnCalcOpen(true),
-      linked: false,
     },
     {
-      icon: PieChart,
-      title: "Runway Simulator",
-      description: totalNewHires > 0 
-        ? `Connected: +${totalNewHires} hire${totalNewHires > 1 ? 's' : ''} planned`
-        : "Visualize cash runway projections",
+      id: "runway",
+      number: "02",
+      title: "Runway",
+      subtitle: "Simulator",
+      description: "Project cash runway with growth variables",
       onClick: () => setRunwaySimOpen(true),
-      linked: totalNewHires > 0,
-      badge: totalNewHires > 0 ? `+${totalNewHires}` : null,
+      active: totalNewHires > 0,
     },
     {
-      icon: TrendingUp,
-      title: "Growth Tracker",
-      description: "Monitor MRR & ARR metrics",
+      id: "growth",
+      number: "03",
+      title: "Growth",
+      subtitle: "Tracker",
+      description: "Monitor MRR, ARR, and expansion metrics",
       onClick: () => setGrowthTrackerOpen(true),
-      linked: false,
     },
     {
-      icon: Users,
-      title: "Hiring Planner",
-      description: totalNewHires > 0 
-        ? `${totalNewHires} hire${totalNewHires > 1 ? 's' : ''} → Simulator`
-        : "Plan team growth vs burn",
+      id: "hiring",
+      number: "04",
+      title: "Hiring",
+      subtitle: "Planner",
+      description: "Plan team growth against burn rate",
       onClick: () => setHiringPlannerOpen(true),
-      linked: totalNewHires > 0,
-      badge: totalNewHires > 0 ? `${totalNewHires}` : null,
+      active: totalNewHires > 0,
     },
   ];
 
+  const resources = [
+    {
+      title: "Founder's Guide to Runway Management",
+      source: "Y Combinator",
+      url: "https://www.ycombinator.com/library/5k-how-to-keep-your-company-alive",
+    },
+    {
+      title: "Understanding Your Burn Rate",
+      source: "First Round Review",
+      url: "https://review.firstround.com/",
+    },
+    {
+      title: "Investor Update Best Practices",
+      source: "Visible.vc",
+      url: "https://visible.vc/blog/startup-fundraising-metrics/",
+    },
+  ];
 
   return (
-    <div ref={ref} className="min-h-screen w-full p-8 lg:p-12">
-      {/* Header */}
-      <motion.header
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-12"
-      >
-        <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-3xl font-semibold text-white">Founder Toolkit</h1>
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[hsl(142,69%,50%,0.15)] text-[hsl(142,69%,50%)] text-xs font-medium">
-            <Crown className="w-3 h-3" />
-            PRO
-          </span>
-        </div>
-        <p className="text-[hsl(0,0%,53%)]">
-          Tools and resources to maximize your runway
-        </p>
-      </motion.header>
+    <div ref={ref} className="min-h-screen w-full">
+      {/* ═══════════════════════════════════════════════════════════════════
+          HEADER - Architectural typography
+      ═══════════════════════════════════════════════════════════════════ */}
+      <header className="px-12 pt-16 pb-20 border-b border-white/[0.06]">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={spring}
+        >
+          <p className="text-[11px] tracking-[0.3em] text-white/30 uppercase mb-4">
+            Financial Tools
+          </p>
+          <h1 className="text-[42px] font-light text-white tracking-tight leading-none">
+            Toolkit
+          </h1>
+        </motion.div>
+      </header>
 
-      {/* Tools Grid */}
-      <section className="mb-12">
-        <div className="flex items-center gap-2 mb-6">
-          <Wrench className="w-5 h-5 text-[hsl(211,100%,45%)]" />
-          <h2 className="text-lg font-semibold text-white">Financial Tools</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {tools.map((tool, index) => (
-            <motion.div
-              key={tool.title}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 * index }}
-              onClick={tool.onClick}
-              className={`card-surface-hover p-6 cursor-pointer ${
-                tool.linked ? "border-[hsl(142,69%,50%,0.3)]" : ""
-              }`}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-[hsl(0,0%,14%)] flex items-center justify-center">
-                  <tool.icon className="w-5 h-5 text-[hsl(211,100%,45%)]" />
-                </div>
+      {/* ═══════════════════════════════════════════════════════════════════
+          TOOLS GRID - Gallery style
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="grid grid-cols-1 md:grid-cols-2">
+        {tools.map((tool, index) => (
+          <motion.div
+            key={tool.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ ...spring, delay: index * 0.1 }}
+            onClick={tool.onClick}
+            onMouseEnter={() => setHoveredTool(tool.id)}
+            onMouseLeave={() => setHoveredTool(null)}
+            className={`relative border-b border-r border-white/[0.06] cursor-pointer group
+              ${index % 2 === 0 ? '' : 'md:border-r-0'}
+              ${index >= 2 ? 'md:border-b-0' : ''}
+            `}
+          >
+            <div className="p-12 min-h-[240px] flex flex-col justify-between">
+              {/* Number */}
+              <div className="flex items-start justify-between">
+                <span className="text-[11px] tracking-[0.2em] text-white/20 font-mono">
+                  {tool.number}
+                </span>
                 
-                {tool.linked && (
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[hsl(142,69%,50%,0.15)]">
-                    <Link2 className="w-3 h-3 text-[hsl(142,69%,50%)]" />
-                    <span className="text-[10px] font-medium text-[hsl(142,69%,50%)]">
-                      {tool.badge}
+                {/* Arrow - appears on hover */}
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ 
+                    opacity: hoveredTool === tool.id ? 1 : 0,
+                    x: hoveredTool === tool.id ? 0 : -10,
+                  }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ArrowUpRight className="w-5 h-5 text-white/40" />
+                </motion.div>
+              </div>
+
+              {/* Title */}
+              <div>
+                <h2 className="text-[28px] font-light text-white leading-tight mb-1">
+                  {tool.title}
+                </h2>
+                <h3 className="text-[28px] font-light text-white/30 leading-tight mb-4">
+                  {tool.subtitle}
+                </h3>
+                <p className="text-[13px] text-white/40 max-w-[280px] leading-relaxed">
+                  {tool.description}
+                </p>
+                
+                {/* Active indicator */}
+                {tool.active && (
+                  <div className="mt-4 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                    <span className="text-[10px] tracking-[0.15em] text-white/40 uppercase">
+                      {totalNewHires} connected
                     </span>
                   </div>
                 )}
               </div>
-              
-              <h3 className="text-white font-medium mb-1">
-                {tool.title}
-              </h3>
-              <p className={`text-sm ${tool.linked ? "text-[hsl(142,69%,50%)]" : "text-[hsl(0,0%,53%)]"}`}>
-                {tool.description}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+            </div>
 
-      {/* Resources Section */}
-      <section className="mb-12">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-[hsl(142,69%,50%)]" />
-            <h2 className="text-lg font-semibold text-white">Learning Resources</h2>
-          </div>
-          <Button variant="ghost" onClick={handleViewAll} className="text-[hsl(211,100%,45%)]">
-            View All
-            <ExternalLink className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {resources.map((resource, index) => (
+            {/* Hover background */}
             <motion.div
-              key={resource.title}
+              className="absolute inset-0 bg-white/[0.02] pointer-events-none"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.05 * index + 0.2 }}
-              onClick={() => handleResourceClick(resource.url)}
-              className="card-surface-hover p-5 flex items-center gap-4 cursor-pointer"
+              animate={{ opacity: hoveredTool === tool.id ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
+            />
+          </motion.div>
+        ))}
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          RESOURCES - Minimal list
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="px-12 py-16 border-t border-white/[0.06]">
+        <p className="text-[11px] tracking-[0.3em] text-white/30 uppercase mb-8">
+          Resources
+        </p>
+        
+        <div className="space-y-0">
+          {resources.map((resource, index) => (
+            <motion.a
+              key={resource.title}
+              href={resource.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ ...spring, delay: 0.4 + index * 0.05 }}
+              className="flex items-center justify-between py-5 border-b border-white/[0.06] group cursor-pointer"
             >
-              <div className="w-10 h-10 rounded-xl bg-[hsl(0,0%,14%)] flex items-center justify-center shrink-0">
-                <resource.icon className="w-5 h-5 text-[hsl(211,100%,45%)]" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-white font-medium truncate">
+              <div className="flex items-center gap-8">
+                <span className="text-[11px] text-white/20 font-mono w-6">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="text-[15px] text-white/70 group-hover:text-white transition-colors duration-300">
                   {resource.title}
-                </h3>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-[hsl(211,100%,45%)]">{resource.type}</span>
-                  <span className="text-[hsl(0,0%,30%)]">•</span>
-                  <span className="text-[hsl(0,0%,53%)]">{resource.readTime}</span>
-                </div>
+                </span>
               </div>
-              <ExternalLink className="w-4 h-4 text-[hsl(0,0%,40%)] shrink-0" />
-            </motion.div>
+              <div className="flex items-center gap-4">
+                <span className="text-[11px] tracking-[0.1em] text-white/30 uppercase">
+                  {resource.source}
+                </span>
+                <motion.div
+                  initial={{ x: 0, opacity: 0.3 }}
+                  whileHover={{ x: 4, opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ArrowUpRight className="w-4 h-4 text-white/30 group-hover:text-white/60 transition-colors duration-300" />
+                </motion.div>
+              </div>
+            </motion.a>
           ))}
         </div>
       </section>
 
-      {/* Pro Banner */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="card-surface p-8"
-      >
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-[hsl(142,69%,50%)] flex items-center justify-center">
-              <Sparkles className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-1">
-                AI-Powered Insights Active
-              </h3>
-              <p className="text-[hsl(0,0%,53%)]">
-                Predictive forecasts and personalized recommendations unlocked
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-[hsl(142,69%,50%)]">
-            <Crown className="w-5 h-5" />
-            <span className="font-medium">Pro Member</span>
+      {/* ═══════════════════════════════════════════════════════════════════
+          FOOTER STATUS
+      ═══════════════════════════════════════════════════════════════════ */}
+      <footer className="px-12 py-8 border-t border-white/[0.06]">
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] tracking-[0.2em] text-white/20 uppercase">
+            Pro Features Active
+          </p>
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+            <span className="text-[11px] tracking-[0.1em] text-white/40">
+              AI Insights Enabled
+            </span>
           </div>
         </div>
-      </motion.div>
+      </footer>
 
-      {/* Modals */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          MODALS
+      ═══════════════════════════════════════════════════════════════════ */}
       <AnimatePresence>
         {burnCalcOpen && (
           <BurnRateCalculator 
