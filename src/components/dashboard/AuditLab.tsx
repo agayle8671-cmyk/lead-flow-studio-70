@@ -63,28 +63,43 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
 
       // Retry logic for network failures (e.g., backend crash on CSV)
       const maxRetries = 2;
+      const timeoutMs = 30000; // 30 second timeout
       let response: Response | null = null;
       let lastError: Error | null = null;
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
+          // Create AbortController for timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
           response = await fetch("https://marginauditpro.com/api/parse-finances", {
             method: "POST",
             headers,
             body: formData,
             mode: "cors",
+            signal: controller.signal,
           });
+          
+          clearTimeout(timeoutId);
           break; // Success - exit retry loop
         } catch (networkError) {
           lastError = networkError instanceof Error ? networkError : new Error("Network error");
-          console.warn(`Upload attempt ${attempt + 1} failed:`, networkError);
+          
+          // Log the exact error details to console for debugging
+          console.error(`Upload attempt ${attempt + 1} failed:`, {
+            error: lastError,
+            message: lastError.message,
+            name: lastError.name,
+            stack: lastError.stack,
+          });
           
           if (attempt < maxRetries) {
-            // Wait 2 seconds before retry, show "Server Busy" message
-            setProcessingStatus("Server busy, retrying...");
+            // Wait 2 seconds before retry, show clearer "Server Busy" message
+            setProcessingStatus("M.A.P. is analyzing your data... this may take a moment for large files.");
             toast({
               title: "Server Busy",
-              description: "The server is processing. Retrying in 2 seconds...",
+              description: "M.A.P. is analyzing your data... this may take a moment for large files.",
               className: "bg-amber-500/10 border-amber-500/30",
             });
             await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -93,8 +108,13 @@ const AuditLab = ({ onAuditComplete }: AuditLabProps) => {
         }
       }
 
-      // If all retries failed, throw the network error
+      // If all retries failed, log and throw the network error
       if (!response) {
+        console.error("All upload attempts failed. Final error:", {
+          error: lastError,
+          message: lastError?.message,
+          name: lastError?.name,
+        });
         throw new Error(lastError?.message || "Failed to connect to server after multiple attempts");
       }
 
