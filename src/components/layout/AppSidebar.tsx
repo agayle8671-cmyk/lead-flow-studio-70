@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Dna, FlaskConical, Archive, Wrench, Settings, Rocket, Zap } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const navigation = [
   {
@@ -107,7 +108,13 @@ const AppSidebar = () => {
             <p className="text-xs text-[hsl(220,10%,60%)] mb-3">
               Unlock AI-powered forecasts & investor reports
             </p>
-            <button className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] text-white text-xs font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.3] transition-all">
+            <button 
+              onClick={() => toast({
+                title: "Founder Pro",
+                description: "Pro features coming soon! We'll notify you when available.",
+              })}
+              className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] text-white text-xs font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.3] transition-all"
+            >
               <Zap className="w-3 h-3" />
               Upgrade Now
             </button>

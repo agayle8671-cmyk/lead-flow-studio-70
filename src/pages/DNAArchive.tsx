@@ -1,7 +1,9 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Archive, Calendar, TrendingUp, FileText, Search, Filter, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 
 // Mock historical data
 const mockAnalyses = [
@@ -47,7 +49,7 @@ const mockAnalyses = [
   },
 ];
 
-const DNAArchive = () => {
+const DNAArchive = forwardRef<HTMLDivElement>((_, ref) => {
   const getGradeClass = (grade: string) => {
     const g = grade.toLowerCase();
     if (g === "a") return "bg-[hsl(152,100%,50%)] text-[hsl(152,100%,5%)]";
@@ -55,8 +57,22 @@ const DNAArchive = () => {
     return "bg-[hsl(45,90%,55%)] text-[hsl(45,100%,10%)]";
   };
 
+  const handleViewAnalysis = (id: number, date: string) => {
+    toast({
+      title: "Opening Analysis",
+      description: `Loading ${date} analysis...`,
+    });
+  };
+
+  const handleFilter = () => {
+    toast({
+      title: "Filter",
+      description: "Filter options coming soon in Pro version.",
+    });
+  };
+
   return (
-    <div className="min-h-screen w-full p-8">
+    <div ref={ref} className="min-h-screen w-full p-8">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -83,6 +99,7 @@ const DNAArchive = () => {
           </div>
           <Button
             variant="outline"
+            onClick={handleFilter}
             className="border-[hsl(226,100%,59%)/0.2] hover:border-[hsl(226,100%,59%)/0.4] text-[hsl(220,10%,70%)]"
           >
             <Filter className="w-4 h-4 mr-2" />
@@ -150,11 +167,12 @@ const DNAArchive = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 * index + 0.3 }}
+              onClick={() => handleViewAnalysis(analysis.id, analysis.date)}
               className="p-4 hover:bg-white/[0.02] transition-colors cursor-pointer group"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl ${getGradeClass(analysis.grade)} flex items-center justify-center font-bold text-lg`}>
+                  <div className={`w-10 h-10 rounded-xl ${getGradeClass(analysis.grade)} flex items-center justify-center font-bold text-lg uppercase`}>
                     {analysis.grade}
                   </div>
                   <div>
@@ -193,6 +211,8 @@ const DNAArchive = () => {
       </motion.p>
     </div>
   );
-};
+});
+
+DNAArchive.displayName = "DNAArchive";
 
 export default DNAArchive;

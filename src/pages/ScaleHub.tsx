@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Settings, 
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "@/hooks/use-toast";
 
 const settingsSections = [
   {
@@ -40,9 +42,30 @@ const settingsSections = [
   },
 ];
 
-const ScaleHub = () => {
+const ScaleHub = forwardRef<HTMLDivElement>((_, ref) => {
+  const handleSettingClick = (label: string) => {
+    toast({
+      title: label,
+      description: `${label} settings will be available with account integration.`,
+    });
+  };
+
+  const handleUpgrade = () => {
+    toast({
+      title: "Upgrade Plan",
+      description: "Pro plan coming soon! We'll notify you when available.",
+    });
+  };
+
+  const handleSignOut = () => {
+    toast({
+      title: "Sign Out",
+      description: "Sign out functionality will be available with account integration.",
+    });
+  };
+
   return (
-    <div className="min-h-screen w-full p-8">
+    <div ref={ref} className="min-h-screen w-full p-8">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -60,7 +83,7 @@ const ScaleHub = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="glass-panel-intense p-6 mb-8 flex items-center justify-between"
+        className="glass-panel-intense p-6 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
       >
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] flex items-center justify-center">
@@ -80,6 +103,7 @@ const ScaleHub = () => {
         </div>
         <Button
           variant="outline"
+          onClick={handleUpgrade}
           className="border-[hsl(226,100%,59%)/0.3] hover:border-[hsl(226,100%,59%)/0.6] text-white"
         >
           Upgrade Plan
@@ -107,6 +131,7 @@ const ScaleHub = () => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.05 * itemIndex + 0.1 * sectionIndex + 0.3 }}
+                    onClick={() => handleSettingClick(item.label)}
                     className="p-4 hover:bg-white/[0.02] transition-colors cursor-pointer group flex items-center justify-between"
                   >
                     <div className="flex items-center gap-4">
@@ -173,6 +198,7 @@ const ScaleHub = () => {
             <h3 className="text-[hsl(0,70%,55%)] font-semibold mb-4">Danger Zone</h3>
             <Button
               variant="outline"
+              onClick={handleSignOut}
               className="w-full border-[hsl(0,70%,50%)/0.3] hover:border-[hsl(0,70%,50%)/0.6] hover:bg-[hsl(0,70%,50%)/0.1] text-[hsl(0,70%,55%)]"
             >
               <LogOut className="w-4 h-4 mr-2" />
@@ -183,6 +209,8 @@ const ScaleHub = () => {
       </div>
     </div>
   );
-};
+});
+
+ScaleHub.displayName = "ScaleHub";
 
 export default ScaleHub;

@@ -540,12 +540,22 @@ const DNALab = () => {
               <div className="flex gap-3">
                 <Button
                   variant="outline"
+                  onClick={() => toast({
+                    title: "Download",
+                    description: "Health Card export coming soon in Pro version.",
+                  })}
                   className="border-[hsl(226,100%,59%)/0.3] hover:border-[hsl(226,100%,59%)/0.6] hover:bg-[hsl(226,100%,59%)/0.1] text-white"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download
                 </Button>
-                <Button className="bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] text-white hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.3]">
+                <Button 
+                  onClick={() => toast({
+                    title: "Share",
+                    description: "Sharing functionality coming soon!",
+                  })}
+                  className="bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] text-white hover:shadow-lg hover:shadow-[hsl(226,100%,59%)/0.3]"
+                >
                   <Share2 className="w-4 h-4 mr-2" />
                   Share
                 </Button>

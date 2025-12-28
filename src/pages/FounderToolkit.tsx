@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Wrench, 
@@ -14,6 +15,7 @@ import {
   DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 const tools = [
   {
@@ -73,9 +75,37 @@ const resources = [
   },
 ];
 
-const FounderToolkit = () => {
+const FounderToolkit = forwardRef<HTMLDivElement>((_, ref) => {
+  const handleToolClick = (title: string) => {
+    toast({
+      title: title,
+      description: "This tool will be available in the Pro version.",
+    });
+  };
+
+  const handleResourceClick = (title: string, type: string) => {
+    toast({
+      title: `Opening ${type}`,
+      description: `"${title}" will be available soon.`,
+    });
+  };
+
+  const handleViewAll = () => {
+    toast({
+      title: "Resource Library",
+      description: "Full library coming soon with Pro upgrade.",
+    });
+  };
+
+  const handleUpgrade = () => {
+    toast({
+      title: "Upgrade to Pro",
+      description: "Pro features coming soon! We'll notify you when available.",
+    });
+  };
+
   return (
-    <div className="min-h-screen w-full p-8">
+    <div ref={ref} className="min-h-screen w-full p-8">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -107,6 +137,7 @@ const FounderToolkit = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * index + 0.2 }}
+              onClick={() => handleToolClick(tool.title)}
               className="glass-panel p-6 hover:border-[hsl(226,100%,59%)/0.3] transition-all cursor-pointer group"
             >
               <div 
@@ -138,7 +169,11 @@ const FounderToolkit = () => {
             <BookOpen className="w-5 h-5 text-[hsl(152,100%,50%)]" />
             <h2 className="text-xl font-bold text-white">Learning Resources</h2>
           </div>
-          <Button variant="ghost" className="text-[hsl(226,100%,59%)] hover:text-[hsl(226,100%,68%)]">
+          <Button 
+            variant="ghost" 
+            onClick={handleViewAll}
+            className="text-[hsl(226,100%,59%)] hover:text-[hsl(226,100%,68%)]"
+          >
             View All
             <ExternalLink className="w-4 h-4 ml-2" />
           </Button>
@@ -151,6 +186,7 @@ const FounderToolkit = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 * index + 0.4 }}
+              onClick={() => handleResourceClick(resource.title, resource.type)}
               className="glass-panel p-5 flex items-center gap-4 hover:border-[hsl(226,100%,59%)/0.3] transition-all cursor-pointer group"
             >
               <div className="w-12 h-12 rounded-xl bg-[hsl(226,100%,59%)/0.1] flex items-center justify-center shrink-0">
@@ -181,7 +217,7 @@ const FounderToolkit = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-r from-[hsl(226,100%,59%)/0.1] via-transparent to-[hsl(152,100%,50%)/0.1]" />
         
-        <div className="relative flex items-center justify-between">
+        <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-6">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] flex items-center justify-center glow-cobalt">
               <Sparkles className="w-8 h-8 text-white" />
@@ -197,6 +233,7 @@ const FounderToolkit = () => {
           </div>
           <Button
             size="lg"
+            onClick={handleUpgrade}
             className="bg-gradient-to-r from-[hsl(226,100%,59%)] to-[hsl(260,80%,55%)] text-white font-semibold px-8 hover:shadow-xl hover:shadow-[hsl(226,100%,59%)/0.3] transition-all"
           >
             <Zap className="w-5 h-5 mr-2" />
@@ -206,6 +243,8 @@ const FounderToolkit = () => {
       </motion.div>
     </div>
   );
-};
+});
+
+FounderToolkit.displayName = "FounderToolkit";
 
 export default FounderToolkit;
