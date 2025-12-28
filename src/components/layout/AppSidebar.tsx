@@ -315,6 +315,8 @@ const AppSidebar = () => {
         {navigation.map((item, index) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
+          // Sync pulse with DNA animation (2.5s cycle, staggered by index)
+          const pulseDelay = index * 0.3;
 
           return (
             <motion.div
@@ -327,12 +329,65 @@ const AppSidebar = () => {
                 to={item.href}
                 className={`nav-item ${isActive ? "active" : ""}`}
               >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-                  isActive 
-                    ? "bg-[hsl(226,100%,59%)] shadow-lg shadow-[hsl(226,100%,59%)/0.3]" 
-                    : "bg-white/5"
-                }`}>
-                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-[hsl(220,10%,60%)]"}`} />
+                <div className="relative">
+                  {/* Pulsing glow ring - synced with DNA rhythm */}
+                  <motion.div
+                    className="absolute inset-0 rounded-lg"
+                    style={{
+                      background: isActive 
+                        ? "hsl(226, 100%, 59%)" 
+                        : "hsl(226, 100%, 65%)",
+                    }}
+                    animate={{
+                      opacity: isActive ? [0.3, 0.6, 0.3] : [0, 0.15, 0],
+                      scale: [1, 1.15, 1],
+                    }}
+                    transition={{
+                      duration: 2.5,
+                      delay: pulseDelay,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                  {/* Outer glow pulse */}
+                  <motion.div
+                    className="absolute -inset-1 rounded-xl blur-md"
+                    style={{
+                      background: isActive 
+                        ? "hsl(226, 100%, 59%)" 
+                        : "hsl(260, 80%, 60%)",
+                    }}
+                    animate={{
+                      opacity: isActive ? [0.2, 0.4, 0.2] : [0, 0.1, 0],
+                    }}
+                    transition={{
+                      duration: 2.5,
+                      delay: pulseDelay + 0.1,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                  <div className={`relative w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
+                    isActive 
+                      ? "bg-[hsl(226,100%,59%)]" 
+                      : "bg-white/5"
+                  }`}>
+                    <motion.div
+                      animate={{
+                        filter: isActive 
+                          ? ["drop-shadow(0 0 2px hsl(226, 100%, 80%))", "drop-shadow(0 0 6px hsl(226, 100%, 80%))", "drop-shadow(0 0 2px hsl(226, 100%, 80%))"]
+                          : ["drop-shadow(0 0 0px transparent)", "drop-shadow(0 0 3px hsl(226, 100%, 70%))", "drop-shadow(0 0 0px transparent)"],
+                      }}
+                      transition={{
+                        duration: 2.5,
+                        delay: pulseDelay,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-[hsl(220,10%,60%)]"}`} />
+                    </motion.div>
+                  </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-medium truncate ${isActive ? "text-white" : ""}`}>
