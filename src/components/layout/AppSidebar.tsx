@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dna, FlaskConical, Archive, Wrench, Settings, Rocket, Zap } from "lucide-react";
+import { Dna, FlaskConical, Archive, Wrench, Settings, Rocket, Zap, Plane } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 
@@ -282,6 +282,109 @@ const RunwayDNA = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Takeoff Plane Animation */}
+      <motion.div
+        className="absolute left-1/2 -translate-x-1/2 z-10"
+        initial={{ bottom: "30%", scale: 0.6, opacity: 0 }}
+        animate={{
+          bottom: ["30%", "40%", "85%"],
+          scale: [0.6, 0.9, 0.4],
+          opacity: [0, 1, 1, 0],
+          x: ["-50%", "-50%", "-30%"],
+        }}
+        transition={{
+          duration: 3.5,
+          repeat: Infinity,
+          repeatDelay: 4,
+          ease: [0.2, 0.8, 0.4, 1],
+          times: [0, 0.3, 1],
+        }}
+      >
+        {/* Plane with glow effect */}
+        <motion.div
+          className="relative"
+          animate={{
+            rotate: [0, -5, -15],
+          }}
+          transition={{
+            duration: 3.5,
+            repeat: Infinity,
+            repeatDelay: 4,
+            times: [0, 0.3, 1],
+          }}
+        >
+          {/* Engine glow trail */}
+          <motion.div
+            className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-2 rounded-full"
+            style={{
+              height: 20,
+              background: "linear-gradient(180deg, hsl(35, 100%, 60%), hsl(25, 100%, 50%), transparent)",
+              filter: "blur(2px)",
+            }}
+            animate={{
+              height: [15, 30, 45],
+              opacity: [0.5, 0.9, 0.7],
+            }}
+            transition={{
+              duration: 3.5,
+              repeat: Infinity,
+              repeatDelay: 4,
+              times: [0, 0.3, 1],
+            }}
+          />
+          {/* Plane icon */}
+          <div
+            className="relative"
+            style={{
+              filter: "drop-shadow(0 0 8px hsl(226, 100%, 60%)) drop-shadow(0 0 16px hsl(226, 100%, 50%))",
+            }}
+          >
+            <Plane 
+              className="w-6 h-6 text-white" 
+              style={{ 
+                transform: "rotate(-90deg)",
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+              }} 
+              fill="hsl(226, 100%, 65%)"
+              strokeWidth={1.5}
+            />
+          </div>
+          {/* Wing contrails */}
+          <motion.div
+            className="absolute top-1/2 -translate-y-1/2 -left-2 w-4 h-[1px]"
+            style={{
+              background: "linear-gradient(90deg, transparent, hsl(200, 100%, 80%))",
+            }}
+            animate={{
+              width: [0, 12, 20],
+              opacity: [0, 0.6, 0.3],
+            }}
+            transition={{
+              duration: 3.5,
+              repeat: Infinity,
+              repeatDelay: 4,
+              times: [0, 0.3, 1],
+            }}
+          />
+          <motion.div
+            className="absolute top-1/2 -translate-y-1/2 -right-2 w-4 h-[1px]"
+            style={{
+              background: "linear-gradient(-90deg, transparent, hsl(200, 100%, 80%))",
+            }}
+            animate={{
+              width: [0, 12, 20],
+              opacity: [0, 0.6, 0.3],
+            }}
+            transition={{
+              duration: 3.5,
+              repeat: Infinity,
+              repeatDelay: 4,
+              times: [0, 0.3, 1],
+            }}
+          />
+        </motion.div>
+      </motion.div>
 
       {/* Horizon glow */}
       <div 
